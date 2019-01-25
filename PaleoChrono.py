@@ -33,7 +33,10 @@ scale_ageci=10.
 show_figures=False
 show_airlayerthick=False
 execfile(datadir+'/parameters.py')
-
+try:
+    list_sites=list_sites
+except NameError:
+    list_sites=list_drillings
 
 ##Global
 variables=np.array([])

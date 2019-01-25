@@ -54,10 +54,16 @@ class Site:
 
 #        print 'Initialization of site '+self.label
 
-	self.archive='icecore'
+    	self.archive='icecore'
         self.accu_prior_rep='staircase'
 
-        execfile(datadir+'/parameters-AllSites.py')
+        filename=datadir+'/parameters-AllSites.py'
+        if os.path.isfile(filename):
+            execfile(filename)
+        else:
+            filename=datadir+'/parameters-AllDrillings.py'
+            if os.path.isfile(filename):
+                execfile(filename)
         execfile(datadir+self.label+'/parameters.py')
 
         self.depth_mid=(self.depth[1:]+self.depth[:-1])/2
@@ -222,14 +228,19 @@ class Site:
             filename=datadir+'/parameters-CovariancePrior-AllSites-init.py'
             if os.path.isfile(filename):
                 execfile(filename)
+            else:
+                filename=datadir+'/parameters-CovariancePrior-AllDrillings-init.py'
+                if os.path.isfile(filename):
+                    execfile(filename)
 
 
         if (self.correlation_corr_a_before!=self.correlation_corr_a).any():
             self.chol_a=cholesky(self.correlation_corr_a)
-        if (self.correlation_corr_LID_before!=self.correlation_corr_LID).any():
-            self.chol_LID=cholesky(self.correlation_corr_LID)
-        if (self.correlation_corr_a_before!=self.correlation_corr_a).any():
-            self.chol_tau=cholesky(self.correlation_corr_tau)
+        if self.archive=='icecore':
+            if (self.correlation_corr_LID_before!=self.correlation_corr_LID).any():
+                self.chol_LID=cholesky(self.correlation_corr_LID)
+            if (self.correlation_corr_a_before!=self.correlation_corr_a).any():
+                self.chol_tau=cholesky(self.correlation_corr_tau)
 
 
         self.variables=np.array([])
@@ -242,7 +253,10 @@ class Site:
 
 #Reading of observations
 
-        filename=datadir+self.label+'/ice_age.txt'
+        if self.archive=='icecore':
+            filename=datadir+self.label+'/ice_age.txt'
+        else:
+            filename=datadir+self.label+'/age.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
@@ -256,21 +270,10 @@ class Site:
                 self.icemarkers_age=np.array([])
                 self.icemarkers_sigma=np.array([])
 
-        filename=datadir+self.label+'/air_age.txt'
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
-                readarray=np.loadtxt(filename)
-                if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
-                self.airmarkers_depth=readarray[:,0]
-                self.airmarkers_age=readarray[:,1]
-                self.airmarkers_sigma=readarray[:,2]
-            else:
-                self.airmarkers_depth=np.array([])
-                self.airmarkers_age=np.array([])
-                self.airmarkers_sigma=np.array([])
-
-        filename=datadir+self.label+'/ice_age_intervals.txt'
+        if self.archive=='icecore':
+            filename=datadir+self.label+'/ice_age_intervals.txt'
+        else:
+            filename=datadir+self.label+'/age_intervals.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
@@ -286,35 +289,50 @@ class Site:
                 self.iceintervals_duration=np.array([])
                 self.iceintervals_sigma=np.array([])
 
-        filename=datadir+self.label+'/air_age_intervals.txt'
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
-                readarray=np.loadtxt(filename)
-                if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
-                self.airintervals_depthtop=readarray[:,0]
-                self.airintervals_depthbot=readarray[:,1]
-                self.airintervals_duration=readarray[:,2]
-                self.airintervals_sigma=readarray[:,3]
-            else:
-                self.airintervals_depthtop=np.array([])
-                self.airintervals_depthbot=np.array([])
-                self.airintervals_duration=np.array([])
-                self.airintervals_sigma=np.array([])
+        if self.archive=='icecore':
+            filename=datadir+self.label+'/air_age.txt'
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
+                    readarray=np.loadtxt(filename)
+                    if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
+                    self.airmarkers_depth=readarray[:,0]
+                    self.airmarkers_age=readarray[:,1]
+                    self.airmarkers_sigma=readarray[:,2]
+                else:
+                    self.airmarkers_depth=np.array([])
+                    self.airmarkers_age=np.array([])
+                    self.airmarkers_sigma=np.array([])
 
-        filename=datadir+self.label+'/Ddepth.txt'
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
-                readarray=np.loadtxt(filename)
-                if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
-                self.Ddepth_depth=readarray[:,0]
-                self.Ddepth_Ddepth=readarray[:,1]
-                self.Ddepth_sigma=readarray[:,2]
-            else:
-                self.Ddepth_depth=np.array([])
-                self.Ddepth_Ddepth=np.array([])
-                self.Ddepth_sigma=np.array([])
+            filename=datadir+self.label+'/air_age_intervals.txt'
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
+                    readarray=np.loadtxt(filename)
+                    if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
+                    self.airintervals_depthtop=readarray[:,0]
+                    self.airintervals_depthbot=readarray[:,1]
+                    self.airintervals_duration=readarray[:,2]
+                    self.airintervals_sigma=readarray[:,3]
+                else:
+                    self.airintervals_depthtop=np.array([])
+                    self.airintervals_depthbot=np.array([])
+                    self.airintervals_duration=np.array([])
+                    self.airintervals_sigma=np.array([])
+
+            filename=datadir+self.label+'/Ddepth.txt'
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if os.path.isfile(filename) and open(filename).read() and np.size(np.loadtxt(filename))>0:
+                    readarray=np.loadtxt(filename)
+                    if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
+                    self.Ddepth_depth=readarray[:,0]
+                    self.Ddepth_Ddepth=readarray[:,1]
+                    self.Ddepth_sigma=readarray[:,2]
+                else:
+                    self.Ddepth_depth=np.array([])
+                    self.Ddepth_Ddepth=np.array([])
+                    self.Ddepth_sigma=np.array([])
 
 
         self.icemarkers_correlation=np.diag(np.ones(np.size(self.icemarkers_depth)))
