@@ -1,4 +1,4 @@
-list_records=['EDC','VK','TALDICE','EDML','NGRIP']
+list_sites=['EDC','VK','TALDICE','EDML','NGRIP']
 
 opt_method='leastsq'  #leastsq, leastsq-parallel, none
 nb_nodes=6         #Number of nodes for the leastsq-parallel mode

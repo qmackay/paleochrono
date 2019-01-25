@@ -50,11 +50,11 @@ def residuals(var):
     """Calculate the residuals."""
     resi=np.array([])
     index=0
-    for i,dlabel in enumerate(list_records):
+    for i,dlabel in enumerate(list_sites):
         D[dlabel].variables=var[index:index+np.size(D[dlabel].variables)]
         index=index+np.size(D[dlabel].variables)
         resi=np.concatenate((resi,D[dlabel].residuals(D[dlabel].variables)))
-        for j,dlabel2 in enumerate(list_records):
+        for j,dlabel2 in enumerate(list_sites):
             if j<i:
                 resi=np.concatenate((resi,DC[dlabel2+'-'+dlabel].residuals()))
     return resi
@@ -85,11 +85,11 @@ def Dres(var):
 
 
 ##Initialisation
-for i,dlabel in enumerate(list_records):
+for i,dlabel in enumerate(list_sites):
 
-    print 'Initialization of record '+dlabel
+    print 'Initialization of site '+dlabel
         
-    D[dlabel]=Record(dlabel)
+    D[dlabel]=Site(dlabel)
     D[dlabel].init()
     D[dlabel].model(D[dlabel].variables)
 #    D[dlabel].a_init=D[dlabel].a
@@ -98,11 +98,11 @@ for i,dlabel in enumerate(list_records):
 #    D[dlabel].display_init()
     variables=np.concatenate((variables,D[dlabel].variables))
 
-for i,dlabel in enumerate(list_records):
-    for j,dlabel2 in enumerate(list_records):
+for i,dlabel in enumerate(list_sites):
+    for j,dlabel2 in enumerate(list_sites):
         if j<i:
-            print 'Initialization of record pair '+dlabel2+'-'+dlabel
-            DC[dlabel2+'-'+dlabel]=RecordPair(D[dlabel2],D[dlabel])
+            print 'Initialization of site pair '+dlabel2+'-'+dlabel
+            DC[dlabel2+'-'+dlabel]=SitePair(D[dlabel2],D[dlabel])
             DC[dlabel2+'-'+dlabel].init()
 #            DC[dlabel2+'-'+dlabel].display_init()
 
@@ -138,7 +138,7 @@ if opt_method!='none' and np.size(hess)==1 and hess==None:
     quit()
 print 'Calculation of confidence intervals'
 index=0
-for dlabel in list_records:
+for dlabel in list_sites:
     if opt_method=='none':
         D[dlabel].sigma_zero()
     else:
@@ -149,11 +149,11 @@ for dlabel in list_records:
 
 ###Final display and output
 print 'Display of results'
-for i,dlabel in enumerate(list_records):
+for i,dlabel in enumerate(list_sites):
 #    print dlabel+'\n'
     D[dlabel].save()
     D[dlabel].figures()
-    for j,dlabel2 in enumerate(list_records):
+    for j,dlabel2 in enumerate(list_sites):
         if j<i:
 #            print dlabel2+'-'+dlabel+'\n'
             DC[dlabel2+'-'+dlabel].figures()
