@@ -50,11 +50,11 @@ def residuals(var):
     """Calculate the residuals."""
     resi=np.array([])
     index=0
-    for i,dlabel in enumerate(list_drillings):
+    for i,dlabel in enumerate(list_records):
         D[dlabel].variables=var[index:index+np.size(D[dlabel].variables)]
         index=index+np.size(D[dlabel].variables)
         resi=np.concatenate((resi,D[dlabel].residuals(D[dlabel].variables)))
-        for j,dlabel2 in enumerate(list_drillings):
+        for j,dlabel2 in enumerate(list_records):
             if j<i:
                 resi=np.concatenate((resi,DC[dlabel2+'-'+dlabel].residuals()))
     return resi
@@ -85,11 +85,11 @@ def Dres(var):
 
 
 ##Initialisation
-for i,dlabel in enumerate(list_drillings):
+for i,dlabel in enumerate(list_records):
 
-    print 'Initialization of drilling '+dlabel
+    print 'Initialization of record '+dlabel
         
-    D[dlabel]=Drilling(dlabel)
+    D[dlabel]=Record(dlabel)
     D[dlabel].init()
     D[dlabel].model(D[dlabel].variables)
 #    D[dlabel].a_init=D[dlabel].a
@@ -98,11 +98,11 @@ for i,dlabel in enumerate(list_drillings):
 #    D[dlabel].display_init()
     variables=np.concatenate((variables,D[dlabel].variables))
 
-for i,dlabel in enumerate(list_drillings):
-    for j,dlabel2 in enumerate(list_drillings):
+for i,dlabel in enumerate(list_records):
+    for j,dlabel2 in enumerate(list_records):
         if j<i:
-            print 'Initialization of drilling pair '+dlabel2+'-'+dlabel
-            DC[dlabel2+'-'+dlabel]=DrillingPair(D[dlabel2],D[dlabel])
+            print 'Initialization of record pair '+dlabel2+'-'+dlabel
+            DC[dlabel2+'-'+dlabel]=RecordPair(D[dlabel2],D[dlabel])
             DC[dlabel2+'-'+dlabel].init()
 #            DC[dlabel2+'-'+dlabel].display_init()
 
@@ -138,7 +138,7 @@ if opt_method!='none' and np.size(hess)==1 and hess==None:
     quit()
 print 'Calculation of confidence intervals'
 index=0
-for dlabel in list_drillings:
+for dlabel in list_records:
     if opt_method=='none':
         D[dlabel].sigma_zero()
     else:
@@ -149,11 +149,11 @@ for dlabel in list_drillings:
 
 ###Final display and output
 print 'Display of results'
-for i,dlabel in enumerate(list_drillings):
+for i,dlabel in enumerate(list_records):
 #    print dlabel+'\n'
     D[dlabel].save()
     D[dlabel].figures()
-    for j,dlabel2 in enumerate(list_drillings):
+    for j,dlabel2 in enumerate(list_records):
         if j<i:
 #            print dlabel2+'-'+dlabel+'\n'
             DC[dlabel2+'-'+dlabel].figures()

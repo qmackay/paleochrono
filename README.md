@@ -87,7 +87,7 @@ If the run went correctly, it has created output files.
 In the main directory, you have the following output file:
 - `output.txt`		: only contains the program execution time for now.
 
-In each drilling directory, you have the following output files:
+In each record directory, you have the following output files:
 - `output.txt`			: is the main output file. It gives you the posterior estimates and uncertainties of the three input variables (accumulation, LID and thinning) and of the output variables (ice age, air age, Δdepth, etc.). The header in the file tells you which column is which variable.
 - `restart.txt`			: is a restart file, which can be used to start an optimization experiment from the result of a previous optimization experiment, for a faster convergence.
 - `accumulation.pdf`	: is the accumulation figure (with prior and posterior estimates)
@@ -99,7 +99,7 @@ In each drilling directory, you have the following output files:
 - `LID.pdf`				: is the Lock-In Depth figure (with prior estimates, observations and posterior estimates)
 - `thinning.pdf`		: is the thinning figure (with prior and posterior estimates)
 
-In each drilling-pair directory, you have the following output files:
+In each record-pair directory, you have the following output files:
 - `air-air.pdf`		: is the air-air stratigraphic links figure (with prior and posterior estimates)
 - `air-ice.pdf`		: is the air-ice stratigraphic links figure (with prior and posterior estimates)
 - `ice-air.pdf`		: is the ice-air stratigraphic links figure (with prior and posterior estimates)
@@ -130,14 +130,14 @@ You need to specify your prior scenarios for accumulation, LID and thinning (for
 
 You have five general files:
 - `parameters.py`                                           : contains general parameters for the experiment
-- `parameters-AllDrillings.py`                              : defines drilling parameters that are the same for all drillings (there are overidded by drilling specific parameters).
-- `parameters-CovariancePrior-AllDrillings-init.py`         : defines the covariance matrices of the background
-- `parameters-CovarianceObservations-AllDrillings.py`       : defines the covariance of the observations that are the same for all drillings  (there are overidded by drilling specific parameters).
-- `parameters-CovarianceObservations-AllDrillingPairs.py` : defines the covariance for the observations that are the same for all drilling pairs  (there are overidded by drilling pair specific parameters).
+- `parameters-AllRecords.py`                              : defines record parameters that are the same for all records (there are overidded by record specific parameters).
+- `parameters-CovariancePrior-AllRecords-init.py`         : defines the covariance matrices of the background
+- `parameters-CovarianceObservations-AllRecords.py`       : defines the covariance of the observations that are the same for all records  (there are overidded by record specific parameters).
+- `parameters-CovarianceObservations-AllRecordPairs.py` : defines the covariance for the observations that are the same for all record pairs  (there are overidded by record pair specific parameters).
 
-Then you have one directory per drilling, which contains:
-- `parameters.py`                           : all the drilling specific parameters
-- `parameters-CovarianceObservations.py`    : this file allows to define the correlation of drilling specific observations
+Then you have one directory per record, which contains:
+- `parameters.py`                           : all the record specific parameters
+- `parameters-CovarianceObservations.py`    : this file allows to define the correlation of record specific observations
 - `density-prior.txt`                       : depth / relative density
 - `accu-prior.txt`                          : depth / background accu (in ice-equivalent) / standard deviation (opt, in %)
 - `LID-prior.txt`                           : depth / background Lock-in-Depth / standard deviation (opt, in %)
@@ -148,8 +148,8 @@ Then you have one directory per drilling, which contains:
 - `ice_age_intervals.txt`		   			: depth\_top / depth\_bottom / duration / sigma for dated ice intervals observations
 - `air_age_intervals.txt`   		    	: depth\_top / depth\_bottom / duration / sigma for dated air intervals observations
 
-Then you have one directory per drilling pair, which contains:
-- `parameters-CovarianceObservations.py`    : this file allows to define the correlation of drilling pair specific observations
+Then you have one directory per record pair, which contains:
+- `parameters-CovarianceObservations.py`    : this file allows to define the correlation of record pair specific observations
 - `ice_depth.txt`           : depth1 / depth2 / sigma on age for ice-ice stratigraphic links observations
 - `air_depth.txt`           : depth1 / depth2 / sigma on age for air-air stratigraphic links observations
 - `iceair_depth.txt`        : depth1 / depth2 / sigma on age for ice-air stratigraphic links observations
@@ -157,7 +157,7 @@ Then you have one directory per drilling pair, which contains:
 
 A few things you need to know to use Icechrono:
 1) You can use whatever units you want but they need to be consistent. For example, if you use meters for the depths and years for the dated horizons, you need to use meters per years for the accumulation rates. 
-2) The drilling specific parameters override the general parameters for all drillings. In the very same way, the drilling-pair specific parameters override the general parameters for all drilling-pairs.
+2) The record specific parameters override the general parameters for all records. In the very same way, the record-pair specific parameters override the general parameters for all record-pairs.
 3) The standard deviations defined in the parameters-Covariance*.py override the standard deviation defined in the observation or prior files.
 4) Most of these files are optional. If there is no file for an certain type of observations, that means that there is no observation of this type. If a covariance matrix is not defined for a prior or an observation type, that means that the correlation matrix is supposed to be equal to identity and that the standard deviation is given in the prior or observation file.
 
@@ -165,12 +165,12 @@ A few things you need to know to use Icechrono:
 What is the structure of the general `parameters.py` file?
 --------------------------------------------------------
 
-It contains the list of drillings, the optimization method to be used and some settings for the figures.
-It is where you define the names of your drillings.
+It contains the list of records, the optimization method to be used and some settings for the figures.
+It is where you define the names of your records.
 Have a look at the file `AICC2012-VLR/parameters.py`, it is commented.
 
 
-What is the structure of a drilling `parameters.py` file?
+What is the structure of a record `parameters.py` file?
 ---------------------------------------------------------
 
 It defines age at the top of the core, the unthinned depth at the top of the core, the age equation grid, the correction functions grids and the type of representation of the prior accu scenario (linear or staircase). You can also define other parameters that are used to defined the covariance matrices of the priors.
@@ -183,14 +183,14 @@ How to set up the `parameters-CovarianceObservations.py` file?
 You need to know a little bit of python to do that.
 Feel free to send an email on the mailing list if you need assistance.
 
-For drilling specific observations, you set up the correlation matrices in the file `parameters-CovarianceObservations.py` in the drilling directory.
+For record specific observations, you set up the correlation matrices in the file `parameters-CovarianceObservations.py` in the record directory.
 - `self.icemarkers_correlation`     : for ice dated horizons
 - `self.airmarkers_correlation`     : for air dated horizons
 - `self.iceintervals_correlation`   : for ice dated intervals
 - `self.airintervals_correlation`   : for air dated intervals
 - `self.Ddepth_correlation`         : for Delta-depth observations
 
-For drilling pair specific observations (stratigraphic links), you set up the correlation matrices in the file `parameters-CovarianceObservations.py` in the drilling pair directory.
+For record pair specific observations (stratigraphic links), you set up the correlation matrices in the file `parameters-CovarianceObservations.py` in the record pair directory.
 - `self.iceicemarkers_correlation`  : for ice-ice stratigraphic links
 - `self.airairmarkers_correlation`  : for air-air stratigraphic links
 - `self.iceairmarkers_correlation`  : for ice-air stratigraphic links
@@ -205,7 +205,7 @@ self.icemarkers_correlation=k*np.ones((np.shape(self.icemarkers_correlation)))+(
 Don't forget that if you find the use of python and the IceChrono internal variables too difficult, you can define your correlation matrices outside IceChrono and import them here by using for example the `np.loadtxt` function.
 
 
-How to set up the `parameters-CovariancePrior-AllDrillings-init.py` file?
+How to set up the `parameters-CovariancePrior-AllRecords-init.py` file?
 -------------------------------------------------------------------------
 
 You need to know a little bit of python to do that and also to know a bit of the IceChrono internal variables.

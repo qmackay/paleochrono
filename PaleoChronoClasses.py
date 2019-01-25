@@ -45,19 +45,19 @@ def interp_stair_aver(xp, x, y):
 def gaussian(x):
     return np.exp(-x**2/2)
 
-class Drilling:
+class Record:
 
     def __init__(self, dlabel):
         self.label=dlabel
 
     def init(self):
 
-#        print 'Initialization of drilling '+self.label
+#        print 'Initialization of record '+self.label
 
 	self.archive='icecore'
         self.accu_prior_rep='staircase'
 
-        execfile(datadir+'/parameters-AllDrillings.py')
+        execfile(datadir+'/parameters-AllRecords.py')
         execfile(datadir+self.label+'/parameters.py')
 
         self.depth_mid=(self.depth[1:]+self.depth[:-1])/2
@@ -219,7 +219,7 @@ class Drilling:
         if os.path.isfile(filename):
             execfile(filename)
         else:
-            filename=datadir+'/parameters-CovariancePrior-AllDrillings-init.py'
+            filename=datadir+'/parameters-CovariancePrior-AllRecords-init.py'
             if os.path.isfile(filename):
                 execfile(filename)
 
@@ -323,7 +323,7 @@ class Drilling:
         self.airintervals_correlation=np.diag(np.ones(np.size(self.airintervals_depthtop)))
         self.Ddepth_correlation=np.diag(np.ones(np.size(self.Ddepth_depth)))
 #        print self.icemarkers_correlation
-        filename=datadir+'/parameters-CovarianceObservations-AllDrillings.py'
+        filename=datadir+'/parameters-CovarianceObservations-AllRecords.py'
         if os.path.isfile(filename):
             execfile(filename)
         filename=datadir+self.label+'/parameters-CovarianceObservations.py'
@@ -387,7 +387,7 @@ class Drilling:
         self.correlation_corr_LID_before=self.correlation_corr_LID+0
         self.correlation_corr_tau_before=self.correlation_corr_tau+0
 
-        filename=datadir+'/parameters-CovariancePrior-AllDrillings.py'
+        filename=datadir+'/parameters-CovariancePrior-AllRecords.py'
         if os.path.isfile(filename):
             execfile(filename)
         filename=datadir+self.label+'/parameters-CovariancePrior.py'
@@ -811,7 +811,7 @@ class Drilling:
 #        np.savetxt(datadir+self.label+'/udepth.txt',self.udepth)
 
 
-class DrillingPair:
+class RecordPair:
 
     def __init__(self, D1, D2):
         self.D1=D1
@@ -820,7 +820,7 @@ class DrillingPair:
 
     def init(self):
         self.label=self.D1.label+'-'+self.D2.label
-#        print 'Initialization of drilling pair ',self.label
+#        print 'Initialization of record pair ',self.label
 
 
 #TODO: allow to have either dlabel1+'-'dlabel2 or dlbel2+'-'dlabel1 as directory
@@ -873,7 +873,7 @@ class DrillingPair:
         self.airairmarkers_correlation=np.diag(np.ones(np.size(self.airairmarkers_depth1)))
         self.iceairmarkers_correlation=np.diag(np.ones(np.size(self.iceairmarkers_depth1)))
         self.airicemarkers_correlation=np.diag(np.ones(np.size(self.airicemarkers_depth1)))
-        filename=datadir+'/parameters-CovarianceObservations-AllDrillingPairs.py'
+        filename=datadir+'/parameters-CovarianceObservations-AllRecordPairs.py'
         if os.path.isfile(filename):
             execfile(filename)
         filename=datadir+self.label+'/parameters-CovarianceObservations.py'
