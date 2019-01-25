@@ -1,0 +1,3 @@
+# Prior accu estimate for LR04.
+0. 1.	0.2
+800000. 1.	0.2
