@@ -115,10 +115,8 @@ def gaussian(x):
 
 class Site:
 
-    def __init__(self, dlabel):
-        self.label = dlabel
-
-    def init(self):
+    def __init__(self, dlab):
+        self.label = dlab
 
 #        print 'Initialization of site '+self.label
 
@@ -543,7 +541,7 @@ class Site:
         self.airlayerthick = 1/np.diff(self.airage)
 
 
-    def model(self, variables):
+    def model(self, var):
         index = 0
 #        if self.calc_a==True:
 #            self.A0=variables[index]
@@ -557,9 +555,9 @@ class Site:
 #            self.pprime=variables[index]
 #            self.muprime=variables[index+1]
 #            index=index+2
-        self.corr_tau = variables[index:index+np.size(self.corr_tau)]
-        self.corr_a = variables[index+np.size(self.corr_tau):index+np.size(self.corr_tau)+np.size(self.corr_a)]
-        self.corr_LID = variables[index+np.size(self.corr_tau)+np.size(self.corr_a):index+np.size(self.corr_tau)+np.size(self.corr_a)+np.size(self.corr_LID)]
+        self.corr_tau = var[index:index+np.size(self.corr_tau)]
+        self.corr_a = var[index+np.size(self.corr_tau):index+np.size(self.corr_tau)+np.size(self.corr_a)]
+        self.corr_LID = var[index+np.size(self.corr_tau)+np.size(self.corr_a):index+np.size(self.corr_tau)+np.size(self.corr_a)+np.size(self.corr_LID)]
 
         ##Raw model
 
@@ -645,7 +643,7 @@ class Site:
     
     
     def optimisation(self) : 
-        self.variables,self.hess,self.infodict,mesg,ier = leastsq(self.residuals, self.variables, full_output=1)
+        self.variables, self.hess = leastsq(self.residuals, self.variables, full_output=1)
         print self.variables
         print self.hess
         return self.variables, self.hess
@@ -1153,13 +1151,13 @@ def residuals(var):
     """Calculate the residuals."""
     resi = np.array([])
     index = 0
-    for i,dlabel in enumerate(list_sites):
-        D[dlabel].variables = var[index:index+np.size(D[dlabel].variables)]
-        index = index+np.size(D[dlabel].variables)
-        resi = np.concatenate((resi,D[dlabel].residuals(D[dlabel].variables)))
-        for j,dlabel2 in enumerate(list_sites):
+    for i,dlab in enumerate(list_sites):
+        D[dlab].variables = var[index:index+np.size(D[dlab].variables)]
+        index = index+np.size(D[dlab].variables)
+        resi = np.concatenate((resi,D[dlab].residuals(D[dlab].variables)))
+        for j,dlab2 in enumerate(list_sites):
             if j < i:
-                resi = np.concatenate((resi,DC[dlabel2+'-'+dlabel].residuals()))
+                resi = np.concatenate((resi,DC[dlab2+'-'+dlab].residuals()))
     return resi
 
 def cost_function(var):
@@ -1188,12 +1186,11 @@ def Dres(var):
 
 
 ##Initialisation
-for i,dlabel in enumerate(list_sites):
+for di,dlabel in enumerate(list_sites):
 
     print 'Initialization of site '+dlabel
         
     D[dlabel] = Site(dlabel)
-    D[dlabel].init()
     D[dlabel].model(D[dlabel].variables)
 #    D[dlabel].a_init=D[dlabel].a
 #    D[dlabel].LID_init=D[dlabel].LID
@@ -1201,9 +1198,9 @@ for i,dlabel in enumerate(list_sites):
 #    D[dlabel].display_init()
     variables = np.concatenate((variables,D[dlabel].variables))
 
-for i,dlabel in enumerate(list_sites):
-    for j,dlabel2 in enumerate(list_sites):
-        if j < i:
+for di,dlabel in enumerate(list_sites):
+    for dj,dlabel2 in enumerate(list_sites):
+        if dj < di:
             print 'Initialization of site pair '+dlabel2+'-'+dlabel
             DC[dlabel2+'-'+dlabel]=SitePair(D[dlabel2],D[dlabel])
             DC[dlabel2+'-'+dlabel].init()
@@ -1241,25 +1238,25 @@ if opt_method != 'none' and np.size(hess) == 1 and hess == None:
     print 'singular matrix encountered (flat curvature in some direction)'
     sys.exit
 print 'Calculation of confidence intervals'
-index = 0
+indexsite = 0
 for dlabel in list_sites:
     if opt_method == 'none':
         D[dlabel].sigma_zero()
     else:
-        D[dlabel].variables = variables[index:index+np.size(D[dlabel].variables)]
-        D[dlabel].hess = hess[index:index+np.size(D[dlabel].variables), 
-         index:index+np.size(D[dlabel].variables)]
-        index = index+np.size(D[dlabel].variables)
+        D[dlabel].variables = variables[indexsite:indexsite+np.size(D[dlabel].variables)]
+        D[dlabel].hess = hess[indexsite:indexsite+np.size(D[dlabel].variables), 
+         indexsite:indexsite+np.size(D[dlabel].variables)]
+        indexsite = indexsite+np.size(D[dlabel].variables)
         D[dlabel].sigma()
 
 ###Final display and output
 print 'Display of results'
-for i,dlabel in enumerate(list_sites):
+for di,dlabel in enumerate(list_sites):
 #    print dlabel+'\n'
     D[dlabel].save()
     D[dlabel].figures()
-    for j,dlabel2 in enumerate(list_sites):
-        if j < i:
+    for dj,dlabel2 in enumerate(list_sites):
+        if dj < di:
 #            print dlabel2+'-'+dlabel+'\n'
             DC[dlabel2+'-'+dlabel].figures()
             
