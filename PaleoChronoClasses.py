@@ -336,32 +336,40 @@ class Site:
 
 
         self.icemarkers_correlation=np.diag(np.ones(np.size(self.icemarkers_depth)))
-        self.airmarkers_correlation=np.diag(np.ones(np.size(self.airmarkers_depth)))
         self.iceintervals_correlation=np.diag(np.ones(np.size(self.iceintervals_depthtop)))
-        self.airintervals_correlation=np.diag(np.ones(np.size(self.airintervals_depthtop)))
-        self.Ddepth_correlation=np.diag(np.ones(np.size(self.Ddepth_depth)))
+        if self.archive=='icecore':
+            self.airmarkers_correlation=np.diag(np.ones(np.size(self.airmarkers_depth)))
+            self.airintervals_correlation=np.diag(np.ones(np.size(self.airintervals_depthtop)))
+            self.Ddepth_correlation=np.diag(np.ones(np.size(self.Ddepth_depth)))
 #        print self.icemarkers_correlation
+
         filename=datadir+'/parameters-CovarianceObservations-AllSites.py'
         if os.path.isfile(filename):
             execfile(filename)
+        else:
+            filename=datadir+'/parameters-CovarianceObservations-AllDrillings.py'
+            if os.path.isfile(filename):
+                execfile(filename)
+
         filename=datadir+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             execfile(filename)
         if np.size(self.icemarkers_depth)>0:
             self.icemarkers_chol=cholesky(self.icemarkers_correlation)
             self.icemarkers_lu_piv=scipy.linalg.lu_factor(np.transpose(self.icemarkers_chol))  #FIXME: we LU factor a triangular matrix. This is suboptimal. We should set lu_piv directly instead.
-        if np.size(self.airmarkers_depth)>0:
-            self.airmarkers_chol=cholesky(self.airmarkers_correlation)
-            self.airmarkers_lu_piv=scipy.linalg.lu_factor(np.transpose(self.airmarkers_chol))
         if np.size(self.iceintervals_depthtop)>0:
             self.iceintervals_chol=cholesky(self.iceintervals_correlation)
             self.iceintervals_lu_piv=scipy.linalg.lu_factor(np.transpose(self.iceintervals_chol))
-        if np.size(self.airintervals_depthtop)>0:
-            self.airintervals_chol=cholesky(self.airintervals_correlation)
-            self.airintervals_lu_piv=scipy.linalg.lu_factor(np.transpose(self.airintervals_chol))
-        if np.size(self.Ddepth_depth)>0:
-            self.Ddepth_chol=cholesky(self.Ddepth_correlation)
-            self.Ddepth_lu_piv=scipy.linalg.lu_factor(np.transpose(self.Ddepth_chol))
+        if self.archive=='icecore':
+            if np.size(self.airmarkers_depth)>0:
+                self.airmarkers_chol=cholesky(self.airmarkers_correlation)
+                self.airmarkers_lu_piv=scipy.linalg.lu_factor(np.transpose(self.airmarkers_chol))
+            if np.size(self.airintervals_depthtop)>0:
+                self.airintervals_chol=cholesky(self.airintervals_correlation)
+                self.airintervals_lu_piv=scipy.linalg.lu_factor(np.transpose(self.airintervals_chol))
+            if np.size(self.Ddepth_depth)>0:
+                self.Ddepth_chol=cholesky(self.Ddepth_correlation)
+                self.Ddepth_lu_piv=scipy.linalg.lu_factor(np.transpose(self.Ddepth_chol))
 
 
     def raw_model(self):
