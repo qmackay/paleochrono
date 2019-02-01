@@ -18,7 +18,7 @@ import matplotlib.pyplot as mpl
 import multiprocessing
 import warnings
 import os
-import scipy.linalg
+from scipy.linalg import lu_factor, lu_solve
 from scipy.optimize import leastsq, minimize
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.linalg import cholesky
@@ -37,11 +37,25 @@ print 'Parameters directory is: ',datadir
 ###Opening of output.txt file
 output_file = open(datadir+'output.txt','a')
 
-##Parameters
+##Default Parameters
 scale_ageci=10.
 show_figures=False
 show_airlayerthick=False
 list_sites=[]
+opt_method='none'  #leastsq, leastsq-parallel, none
+nb_nodes=6         #Number of nodes for the leastsq-parallel mode
+color_obs='r'       #color for the observations
+color_opt='k'       #color for the posterior scenario
+color_mod='b'       #color for the prior scenario
+color_ci='0.8'      #color for the confidence intervals
+color_sigma='m'     #color for the uncertainty
+color_di='g'        #color for the dated intervals
+show_initial=False  #always put to False for now
+color_init='c'      #always put to 'c' for now
+scale_ageci=10.     #scaling of the confidence interval in the ice and air age figures
+show_figures=False  #whether to show or not the figures at the end of the run
+show_airlayerthick=False #whether to show the air layer thickness figure (buggy on anaconda)
+
 execfile(datadir+'/parameters.py')
 if list_sites==[]:
     try:
@@ -100,9 +114,34 @@ class Site:
 
 #        print 'Initialization of site '+self.label
 
+        #Default parameters
+        
     	self.archive='icecore'
         self.accu_prior_rep='staircase'
-
+        self.udepth_top=None
+        self.age_top=None
+        self.depth=np.empty(0)
+        self.corr_a_age=None
+        self.calc_a=False
+        self.calc_a_method=None
+        self.gamma_source=None
+        self.beta_source=None
+        self.calc_tau=False
+        self.thickness=None
+        self.calc_LID=False
+        self.LID_value=None
+        self.start='default'
+        self.corr_LID_age=None
+        self.corr_tau_depth=None
+        self.A0=None
+        self.beta=None
+        self.pprime=None
+        self.muprime=None
+        self.s=None
+        self.Dfirn=None
+        
+        
+        #Setting the parameters from the parameter files
         filename=datadir+'/parameters-AllSites.py'
         if os.path.isfile(filename):
             execfile(filename)
@@ -402,20 +441,20 @@ class Site:
             execfile(filename)
         if np.size(self.icemarkers_depth)>0:
             self.icemarkers_chol=cholesky(self.icemarkers_correlation)
-            self.icemarkers_lu_piv=scipy.linalg.lu_factor(np.transpose(self.icemarkers_chol))  #FIXME: we LU factor a triangular matrix. This is suboptimal. We should set lu_piv directly instead.
+            self.icemarkers_lu_piv=lu_factor(np.transpose(self.icemarkers_chol))  #FIXME: we LU factor a triangular matrix. This is suboptimal. We should set lu_piv directly instead.
         if np.size(self.iceintervals_depthtop)>0:
             self.iceintervals_chol=cholesky(self.iceintervals_correlation)
-            self.iceintervals_lu_piv=scipy.linalg.lu_factor(np.transpose(self.iceintervals_chol))
+            self.iceintervals_lu_piv=lu_factor(np.transpose(self.iceintervals_chol))
         if self.archive=='icecore':
             if np.size(self.airmarkers_depth)>0:
                 self.airmarkers_chol=cholesky(self.airmarkers_correlation)
-                self.airmarkers_lu_piv=scipy.linalg.lu_factor(np.transpose(self.airmarkers_chol))
+                self.airmarkers_lu_piv=lu_factor(np.transpose(self.airmarkers_chol))
             if np.size(self.airintervals_depthtop)>0:
                 self.airintervals_chol=cholesky(self.airintervals_correlation)
-                self.airintervals_lu_piv=scipy.linalg.lu_factor(np.transpose(self.airintervals_chol))
+                self.airintervals_lu_piv=lu_factor(np.transpose(self.airintervals_chol))
             if np.size(self.Ddepth_depth)>0:
                 self.Ddepth_chol=cholesky(self.Ddepth_correlation)
-                self.Ddepth_lu_piv=scipy.linalg.lu_factor(np.transpose(self.Ddepth_chol))
+                self.Ddepth_lu_piv=lu_factor(np.transpose(self.Ddepth_chol))
 
 
     def raw_model(self):
@@ -563,19 +602,19 @@ class Site:
         resi_corr_tau=self.corr_tau
         resi_age=(self.fct_age(self.icemarkers_depth)-self.icemarkers_age)/self.icemarkers_sigma
         if np.size(self.icemarkers_depth)>0:
-            resi_age=scipy.linalg.lu_solve(self.icemarkers_lu_piv,resi_age)
+            resi_age=lu_solve(self.icemarkers_lu_piv,resi_age)
         resi_airage=(self.fct_airage(self.airmarkers_depth)-self.airmarkers_age)/self.airmarkers_sigma
         if np.size(self.airmarkers_depth)>0:
-            resi_airage=scipy.linalg.lu_solve(self.airmarkers_lu_piv,resi_airage)
+            resi_airage=lu_solve(self.airmarkers_lu_piv,resi_airage)
         resi_iceint=(self.fct_age(self.iceintervals_depthbot)-self.fct_age(self.iceintervals_depthtop)-self.iceintervals_duration)/self.iceintervals_sigma
         if np.size(self.iceintervals_depthtop)>0:
-            resi_iceint=scipy.linalg.lu_solve(self.iceintervals_lu_piv,resi_iceint)
+            resi_iceint=lu_solve(self.iceintervals_lu_piv,resi_iceint)
         resi_airint=(self.fct_airage(self.airintervals_depthbot)-self.fct_airage(self.airintervals_depthtop)-self.airintervals_duration)/self.airintervals_sigma
         if np.size(self.airintervals_depthtop)>0:
-            resi_airint=scipy.linalg.lu_solve(self.airintervals_lu_piv,resi_airint)
+            resi_airint=lu_solve(self.airintervals_lu_piv,resi_airint)
         resi_Ddepth=(self.fct_Ddepth(self.Ddepth_depth)-self.Ddepth_Ddepth)/self.Ddepth_sigma
         if np.size(self.Ddepth_depth)>0:
-            resi_Ddepth=scipy.linalg.lu_solve(self.Ddepth_lu_piv,resi_Ddepth)
+            resi_Ddepth=lu_solve(self.Ddepth_lu_piv,resi_Ddepth)
         return np.concatenate((resi_corr_a, resi_corr_LID, resi_corr_tau, resi_age,resi_airage, resi_iceint, resi_airint, resi_Ddepth))
 
 
@@ -953,32 +992,32 @@ class SitePair:
             execfile(filename)
         if np.size(self.iceicemarkers_depth1)>0:
             self.iceicemarkers_chol=cholesky(self.iceicemarkers_correlation)
-            self.iceicemarkers_lu_piv=scipy.linalg.lu_factor(self.iceicemarkers_chol)
+            self.iceicemarkers_lu_piv=lu_factor(self.iceicemarkers_chol)
         if np.size(self.airairmarkers_depth1)>0:
             self.airairmarkers_chol=cholesky(self.airairmarkers_correlation)
-            self.airairmarkers_lu_piv=scipy.linalg.lu_factor(self.airairmarkers_chol)
+            self.airairmarkers_lu_piv=lu_factor(self.airairmarkers_chol)
         if np.size(self.iceairmarkers_depth1)>0:
             self.iceairmarkers_chol=cholesky(self.iceairmarkers_correlation)
-            self.iceairmarkers_lu_piv=scipy.linalg.lu_factor(self.iceairmarkers_chol)
+            self.iceairmarkers_lu_piv=lu_factor(self.iceairmarkers_chol)
         if np.size(self.airicemarkers_depth1)>0:
             self.airicemarkers_chol=cholesky(self.airicemarkers_correlation)
-            self.airicemarkers_lu_piv=scipy.linalg.lu_factor(self.airicemarkers_chol)
+            self.airicemarkers_lu_piv=lu_factor(self.airicemarkers_chol)
 
 
     def residuals(self):
 
         resi_iceice=(self.D1.fct_age(self.iceicemarkers_depth1)-self.D2.fct_age(self.iceicemarkers_depth2))/self.iceicemarkers_sigma
         if np.size(self.iceicemarkers_depth1)>0:
-            resi_iceice=scipy.linalg.lu_solve(self.iceicemarkers_lu_piv,resi_iceice)
+            resi_iceice=lu_solve(self.iceicemarkers_lu_piv,resi_iceice)
         resi_airair=(self.D1.fct_airage(self.airairmarkers_depth1)-self.D2.fct_airage(self.airairmarkers_depth2))/self.airairmarkers_sigma
         if np.size(self.airairmarkers_depth1)>0:
-            resi_airair=scipy.linalg.lu_solve(self.airairmarkers_lu_piv,resi_airair)
+            resi_airair=lu_solve(self.airairmarkers_lu_piv,resi_airair)
         resi_iceair=(self.D1.fct_age(self.iceairmarkers_depth1)-self.D2.fct_airage(self.iceairmarkers_depth2))/self.iceairmarkers_sigma
         if np.size(self.iceairmarkers_depth1)>0:
-            resi_iceair=scipy.linalg.lu_solve(self.iceairmarkers_lu_piv,resi_iceair)
+            resi_iceair=lu_solve(self.iceairmarkers_lu_piv,resi_iceair)
         resi_airice=(self.D1.fct_airage(self.airicemarkers_depth1)-self.D2.fct_age(self.airicemarkers_depth2))/self.airicemarkers_sigma
         if np.size(self.airicemarkers_depth1)>0:
-            resi_airice=scipy.linalg.lu_solve(self.airicemarkers_lu_piv,resi_airice)
+            resi_airice=lu_solve(self.airicemarkers_lu_piv,resi_airice)
         resi=np.concatenate((resi_iceice,resi_airair,resi_iceair,resi_airice))
         
         return resi
