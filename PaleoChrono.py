@@ -142,7 +142,7 @@ class Site:
                 self.deutice_fullcorr=8*interp_stair_aver(self.depth, self.iso_depth, self.iso_d18Oice)
             else:
                 print 'Accumulation method not recognized'
-                quit()
+                sys.exit
         else:
             readarray=np.loadtxt(datadir+self.label+'/accu-prior.txt')
             if (np.size(readarray)==np.shape(readarray)[0]): readarray.resize(1, np.size(readarray))
@@ -1158,13 +1158,13 @@ elif opt_method=='none':
 #    hess=np.zeros((np.size(variables),np.size(variables)))
 else:
     print opt_method,': Optimization method not recognized.'
-    quit()
+    sys.exit
 print 'Optimization execution time: ', time.time() - start_time_opt, 'seconds'
 #print 'solution: ',variables
 print 'cost function: ',cost_function(variables)
 if opt_method!='none' and np.size(hess)==1 and hess==None:
     print 'singular matrix encountered (flat curvature in some direction)'
-    quit()
+    sys.exit
 print 'Calculation of confidence intervals'
 index=0
 for dlabel in list_sites:
