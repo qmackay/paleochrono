@@ -4,7 +4,7 @@ TODO: extend the chronology down to the bedrock by extrapolating the accumulatio
 TODO: optinally use a restart file to have a bootstrap method
 TODO: is there an elegant way to unpack the variables vector in the model function?
 TODO: allow to save the correction vector to be able to restart while changing the resolution
-TODO: include some checks for when dDdepth/dz>1
+TODO: include some checks for when ddelta_depth/dz>1
 TODO: Delta-depth observations should be lognormal?
 TODO: we should superpose two charts for ice and air ages, one for the age and
     one for the uncertainty, since the min age is not always near 0.
@@ -18,19 +18,21 @@ TODO: is there really a computation gain with the change of variable for the
     when we have computed A^-1.
 """
 
+import os
 import sys
 import time
+import warnings
+import multiprocessing
 import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
-import multiprocessing
-import warnings
-import os
+from matplotlib.backends.backend_pdf import PdfPages
 from scipy.linalg import lu_factor, lu_solve
 from scipy.optimize import leastsq, minimize
-from matplotlib.backends.backend_pdf import PdfPages
 from scipy.linalg import cholesky
-
+from scipy.interpolate import interp1d
+from pcmath import interp_lin_aver, interp_stair_aver
+interp1d
 
 ###Registration of start time
 START_TIME = time.clock() #Use time.clock() for processor time
@@ -48,71 +50,85 @@ OUTPUT_FILE = open(DATADIR+'output.txt', 'a')
 ##Default Parameters
 LIST_SITES = []
 OPT_METHOD = 'none'  #leastsq, leastsq-parallel, none
-nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
-color_obs = 'r'       #color for the observations
-color_opt = 'k'       #color for the posterior scenario
-color_mod = 'b'       #color for the prior scenario
-color_ci = '0.8'      #color for the confidence intervals
-color_sigma = 'm'     #color for the uncertainty
-color_di = 'g'        #color for the dated intervals
-show_initial = False  #always put to False for now
-color_init = 'c'      #always put to 'c' for now
-scale_ageci = 10.     #scaling of the confidence interval in the ice and air age figures
-show_figures = False  #whether to show or not the figures at the end of the run
-show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
+NB_NODES = 6         #Number of nodes for the leastsq-parallel mode
+COLOR_OBS = 'r'       #color for the observations
+COLOR_OPT = 'k'       #color for the posterior scenario
+COLOR_MOD = 'b'       #color for the prior scenario
+COLOR_CI = '0.8'      #color for the confidence intervals
+COLOR_SIGMA = 'm'     #color for the uncertainty
+COLOR_DI = 'g'        #color for the dated intervals
+SHOW_INITIAL = False  #always put to False for now
+COLOR_INIT = 'c'      #always put to 'c' for now
+SCALE_AGECI = 10.     #scaling of the confidence interval in the ice and air age figures
+SHOW_FIGURES = False  #whether to show or not the figures at the end of the run
+SHOW_AIRLAYERTHICK = False #whether to show the air layer thickness figure (buggy on anaconda)
 
 execfile(DATADIR+'/parameters.py')
-if LIST_SITES == []:
-    try:
-        LIST_SITES = list_drillings
-    except NameError:
-        print 'experiment with no site.'
+try:
+    LIST_SITES = list_drillings
+except NameError:
+    pass
+try:
+    OPT_METHOD = opt_method
+except NameError:
+    pass
+try:
+    NB_NODES = nb_nodes
+except NameError:
+    pass
+try:
+    COLOR_OBS = color_obs
+except NameError:
+    pass
+try:
+    COLOR_OPT = color_opt
+except NameError:
+    pass
+try:
+    COLOR_MOD = color_mod
+except NameError:
+    pass
+try:
+    COLOR_CI = color_ci
+except NameError:
+    pass
+try:
+    COLOR_SIGMA = color_sigma
+except NameError:
+    pass
+try:
+    COLOR_DI = color_di
+except NameError:
+    pass
+try:
+    SHOW_INITIAL = show_initial
+except NameError:
+    pass
+try:
+    COLOR_INIT = color_init
+except NameError:
+    pass
+try:
+    SCALE_AGECI = scale_ageci
+except NameError:
+    pass
+try:
+    SHOW_FIGURES = show_figures
+except NameError:
+    pass
+try:
+    SHOW_AIRLAYERTHICK = show_airlayerthick
+except NameError:
+    pass
 
 ##Global
-variables = np.array([])
+VARIABLES = np.array([])
 D = {}
 DC = {}
 
 
-##Functions and Classes
-
-def interp_lin_aver(xp, x, y):
-    yp = np.nan*np.zeros(np.size(xp)-1)
-    if xp[0] < min(x):
-        xmod = np.concatenate((np.array([xp[0]]), x))
-        ymod = np.concatenate((np.array([y[0]]), y))
-    else:
-        xmod = x+0
-        ymod = y+0
-    if xp[-1] > max(x):
-        xmod = np.concatenate((xmod, np.array([xp[-1]])))
-        ymod = np.concatenate((ymod, np.array([y[-1]])))
-    for i in range(np.size(xp)-1):
-        xx = xmod[np.where(np.logical_and(xmod > xp[i], xmod < xp[i+1]))]
-        xx = np.concatenate((np.array([xp[i]]), xx, np.array([xp[i+1]])))
-        yy = np.interp(xx, xmod, ymod)
-        yp[i] = np.sum((yy[1:]+yy[:-1])/2*(xx[1:]-xx[:-1]))/(xp[i+1]-xp[i])
-    return yp
-
-def interp_stair_aver(xp, x, y):
-    xmod = x+0
-    ymod = y+0
-    if xp[0] < x[0]:
-        xmod = np.concatenate((np.array([xp[0]]), xmod))
-        ymod = np.concatenate((np.array([y[0]]), ymod))
-    if xp[-1] > x[-1]:
-        xmod = np.concatenate((xmod, np.array([xp[-1]])))
-        ymod = np.concatenate((ymod, np.array([y[-1]])))
-    yint = np.cumsum(np.concatenate((np.array([0]), ymod[:-1]*(xmod[1:]-xmod[:-1]))))
-#Maybe this is suboptimal since we compute twice g(xp[i]):
-    yp = (np.interp(xp[1:], xmod, yint)-np.interp(xp[:-1], xmod, yint))/(xp[1:]-xp[:-1])
-    return yp
-
-
-def gaussian(x):
-    return np.exp(-x**2/2)
-
-class Site:
+class Site(object):
+    """This is the class for a site."""
 
     def __init__(self, dlab):
         self.label = dlab
@@ -133,17 +149,17 @@ class Site:
         self.beta_source = None
         self.calc_tau = False
         self.thickness = None
-        self.calc_LID = False
-        self.LID_value = None
+        self.calc_lid = False
+        self.lid_value = None
         self.start = 'default'
-        self.corr_LID_age = None
+        self.corr_lid_age = None
         self.corr_tau_depth = None
-        self.A0 = None
+        self.accu0 = None
         self.beta = None
         self.pprime = None
         self.muprime = None
-        self.s = None
-        self.Dfirn = None
+        self.sliding = None
+        self.dens_firn = None
 
 
 
@@ -157,12 +173,33 @@ class Site:
                 execfile(filename)
         execfile(DATADIR+self.label+'/parameters.py')
 
+        try:
+            self.calc_lid = self.calc_LID
+        except AttributeError:
+            pass
+        try:
+            self.corr_lid_age = self.corr_LID_age
+        except AttributeError:
+            pass
+        try:
+            self.dens_firn = self.Dfirn
+        except AttributeError:
+            pass
+        try:
+            self.sliding = self.s
+        except AttributeError:
+            pass
+        try:
+            self.accu0 = self.A0
+        except AttributeError:
+            pass
+
         ##Initialisation of variables
 
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
         self.depth_inter = (self.depth[1:]-self.depth[:-1])
-        self.LID = np.empty_like(self.depth)
-        self.sigma_Ddepth = np.empty_like(self.depth)
+        self.lid = np.empty_like(self.depth)
+        self.sigma_delta_depth = np.empty_like(self.depth)
         self.sigma_airlayerthick = np.empty_like(self.depth_mid)
         self.airlayerthick_init = np.empty_like(self.depth_mid)
         self.age_init = np.empty_like(self.depth)
@@ -178,14 +215,14 @@ class Site:
         self.icelayerthick = np.empty_like(self.depth_mid)
         self.icelayerthick_init = np.empty_like(self.depth_mid)
         self.sigma_tau_model = np.empty_like(self.depth_mid)
-        self.Ddepth_init = np.empty_like(self.depth)
-        self.sigma_LID_model = np.empty_like(self.depth)
-        self.LID_init = np.empty_like(self.depth)
+        self.delta_depth_init = np.empty_like(self.depth)
+        self.sigma_lid_model = np.empty_like(self.depth)
+        self.lid_init = np.empty_like(self.depth)
         self.sigma_age = np.empty_like(self.depth)
         self.sigma_airage = np.empty_like(self.depth)
-        self.LIDIE = np.empty_like(self.depth)
-        self.sigma_LID = np.empty_like(self.depth)
-        self.ULIDIE = np.empty_like(self.depth)
+        self.lidie = np.empty_like(self.depth)
+        self.sigma_lid = np.empty_like(self.depth)
+        self.ulidie = np.empty_like(self.depth)
         self.hess = np.array([])
 
 ## We set up the raw model
@@ -196,19 +233,19 @@ class Site:
                 readarray.resize(1, np.size(readarray))
             self.iso_depth = readarray[:, 0]
             if self.calc_a_method == 'fullcorr':
-                self.iso_d18Oice = readarray[:, 1]
-                self.d18Oice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18Oice)
+                self.iso_d18o_ice = readarray[:, 1]
+                self.d18o_ice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_ice)
                 self.iso_deutice = readarray[:, 2]
                 self.deutice = interp_stair_aver(self.depth, self.iso_depth, self.iso_deutice)
-                self.iso_d18Osw = readarray[:, 3]
-                self.d18Osw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18Osw)
-                self.excess = self.deutice-8*self.d18Oice   # dans Uemura : d=excess
-                self.a = np.empty_like(self.deutice)
-                self.d18Oice_corr = self.d18Oice-self.d18Osw*(1+self.d18Oice/1000)/\
-                    (1+self.d18Osw/1000)	#Uemura (1)
-                self.deutice_corr = self.deutice-8*self.d18Osw*(1+self.deutice/1000)/\
-                    (1+8*self.d18Osw/1000) #Uemura et al. (CP, 2012) (2)
-                self.excess_corr = self.deutice_corr-8*self.d18Oice_corr
+                self.iso_d18o_sw = readarray[:, 3]
+                self.d18o_sw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_sw)
+                self.excess = self.deutice-8*self.d18o_ice   # dans Uemura : d=excess
+                self.accu = np.empty_like(self.deutice)
+                self.d18o_ice_corr = self.d18o_ice-self.d18o_sw*(1+self.d18o_ice/1000)/\
+                    (1+self.d18o_sw/1000)	#Uemura (1)
+                self.deutice_corr = self.deutice-8*self.d18o_sw*(1+self.deutice/1000)/\
+                    (1+8*self.d18o_sw/1000) #Uemura et al. (CP, 2012) (2)
+                self.excess_corr = self.deutice_corr-8*self.d18o_ice_corr
                 self.deutice_fullcorr = self.deutice_corr+self.gamma_source/self.beta_source*\
                     self.excess_corr
             elif self.calc_a_method == 'deut':
@@ -216,9 +253,9 @@ class Site:
                 self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
                                                           self.iso_deutice)
             elif self.calc_a_method == 'd18O':
-                self.d18Oice = readarray[:, 1]
+                self.d18o_ice = readarray[:, 1]
                 self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
-                                                            self.iso_d18Oice)
+                                                            self.iso_d18o_ice)
             else:
                 print 'Accumulation method not recognized'
                 sys.exit
@@ -236,7 +273,7 @@ class Site:
                 self.a_model = interp_lin_aver(self.depth, self.a_depth, self.a_a)
             else:
                 print 'Representation of prior accu scenario not recognized'
-            self.a = self.a_model
+            self.accu = self.a_model
 
         self.age = np.empty_like(self.depth)
         self.airage = np.empty_like(self.depth)
@@ -247,34 +284,34 @@ class Site:
             #        self.density_depth=readarray[:,0]
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
-            self.D_depth = readarray[:, 0]
-            self.D_D = readarray[:, 1]
-            self.D = np.interp(self.depth_mid, self.D_depth, self.D_D)
-            self.iedepth = np.cumsum(np.concatenate((np.array([0]), self.D*self.depth_inter)))
+            self.dens_depth = readarray[:, 0]
+            self.dens_dens = readarray[:, 1]
+            self.dens = np.interp(self.depth_mid, self.dens_depth, self.dens_dens)
+            self.iedepth = np.cumsum(np.concatenate((np.array([0]), self.dens*self.depth_inter)))
             self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
 
             if self.calc_tau:
                 self.thickness_ie = self.thickness-self.depth[-1]+self.iedepth[-1]
 
-            if self.calc_LID:
-                if self.depth[0] < self.LID_value:
-                    self.LID_depth = np.array([self.depth[0], self.LID_value, self.depth[-1]])
-                    self.LID_LID = np.array([self.depth[0], self.LID_value, self.LID_value])
+            if self.calc_lid:
+                if self.depth[0] < self.lid_value:
+                    self.lid_depth = np.array([self.depth[0], self.lid_value, self.depth[-1]])
+                    self.lid_lid = np.array([self.depth[0], self.lid_value, self.lid_value])
                 else:
-                    self.LID_depth = np.array([self.depth[0], self.depth[-1]])
-                    self.LID_LID = np.array([self.LID_value, self.LID_value])
+                    self.lid_depth = np.array([self.depth[0], self.depth[-1]])
+                    self.lid_lid = np.array([self.lid_value, self.lid_value])
             else:
-    #            self.LID_model=np.loadtxt(DATADIR+self.label+'/LID-prior.txt')
+    #            self.lid_model=np.loadtxt(DATADIR+self.label+'/LID-prior.txt')
                 readarray = np.loadtxt(DATADIR+self.label+'/LID-prior.txt')
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
-                self.LID_depth = readarray[:, 0]
-                self.LID_LID = readarray[:, 1]
+                self.lid_depth = readarray[:, 0]
+                self.lid_lid = readarray[:, 1]
                 if readarray.shape[1] >= 3:
-                    self.LID_sigma = readarray[:, 2]
-            self.LID_model = np.interp(self.depth, self.LID_depth, self.LID_LID)
+                    self.lid_sigma = readarray[:, 2]
+            self.lid_model = np.interp(self.depth, self.lid_depth, self.lid_lid)
 
-            self.Ddepth = np.empty_like(self.depth)
+            self.delta_depth = np.empty_like(self.depth)
             self.udepth = np.empty_like(self.depth)
 
 #        print 'depth_mid ', np.size(self.depth_mid)
@@ -304,12 +341,12 @@ class Site:
         elif self.start == 'default':
             self.corr_a = np.zeros(np.size(self.corr_a_age))
             if self.archive == 'icecore':
-                self.corr_LID = np.zeros(np.size(self.corr_LID_age))
+                self.corr_lid = np.zeros(np.size(self.corr_lid_age))
                 self.corr_tau = np.zeros(np.size(self.corr_tau_depth))
         elif self.start == 'random':
             self.corr_a = np.random.normal(loc=0., scale=1., size=np.size(self.corr_a_age))
             if self.archive == 'icecore':
-                self.corr_LID = np.random.normal(loc=0., scale=1., size=np.size(self.corr_LID_age))
+                self.corr_lid = np.random.normal(loc=0., scale=1., size=np.size(self.corr_lid_age))
                 self.corr_tau = np.random.normal(loc=0., scale=1.,
                                                  size=np.size(self.corr_tau_depth))
         else:
@@ -320,9 +357,9 @@ class Site:
         self.correlation_corr_a = np.diag(np.ones(np.size(self.corr_a)))
         self.chol_a = np.diag(np.ones(np.size(self.corr_a)))
         if self.archive == 'icecore':
-            self.correlation_corr_LID = np.diag(np.ones(np.size(self.corr_LID)))
+            self.correlation_corr_lid = np.diag(np.ones(np.size(self.corr_lid)))
             self.correlation_corr_tau = np.diag(np.ones(np.size(self.corr_tau)))
-            self.chol_LID = np.diag(np.ones(np.size(self.corr_LID)))
+            self.chol_lid = np.diag(np.ones(np.size(self.corr_lid)))
             self.chol_tau = np.diag(np.ones(np.size(self.corr_tau)))
 
 
@@ -339,9 +376,9 @@ class Site:
         if self.archive == 'icecore':
             try:
                  #FIXME: we should average here since it would be more representative
-                self.sigmap_corr_LID = np.interp(self.corr_LID_age,
-                                                 self.fct_airage_model(self.LID_depth),
-                                                 self.LID_sigma)
+                self.sigmap_corr_lid = np.interp(self.corr_lid_age,
+                                                 self.fct_airage_model(self.lid_depth),
+                                                 self.lid_sigma)
             except AttributeError:
                 print 'Sigma on prior LID scenario not defined in the LID-prior.txt file'
 
@@ -354,7 +391,7 @@ class Site:
 
         self.correlation_corr_a_before = self.correlation_corr_a+0
         if self.archive == 'icecore':
-            self.correlation_corr_LID_before = self.correlation_corr_LID+0
+            self.correlation_corr_lid_before = self.correlation_corr_lid+0
             self.correlation_corr_tau_before = self.correlation_corr_tau+0
 
         filename = DATADIR+self.label+'/parameters-CovariancePrior-init.py'
@@ -373,20 +410,20 @@ class Site:
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
             self.chol_a = cholesky(self.correlation_corr_a)
         if self.archive == 'icecore':
-            if (self.correlation_corr_LID_before != self.correlation_corr_LID).any():
-                self.chol_LID = cholesky(self.correlation_corr_LID)
+            if (self.correlation_corr_lid_before != self.correlation_corr_lid).any():
+                self.chol_lid = cholesky(self.correlation_corr_lid)
             if (self.correlation_corr_a_before != self.correlation_corr_a).any():
                 self.chol_tau = cholesky(self.correlation_corr_tau)
 
 
         self.variables = np.array([])
 #        if self.calc_a==True:
-#            self.variables=np.concatenate((self.variables, np.array([self.A0]),
+#            self.variables=np.concatenate((self.variables, np.array([self.accu0]),
 #                                           np.array([self.beta])))
 #        if self.calc_tau==True:
 #            self.variables=np.concatenate((self.variables, np.array([self.pprime]),
 #                                           np.array([self.muprime])))
-        self.variables = np.concatenate((self.variables, self.corr_tau, self.corr_a, self.corr_LID))
+        self.variables = np.concatenate((self.variables, self.corr_tau, self.corr_a, self.corr_lid))
 
 
 #Reading of observations
@@ -474,13 +511,13 @@ class Site:
                     readarray = np.loadtxt(filename)
                     if np.size(readarray) == np.shape(readarray)[0]:
                         readarray.resize(1, np.size(readarray))
-                    self.Ddepth_depth = readarray[:, 0]
-                    self.Ddepth_Ddepth = readarray[:, 1]
-                    self.Ddepth_sigma = readarray[:, 2]
+                    self.delta_depth_depth = readarray[:, 0]
+                    self.delta_depth_delta_depth = readarray[:, 1]
+                    self.delta_depth_sigma = readarray[:, 2]
                 else:
-                    self.Ddepth_depth = np.array([])
-                    self.Ddepth_Ddepth = np.array([])
-                    self.Ddepth_sigma = np.array([])
+                    self.delta_depth_depth = np.array([])
+                    self.delta_depth_delta_depth = np.array([])
+                    self.delta_depth_sigma = np.array([])
 
 
         self.icemarkers_correlation = np.diag(np.ones(np.size(self.icemarkers_depth)))
@@ -488,7 +525,7 @@ class Site:
         if self.archive == 'icecore':
             self.airmarkers_correlation = np.diag(np.ones(np.size(self.airmarkers_depth)))
             self.airintervals_correlation = np.diag(np.ones(np.size(self.airintervals_depthtop)))
-            self.Ddepth_correlation = np.diag(np.ones(np.size(self.Ddepth_depth)))
+            self.delta_depth_correlation = np.diag(np.ones(np.size(self.delta_depth_depth)))
 #        print self.icemarkers_correlation
 
         filename = DATADIR+'/parameters-CovarianceObservations-AllSites.py'
@@ -517,57 +554,61 @@ class Site:
             if np.size(self.airintervals_depthtop) > 0:
                 self.airintervals_chol = cholesky(self.airintervals_correlation)
                 self.airintervals_lu_piv = lu_factor(np.transpose(self.airintervals_chol))
-            if np.size(self.Ddepth_depth) > 0:
-                self.Ddepth_chol = cholesky(self.Ddepth_correlation)
-                self.Ddepth_lu_piv = lu_factor(np.transpose(self.Ddepth_chol))
+            if np.size(self.delta_depth_depth) > 0:
+                self.delta_depth_chol = cholesky(self.delta_depth_correlation)
+                self.delta_depth_lu_piv = lu_factor(np.transpose(self.delta_depth_chol))
 
 
     def raw_model(self):
+        """Calculate the raw model, that is before applying correction functions."""
 
 
 
         #Accumulation
         if self.calc_a:
-            self.a_model = self.A0*np.exp(self.beta*(self.deutice_fullcorr-\
+            self.a_model = self.accu0*np.exp(self.beta*(self.deutice_fullcorr-\
                 self.deutice_fullcorr[0])) #Parrenin et al. (CP, 2007a) 2.3 (6)
 
         #Thinning
         if self.calc_tau:
-            self.p = -1+m.exp(self.pprime)
-            self.mu = m.exp(self.muprime)
-#            self.s=m.tanh(self.sprime)
+            self.p_def = -1+m.exp(self.pprime)
+            self.mu_melt = m.exp(self.muprime)
+#            self.sliding=m.tanh(self.sprime)
             #Parrenin et al. (CP, 2007a) 2.2 (3)
-            omega_D = 1-(self.p+2)/(self.p+1)*(1-self.zeta)+1/(self.p+1)*(1-self.zeta)**(self.p+2)
-            omega = self.s*self.zeta+(1-self.s)*omega_D   #Parrenin et al. (CP, 2007a) 2.2 (2)
-            self.tau_model = (1-self.mu)*omega+self.mu
+            omega_def = 1-(self.p_def+2)/(self.p_def+1)*(1-self.zeta)+\
+                      1/(self.p_def+1)*(1-self.zeta)**(self.p_def+2)
+            #Parrenin et al. (CP, 2007a) 2.2 (2)
+            omega = self.sliding*self.zeta+(1-self.sliding)*omega_def
+            self.tau_model = (1-self.mu_melt)*omega+self.mu_melt
 
         #udepth
         self.udepth_model = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
-                            self.D/self.tau_model*self.depth_inter)))
+                            self.dens/self.tau_model*self.depth_inter)))
 
-        self.LIDIE_model = self.LID_model*self.Dfirn
-        self.ULIDIE_model = np.interp(self.LIDIE_model, self.iedepth, self.udepth_model)
+        self.lidie_model = self.lid_model*self.dens_firn
+        self.ulidie_model = np.interp(self.lidie_model, self.iedepth, self.udepth_model)
 
         #Ice age
-        self.icelayerthick_model = self.tau_model*self.a_model/self.D
+        self.icelayerthick_model = self.tau_model*self.a_model/self.dens
         self.age_model = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
-                         self.D/self.tau_model/self.a_model*self.depth_inter)))
+                         self.dens/self.tau_model/self.a_model*self.depth_inter)))
 
 
         #air age
-#        self.ice_equiv_depth_model = i_model(np.where(self.udepth_model-self.ULIDIE_model > \
-#        self.udepth_top, self.udepth_model-self.ULIDIE_model, np.nan))
-        self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ULIDIE_model,
+#        self.ice_equiv_depth_model = i_model(np.where(self.udepth_model-self.ulidie_model > \
+#        self.udepth_top, self.udepth_model-self.ulidie_model, np.nan))
+        self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ulidie_model,
                                                self.udepth_model, self.depth)
-        self.Ddepth_model = self.depth-self.ice_equiv_depth_model
+        self.delta_depth_model = self.depth-self.ice_equiv_depth_model
         self.airage_model = np.interp(self.ice_equiv_depth_model, self.depth, self.age_model,
                                       left=np.nan, right=np.nan)
         self.airlayerthick_model = 1/np.diff(self.airage_model)
 
     def corrected_model(self):
+        """Calculate the age model, taking into account the correction functions."""
 
         self.correlation_corr_a_before = self.correlation_corr_a+0
-        self.correlation_corr_LID_before = self.correlation_corr_LID+0
+        self.correlation_corr_lid_before = self.correlation_corr_lid+0
         self.correlation_corr_tau_before = self.correlation_corr_tau+0
 
         filename = DATADIR+'/parameters-CovariancePrior-AllSites.py'
@@ -579,8 +620,8 @@ class Site:
 
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
             self.chol_a = cholesky(self.correlation_corr_a)
-        if (self.correlation_corr_LID_before != self.correlation_corr_LID).any():
-            self.chol_LID = cholesky(self.correlation_corr_LID)
+        if (self.correlation_corr_lid_before != self.correlation_corr_lid).any():
+            self.chol_lid = cholesky(self.correlation_corr_lid)
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
             self.chol_tau = cholesky(self.correlation_corr_tau)
 
@@ -588,49 +629,50 @@ class Site:
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
         #FIXME: we should use mid-age and not age
-        self.a = self.a_model*np.exp(np.interp(self.age_model[:-1], self.corr_a_age, corr))
+        self.accu = self.a_model*np.exp(np.interp(self.age_model[:-1], self.corr_a_age, corr))
 
         #Thinning
         self.tau = self.tau_model*np.exp(np.interp(self.depth_mid, self.corr_tau_depth,\
                    np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
-        self.udepth = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),
-                                                                self.D/self.tau*self.depth_inter)))
-        corr = np.dot(self.chol_LID, self.corr_LID)*self.sigmap_corr_LID
-        self.LID = self.LID_model*np.exp(np.interp(self.age_model, self.corr_LID_age, corr))
-        self.LIDIE = self.LID*self.Dfirn
-        self.ULIDIE = np.interp(self.LIDIE, self.iedepth, self.udepth)
+        self.udepth = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
+                      self.dens/self.tau*self.depth_inter)))
+        corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
+        self.lid = self.lid_model*np.exp(np.interp(self.age_model, self.corr_lid_age, corr))
+        self.lidie = self.lid*self.dens_firn
+        self.ulidie = np.interp(self.lidie, self.iedepth, self.udepth)
 
         #Ice age
-        self.icelayerthick = self.tau*self.a/self.D
-        self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),
-                                                          self.D/self.tau/self.a*self.depth_inter)))
+        self.icelayerthick = self.tau*self.accu/self.dens
+        self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
+                   self.dens/self.tau/self.accu*self.depth_inter)))
 
-        self.ice_equiv_depth = np.interp(self.udepth-self.ULIDIE, self.udepth, self.depth)
-        self.Ddepth = self.depth-self.ice_equiv_depth
+        self.ice_equiv_depth = np.interp(self.udepth-self.ulidie, self.udepth, self.depth)
+        self.delta_depth = self.depth-self.ice_equiv_depth
         self.airage = np.interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
                                 right=np.nan)
         self.airlayerthick = 1/np.diff(self.airage)
 
 
     def model(self, var):
+        """Calculate the model from the vector var containing its variables."""
         index = 0
 #        if self.calc_a==True:
-#            self.A0=variables[index]
-#            self.beta=variables[index+1]
+#            self.accu0=var[index]
+#            self.beta=var[index+1]
 #            index=index+2
 #        if self.calc_tau==True:
-##            self.p=-1+m.exp(variables[index])
-##            self.s=variables[index+1]
-##            self.mu=variables[index+2]
+##            self.p_def=-1+m.exp(var[index])
+##            self.sliding=var[index+1]
+##            self.mu_melt=var[index+2]
 ##            index=index+3
-#            self.pprime=variables[index]
-#            self.muprime=variables[index+1]
+#            self.pprime=var[index]
+#            self.muprime=var[index+1]
 #            index=index+2
         self.corr_tau = var[index:index+np.size(self.corr_tau)]
         self.corr_a = var[index+np.size(self.corr_tau):\
                           index+np.size(self.corr_tau)+np.size(self.corr_a)]
-        self.corr_LID = var[index+np.size(self.corr_tau)+np.size(self.corr_a):\
-                        index+np.size(self.corr_tau)+np.size(self.corr_a)+np.size(self.corr_LID)]
+        self.corr_lid = var[index+np.size(self.corr_tau)+np.size(self.corr_a):\
+                        index+np.size(self.corr_tau)+np.size(self.corr_a)+np.size(self.corr_lid)]
 
         ##Raw model
 
@@ -640,45 +682,54 @@ class Site:
 
         self.corrected_model()
 
-        return np.concatenate((self.age, self.airage, self.Ddepth, self.a, self.tau, self.LID,
-                               self.icelayerthick, self.airlayerthick))
+        return np.concatenate((self.age, self.airage, self.delta_depth, self.accu, self.tau,
+                               self.lid, self.icelayerthick, self.airlayerthick))
 
 
     def write_init(self):
-        self.a_init = self.a
-        self.LID_init = self.LID
+        """Write the initial values of the variables in the corresponding *_init variables."""
+        self.a_init = self.accu
+        self.lid_init = self.lid
         self.tau_init = self.tau
         self.icelayerthick_init = self.icelayerthick
         self.airlayerthick_init = self.airlayerthick
         self.age_init = self.age
         self.airage_init = self.airage
-        self.Ddepth_init = self.Ddepth
+        self.delta_depth_init = self.delta_depth
 
     def fct_age(self, depth):
+        """Return the age at given depths."""
         return np.interp(depth, self.depth, self.age)
 
     def fct_age_init(self, depth):
+        """Return the initial age at given depths."""
         return np.interp(depth, self.depth, self.age_init)
 
     def fct_age_model(self, depth):
+        """Return the raw modelled age at given depths."""
         return np.interp(depth, self.depth, self.age_model)
 
     def fct_airage(self, depth):
+        """Return the air age at given depths."""
         return np.interp(depth, self.depth, self.airage)
 
     def fct_airage_init(self, depth):
+        """Return the initial air age at given depth."""
         return np.interp(depth, self.depth, self.airage_init)
 
     def fct_airage_model(self, depth):
+        """Return the raw modelled air age at given depths."""
         return np.interp(depth, self.depth, self.airage_model)
 
-    def fct_Ddepth(self, depth):
-        return np.interp(depth, self.depth, self.Ddepth)
+    def fct_delta_depth(self, depth):
+        """Return the delta_depth at given detphs."""
+        return np.interp(depth, self.depth, self.delta_depth)
 
     def residuals(self, var):
+        """Calculate the residuals from the vector of the variables"""
         self.model(var)
         resi_corr_a = self.corr_a
-        resi_corr_LID = self.corr_LID
+        resi_corr_lid = self.corr_lid
         resi_corr_tau = self.corr_tau
         resi_age = (self.fct_age(self.icemarkers_depth)-self.icemarkers_age)/self.icemarkers_sigma
         if np.size(self.icemarkers_depth) > 0:
@@ -697,18 +748,21 @@ class Site:
                        self.airintervals_duration)/self.airintervals_sigma
         if np.size(self.airintervals_depthtop) > 0:
             resi_airint = lu_solve(self.airintervals_lu_piv, resi_airint)
-        resi_Ddepth = (self.fct_Ddepth(self.Ddepth_depth)-self.Ddepth_Ddepth)/self.Ddepth_sigma
-        if np.size(self.Ddepth_depth) > 0:
-            resi_Ddepth = lu_solve(self.Ddepth_lu_piv, resi_Ddepth)
-        return np.concatenate((resi_corr_a, resi_corr_LID, resi_corr_tau, resi_age, resi_airage,
-                               resi_iceint, resi_airint, resi_Ddepth))
+        resi_delta_depth = (self.fct_delta_depth(self.delta_depth_depth)-\
+                            self.delta_depth_delta_depth)/self.delta_depth_sigma
+        if np.size(self.delta_depth_depth) > 0:
+            resi_delta_depth = lu_solve(self.delta_depth_lu_piv, resi_delta_depth)
+        return np.concatenate((resi_corr_a, resi_corr_lid, resi_corr_tau, resi_age, resi_airage,
+                               resi_iceint, resi_airint, resi_delta_depth))
 
 
     def cost_function(self):
+        """Calculate the cost function."""
         cost = np.dot(self.residuals, np.transpose(self.residuals))
         return cost
 
     def jacobian(self):
+        """Calculate the jacobian."""
         epsilon = np.sqrt(np.diag(self.hess))/100000000.
         model0 = self.model(self.variables)
         jacob = np.empty((np.size(model0), np.size(self.variables)))
@@ -723,6 +777,7 @@ class Site:
 
 
     def optimisation(self):
+        """Optimize a site."""
         self.variables, self.hess = leastsq(self.residuals, self.variables, full_output=1)
         print self.variables
         print self.hess
@@ -730,6 +785,7 @@ class Site:
 
 
     def sigma(self):
+        """Calculate the error of various variables."""
         jacob = self.jacobian()
 
         index = 0
@@ -741,22 +797,22 @@ class Site:
                                np.transpose(jacob[index:index+np.size(self.airage), :])))
         self.sigma_airage = np.sqrt(np.diag(c_model))
         index = index+np.size(self.airage)
-        c_model = np.dot(jacob[index:index+np.size(self.Ddepth), :], np.dot(self.hess,\
-                               np.transpose(jacob[index:index+np.size(self.Ddepth), :])))
-        self.sigma_Ddepth = np.sqrt(np.diag(c_model))
-        index = index+np.size(self.Ddepth)
-        c_model = np.dot(jacob[index:index+np.size(self.a), :], np.dot(self.hess,\
-                               np.transpose(jacob[index:index+np.size(self.a), :])))
+        c_model = np.dot(jacob[index:index+np.size(self.delta_depth), :], np.dot(self.hess,\
+                               np.transpose(jacob[index:index+np.size(self.delta_depth), :])))
+        self.sigma_delta_depth = np.sqrt(np.diag(c_model))
+        index = index+np.size(self.delta_depth)
+        c_model = np.dot(jacob[index:index+np.size(self.accu), :], np.dot(self.hess,\
+                               np.transpose(jacob[index:index+np.size(self.accu), :])))
         self.sigma_a = np.sqrt(np.diag(c_model))
-        index = index+np.size(self.a)
+        index = index+np.size(self.accu)
         c_model = np.dot(jacob[index:index+np.size(self.tau), :], np.dot(self.hess,\
                                np.transpose(jacob[index:index+np.size(self.tau), :])))
         self.sigma_tau = np.sqrt(np.diag(c_model))
         index = index+np.size(self.tau)
-        c_model = np.dot(jacob[index:index+np.size(self.LID), :], np.dot(self.hess,\
-                               np.transpose(jacob[index:index+np.size(self.LID), :])))
-        self.sigma_LID = np.sqrt(np.diag(c_model))
-        index = index+np.size(self.LID)
+        c_model = np.dot(jacob[index:index+np.size(self.lid), :], np.dot(self.hess,\
+                               np.transpose(jacob[index:index+np.size(self.lid), :])))
+        self.sigma_lid = np.sqrt(np.diag(c_model))
+        index = index+np.size(self.lid)
         c_model = np.dot(jacob[index:index+np.size(self.icelayerthick), :], np.dot(self.hess,\
                                np.transpose(jacob[index:index+np.size(self.icelayerthick), :])))
         self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
@@ -768,22 +824,23 @@ class Site:
 
         self.sigma_a_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2, self.corr_a_age,
                                        self.sigmap_corr_a)
-        self.sigma_LID_model = np.interp(self.age_model, self.corr_LID_age, self.sigmap_corr_LID)
+        self.sigma_lid_model = np.interp(self.age_model, self.corr_lid_age, self.sigmap_corr_lid)
         self.sigma_tau_model = np.interp(self.depth_mid, self.corr_tau_depth, self.sigmap_corr_tau)
 
     def sigma_zero(self):
+        """Return zero as the error of various variables."""
 
         self.sigma_age = np.zeros_like(self.age)
         self.sigma_airage = np.zeros_like(self.airage)
-        self.sigma_Ddepth = np.zeros_like(self.Ddepth)
-        self.sigma_a = np.zeros_like(self.a)
+        self.sigma_delta_depth = np.zeros_like(self.delta_depth)
+        self.sigma_accu = np.zeros_like(self.accu)
         self.sigma_tau = np.zeros_like(self.tau)
-        self.sigma_LID = np.zeros_like(self.LID)
+        self.sigma_lid = np.zeros_like(self.lid)
         self.sigma_icelayerthick = np.zeros_like(self.icelayerthick)
         self.sigma_airlayerthick = np.zeros_like(self.airlayerthick)
         self.sigma_a_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2, self.corr_a_age,
                                        self.sigmap_corr_a)
-        self.sigma_LID_model = np.interp(self.age_model, self.corr_LID_age, self.sigmap_corr_LID)
+        self.sigma_lid_model = np.interp(self.age_model, self.corr_lid_age, self.sigmap_corr_lid)
         self.sigma_tau_model = np.interp(self.depth_mid, self.corr_tau_depth, self.sigmap_corr_tau)
 
 
@@ -791,271 +848,277 @@ class Site:
 
 
     def figures(self):
+        """Build the figures of a site."""
 
         mpl.figure(self.label+' thinning')
         mpl.title(self.label+' thinning')
         mpl.xlabel('Thinning')
         mpl.ylabel('Depth')
-        if show_initial:
-            mpl.plot(self.tau_init, self.depth_mid, color=color_init, label='Initial')
-        mpl.plot(self.tau_model, self.depth_mid, color=color_mod, label='Prior')
-        mpl.plot(self.tau, self.depth_mid, color=color_opt, label='Posterior +/-$\sigma$')
+        if SHOW_INITIAL:
+            mpl.plot(self.tau_init, self.depth_mid, color=COLOR_INIT, label='Initial')
+        mpl.plot(self.tau_model, self.depth_mid, color=COLOR_MOD, label='Prior')
+        mpl.plot(self.tau, self.depth_mid, color=COLOR_OPT, label='Posterior +/-$\sigma$')
         mpl.fill_betweenx(self.depth_mid, self.tau-self.sigma_tau, self.tau+self.sigma_tau,
-                          color=color_ci)
+                          color=COLOR_CI)
 #        mpl.plot(self.tau+self.sigma_tau, self.depth_mid, color='k', linestyle='-',
 #                 label='+/- 1 sigma')
 #        mpl.plot(self.tau-self.sigma_tau, self.depth_mid, color='k', linestyle='-')
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((x1, x2, self.depth[-1], self.depth[0]))
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/thinning.pdf')
-        pp.savefig(mpl.figure(self.label+' thinning'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/thinning.pdf')
+        printed_page.savefig(mpl.figure(self.label+' thinning'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' ice layer thickness')
         mpl.title(self.label+' ice layer thickness')
         mpl.xlabel('thickness of annual layers (m/yr)')
         mpl.ylabel('Depth')
-        if show_initial:
-            mpl.plot(self.icelayerthick_init, self.depth_mid, color=color_init, label='Initial')
+        if SHOW_INITIAL:
+            mpl.plot(self.icelayerthick_init, self.depth_mid, color=COLOR_INIT, label='Initial')
 #        for i in range(np.size(self.iceintervals_duration)):
-#            y1=self.iceintervals_depthtop[i]
-#            y2=self.iceintervals_depthbot[i]
-#            x1=(y2-y1)/(self.iceintervals_duration[i]+self.iceintervals_sigma[i])
-#            x2=(y2-y1)/(self.iceintervals_duration[i]-self.iceintervals_sigma[i])
-#            yserie=np.array([y1,y1,y2,y2,y1])
-#            xserie=np.array([x1,x2,x2,x1,x1])
+#            y_low=self.iceintervals_depthtop[i]
+#            y_up=self.iceintervals_depthbot[i]
+#            x_low=(y_up-y_low)/(self.iceintervals_duration[i]+self.iceintervals_sigma[i])
+#            x_up=(y_up-y_low)/(self.iceintervals_duration[i]-self.iceintervals_sigma[i])
+#            yserie=np.array([y_low,y_low,y_up,y_up,y_low])
+#            xserie=np.array([x_low,x_up,x_up,x_low,x_low])
 #            if i==0:
-#                mpl.plot(xserie,yserie, color=color_obs, label="observations")
+#                mpl.plot(xserie,yserie, color=COLOR_OBS, label="observations")
 #            else:
-#                mpl.plot(xserie,yserie, color=color_obs)
-        mpl.plot(self.icelayerthick_model, self.depth_mid, color=color_mod, label='Prior')
-        mpl.plot(self.icelayerthick, self.depth_mid, color=color_opt, label='Posterior +/-$\sigma$')
+#                mpl.plot(xserie,yserie, color=COLOR_OBS)
+        mpl.plot(self.icelayerthick_model, self.depth_mid, color=COLOR_MOD, label='Prior')
+        mpl.plot(self.icelayerthick, self.depth_mid, color=COLOR_OPT, label='Posterior +/-$\sigma$')
         mpl.fill_betweenx(self.depth_mid, self.icelayerthick-self.sigma_icelayerthick,
-                          self.icelayerthick+self.sigma_icelayerthick, color=color_ci)
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((0, x2, self.depth[-1], self.depth[0]))
+                          self.icelayerthick+self.sigma_icelayerthick, color=COLOR_CI)
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/icelayerthick.pdf')
-        pp.savefig(mpl.figure(self.label+' ice layer thickness'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/icelayerthick.pdf')
+        printed_page.savefig(mpl.figure(self.label+' ice layer thickness'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' air layer thickness')
         mpl.title(self.label+' air layer thickness')
         mpl.xlabel('thickness of annual layers (m/yr)')
         mpl.ylabel('Depth')
-        if show_initial:
-            mpl.plot(self.airlayerthick_init, self.depth_mid, color=color_init, label='Initial')
+        if SHOW_INITIAL:
+            mpl.plot(self.airlayerthick_init, self.depth_mid, color=COLOR_INIT, label='Initial')
 #        for i in range(np.size(self.airintervals_duration)):
-#            y1=self.airintervals_depthtop[i]
-#            y2=self.airintervals_depthbot[i]
-#            x1=(y2-y1)/(self.airintervals_duration[i]+self.airintervals_sigma[i])
-#            x2=(y2-y1)/(self.airintervals_duration[i]-self.airintervals_sigma[i])
-#            yserie=np.array([y1,y1,y2,y2,y1])
-#            xserie=np.array([x1,x2,x2,x1,x1])
+#            y_low=self.airintervals_depthtop[i]
+#            y_up=self.airintervals_depthbot[i]
+#            x_low=(y_up-y_low)/(self.airintervals_duration[i]+self.airintervals_sigma[i])
+#            x_up=(y_up-y_low)/(self.airintervals_duration[i]-self.airintervals_sigma[i])
+#            yserie=np.array([y_low,y_low,y_up,y_up,y_low])
+#            xserie=np.array([x_low,x_up,x_up,x_low,x_low])
 #            if i==0:
-#                mpl.plot(xserie,yserie, color=color_obs, label='observations')
+#                mpl.plot(xserie,yserie, color=COLOR_OBS, label='observations')
 #            else:
-#                mpl.plot(xserie,yserie, color=color_obs)
-        mpl.plot(self.airlayerthick_model, self.depth_mid, color=color_mod, label='Prior')
-        mpl.plot(self.airlayerthick, self.depth_mid, color=color_opt, label='Posterior +/-$\sigma$')
+#                mpl.plot(xserie,yserie, color=COLOR_OBS)
+        mpl.plot(self.airlayerthick_model, self.depth_mid, color=COLOR_MOD, label='Prior')
+        mpl.plot(self.airlayerthick, self.depth_mid, color=COLOR_OPT, label='Posterior +/-$\sigma$')
         mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
-                          self.airlayerthick+self.sigma_airlayerthick, color=color_ci)
-        x1, x2, y1, y2 = mpl.axis()
+                          self.airlayerthick+self.sigma_airlayerthick, color=COLOR_CI)
+        x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/airlayerthick.pdf')
-        if show_airlayerthick:
-            pp.savefig(mpl.figure(self.label+' air layer thickness')) #Fixme: buggy line on anaconda
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/airlayerthick.pdf')
+        if SHOW_AIRLAYERTHICK:
+            #Fixme: buggy line on anaconda
+            printed_page.savefig(mpl.figure(self.label+' air layer thickness'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' accumulation')
         mpl.title(self.label+' accumulation')
         mpl.xlabel('Optimized age (yr)')
         mpl.ylabel('Accumulation (m/yr)')
-        if show_initial:
+        if SHOW_INITIAL:
             mpl.step(self.age, np.concatenate((self.a_init, np.array([self.a_init[-1]]))),
-                     color=color_init, where='post', label='Initial')
+                     color=COLOR_INIT, where='post', label='Initial')
         mpl.step(self.age, np.concatenate((self.a_model, np.array([self.a_model[-1]]))),
-                 color=color_mod, where='post', label='Prior')
-        mpl.step(self.age, np.concatenate((self.a, np.array([self.a[-1]]))), color=color_opt,
+                 color=COLOR_MOD, where='post', label='Prior')
+        mpl.step(self.age, np.concatenate((self.accu, np.array([self.accu[-1]]))), color=COLOR_OPT,
                  where='post', label='Posterior +/-$\sigma$')
-        mpl.fill_between(self.age[:-1], self.a-self.sigma_a, self.a+self.sigma_a, color=color_ci)
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((self.age_top, x2, y1, y2))
+        mpl.fill_between(self.age[:-1], self.accu-self.sigma_a, self.accu+self.sigma_a,
+                         color=COLOR_CI)
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((self.age_top, x_up, y_low, y_up))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/accumulation.pdf')
-        pp.savefig(mpl.figure(self.label+' accumulation'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/accumulation.pdf')
+        printed_page.savefig(mpl.figure(self.label+' accumulation'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' LID')
         mpl.title(self.label+' LID')
         mpl.xlabel('Optimized age (yr)')
         mpl.ylabel('LID')
-        if show_initial:
-            mpl.plot(self.age, self.LID_init, color=color_init, label='Initial')
-        mpl.plot(self.age, self.LID_model, color=color_mod, label='Prior')
-        mpl.plot(self.age, self.LID, color=color_opt, label='Posterior +/-$\sigma$')
-        mpl.fill_between(self.age, self.LID-self.sigma_LID, self.LID+self.sigma_LID, color=color_ci)
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((self.age_top, x2, y1, y2))
+        if SHOW_INITIAL:
+            mpl.plot(self.age, self.lid_init, color=COLOR_INIT, label='Initial')
+        mpl.plot(self.age, self.lid_model, color=COLOR_MOD, label='Prior')
+        mpl.plot(self.age, self.lid, color=COLOR_OPT, label='Posterior +/-$\sigma$')
+        mpl.fill_between(self.age, self.lid-self.sigma_lid, self.lid+self.sigma_lid, color=COLOR_CI)
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((self.age_top, x_up, y_low, y_up))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/LID.pdf')
-        pp.savefig(mpl.figure(self.label+' LID'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/LID.pdf')
+        printed_page.savefig(mpl.figure(self.label+' LID'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' ice age')
         mpl.title(self.label+' ice age')
         mpl.xlabel('age (yr b1950)')
         mpl.ylabel('depth (m)')
-        if show_initial:
-            mpl.plot(self.age_init, self.depth, color=color_init, label='Initial')
+        if SHOW_INITIAL:
+            mpl.plot(self.age_init, self.depth, color=COLOR_INIT, label='Initial')
         if np.size(self.icemarkers_depth) > 0:
-            mpl.errorbar(self.icemarkers_age, self.icemarkers_depth, color=color_obs,
+            mpl.errorbar(self.icemarkers_age, self.icemarkers_depth, color=COLOR_OBS,
                          xerr=self.icemarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="dated horizons")
 #        mpl.ylim(mpl.ylim()[::-1])
         for i in range(np.size(self.iceintervals_duration)):
-            y1 = self.iceintervals_depthtop[i]
-            y2 = self.iceintervals_depthbot[i]
-            x1 = self.fct_age(y1)
-            x2 = x1+self.iceintervals_duration[i]
-            xseries = np.array([x1, x2, x2, x1, x1])
-            yseries = np.array([y1, y1, y2, y2, y1])
+            y_low = self.iceintervals_depthtop[i]
+            y_up = self.iceintervals_depthbot[i]
+            x_low = self.fct_age(y_low)
+            x_up = x_low+self.iceintervals_duration[i]
+            xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+            yseries = np.array([y_low, y_low, y_up, y_up, y_low])
             if i == 0:
-                mpl.plot(xseries, yseries, color=color_di, label="dated intervals")
-                mpl.errorbar(x2, y2, color=color_di, xerr=self.iceintervals_sigma[i], capsize=1)
+                mpl.plot(xseries, yseries, color=COLOR_DI, label="dated intervals")
+                mpl.errorbar(x_up, y_up, color=COLOR_DI, xerr=self.iceintervals_sigma[i], capsize=1)
             else:
-                mpl.plot(xseries, yseries, color=color_di)
-                mpl.errorbar(x2, y2, color=color_di, xerr=self.iceintervals_sigma[i], capsize=1)
-        mpl.plot(self.age_model, self.depth, color=color_mod, label='Prior')
-        mpl.plot(self.age, self.depth, color=color_opt, label='Posterior +/-$\sigma$')
+                mpl.plot(xseries, yseries, color=COLOR_DI)
+                mpl.errorbar(x_up, y_up, color=COLOR_DI, xerr=self.iceintervals_sigma[i], capsize=1)
+        mpl.plot(self.age_model, self.depth, color=COLOR_MOD, label='Prior')
+        mpl.plot(self.age, self.depth, color=COLOR_OPT, label='Posterior +/-$\sigma$')
         mpl.fill_betweenx(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
-                          color=color_ci)
-        mpl.plot(self.sigma_age*scale_ageci, self.depth, color=color_sigma,
-                 label='$\sigma$ x'+str(scale_ageci))
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((self.age_top, x2, self.depth[-1], self.depth[0]))
+                          color=COLOR_CI)
+        mpl.plot(self.sigma_age*SCALE_AGECI, self.depth, color=COLOR_SIGMA,
+                 label='$\sigma$ x'+str(SCALE_AGECI))
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/ice_age.pdf')
-        pp.savefig(mpl.figure(self.label+' ice age'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/ice_age.pdf')
+        printed_page.savefig(mpl.figure(self.label+' ice age'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' air age')
         mpl.title(self.label+' air age')
         mpl.xlabel('age (yr b1950)')
         mpl.ylabel('depth (m)')
-        if show_initial:
-            mpl.plot(self.airage_init, self.depth, color=color_init, label='Initial')
+        if SHOW_INITIAL:
+            mpl.plot(self.airage_init, self.depth, color=COLOR_INIT, label='Initial')
         if np.size(self.airmarkers_depth) > 0:
-            mpl.errorbar(self.airmarkers_age, self.airmarkers_depth, color=color_obs,
+            mpl.errorbar(self.airmarkers_age, self.airmarkers_depth, color=COLOR_OBS,
                          xerr=self.airmarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="observations")
 #        mpl.ylim(mpl.ylim()[::-1])
         for i in range(np.size(self.airintervals_duration)):
-            y1 = self.airintervals_depthtop[i]
-            y2 = self.airintervals_depthbot[i]
-            x1 = self.fct_airage(y1)
-            x2 = x1+self.airintervals_duration[i]
-            xseries = np.array([x1, x2, x2, x1, x1])
-            yseries = np.array([y1, y1, y2, y2, y1])
+            y_low = self.airintervals_depthtop[i]
+            y_up = self.airintervals_depthbot[i]
+            x_low = self.fct_airage(y_low)
+            x_up = x_low+self.airintervals_duration[i]
+            xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+            yseries = np.array([y_low, y_low, y_up, y_up, y_low])
             if i == 0:
-                mpl.plot(xseries, yseries, color=color_di, label="dated intervals")
-                mpl.errorbar(x2, y2, color=color_di, xerr=self.airintervals_sigma[i], capsize=1)
+                mpl.plot(xseries, yseries, color=COLOR_DI, label="dated intervals")
+                mpl.errorbar(x_up, y_up, color=COLOR_DI, xerr=self.airintervals_sigma[i], capsize=1)
             else:
-                mpl.plot(xseries, yseries, color=color_di)
-                mpl.errorbar(x2, y2, color=color_di, xerr=self.airintervals_sigma[i], capsize=1)
-        mpl.plot(self.airage_model, self.depth, color=color_mod, label='Prior')
+                mpl.plot(xseries, yseries, color=COLOR_DI)
+                mpl.errorbar(x_up, y_up, color=COLOR_DI, xerr=self.airintervals_sigma[i], capsize=1)
+        mpl.plot(self.airage_model, self.depth, color=COLOR_MOD, label='Prior')
         mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage, self.airage+self.sigma_airage,
-                          color=color_ci)
-        mpl.plot(self.airage, self.depth, color=color_opt, label='Posterior +/-$\sigma$')
-        mpl.plot(self.sigma_airage*scale_ageci, self.depth, color=color_sigma,
-                 label='$\sigma$ x'+str(scale_ageci))
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((self.age_top, x2, self.depth[-1], self.depth[0]))
+                          color=COLOR_CI)
+        mpl.plot(self.airage, self.depth, color=COLOR_OPT, label='Posterior +/-$\sigma$')
+        mpl.plot(self.sigma_airage*SCALE_AGECI, self.depth, color=COLOR_SIGMA,
+                 label='$\sigma$ x'+str(SCALE_AGECI))
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/air_age.pdf')
-        pp.savefig(mpl.figure(self.label+' air age'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/air_age.pdf')
+        printed_page.savefig(mpl.figure(self.label+' air age'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
-        mpl.figure(self.label+' Ddepth')
+        mpl.figure(self.label+' delta_depth')
         mpl.title(self.label+' $\Delta$depth')
         mpl.xlabel('$\Delta$depth (m)')
         mpl.ylabel('Air depth (m)')
-        if show_initial:
-            mpl.plot(self.Ddepth_init, self.depth, color=color_init, label='Initial')
-        if np.size(self.Ddepth_depth) > 0:
-            mpl.errorbar(self.Ddepth_Ddepth, self.Ddepth_depth, color=color_obs,
-                         xerr=self.Ddepth_sigma, linestyle='', marker='o', markersize=2,
+        if SHOW_INITIAL:
+            mpl.plot(self.delta_depth_init, self.depth, color=COLOR_INIT, label='Initial')
+        if np.size(self.delta_depth_depth) > 0:
+            mpl.errorbar(self.delta_depth_delta_depth, self.delta_depth_depth, color=COLOR_OBS,
+                         xerr=self.delta_depth_sigma, linestyle='', marker='o', markersize=2,
                          label="observations")
-        mpl.plot(self.Ddepth_model, self.depth, color=color_mod, label='Prior')
-        mpl.plot(self.Ddepth, self.depth, color=color_opt, label='Posterior +/-$\sigma$')
-        mpl.fill_betweenx(self.depth, self.Ddepth-self.sigma_Ddepth,
-                          self.Ddepth+self.sigma_Ddepth, color=color_ci)
-        x1, x2, y1, y2 = mpl.axis()
-        mpl.axis((x1, x2, self.depth[-1], self.depth[0]))
+        mpl.plot(self.delta_depth_model, self.depth, color=COLOR_MOD, label='Prior')
+        mpl.plot(self.delta_depth, self.depth, color=COLOR_OPT, label='Posterior +/-$\sigma$')
+        mpl.fill_betweenx(self.depth, self.delta_depth-self.sigma_delta_depth,
+                          self.delta_depth+self.sigma_delta_depth, color=COLOR_CI)
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/Ddepth.pdf')
-        pp.savefig(mpl.figure(self.label+' Ddepth'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/Ddepth.pdf')
+        printed_page.savefig(mpl.figure(self.label+' delta_depth'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
 
     def save(self):
+        """Save various variables for a site."""
         output = np.vstack((self.depth, self.age, self.sigma_age, self.airage, self.sigma_airage,
-                            np.append(self.a, self.a[-1]),
+                            np.append(self.accu, self.accu[-1]),
                             np.append(self.sigma_a, self.sigma_a[-1]),
                             np.append(self.tau, self.tau[-1]),
-                            np.append(self.sigma_tau, self.sigma_tau[-1]), self.LID, self.sigma_LID,
-                            self.Ddepth, self.sigma_Ddepth,
+                            np.append(self.sigma_tau, self.sigma_tau[-1]), self.lid, self.sigma_lid,
+                            self.delta_depth, self.sigma_delta_depth,
                             np.append(self.a_model, self.a_model[-1]),
                             np.append(self.sigma_a_model, self.sigma_a_model[-1]),
                             np.append(self.tau_model, self.tau_model[-1]),
                             np.append(self.sigma_tau_model, self.sigma_tau_model[-1]),
-                            self.LID_model, self.sigma_LID_model,
+                            self.lid_model, self.sigma_lid_model,
                             np.append(self.icelayerthick, self.icelayerthick[-1]),
                             np.append(self.sigma_icelayerthick, self.sigma_icelayerthick[-1]),
                             np.append(self.airlayerthick, self.airlayerthick[-1]),
                             np.append(self.sigma_airlayerthick, self.sigma_airlayerthick[-1])))
-        with open(DATADIR+self.label+'/output.txt', 'w') as f:
-            f.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\taccu\tsigma_accu\tthinning\
-                    \tsigma_thinning\tLID\tsigma_LID\tDdepth\tsigma_Ddepth\taccu_model\
+        with open(DATADIR+self.label+'/output.txt', 'w') as file_save:
+            file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\taccu\tsigma_accu\
+                    \tthinning\
+                    \tsigma_thinning\tLID\tsigma_LID\tdelta_depth\tsigma_delta_depth\taccu_model\
                     \tsigma_accu_model\tthinning_model\tsigma_thinning_model\tLID_model\
                     \tsigma_LID_model\ticelayerthick\tsigma_icelayerthick\tairlayerthick\
                     \tsigma_airlayerthick\n')
-            np.savetxt(f, np.transpose(output), delimiter='\t')
+            np.savetxt(file_save, np.transpose(output), delimiter='\t')
         np.savetxt(DATADIR+self.label+'/restart.txt', np.transpose(self.variables))
 
 #    def udepth_save(self):
 #        np.savetxt(DATADIR+self.label+'/udepth.txt',self.udepth)
 
 
-class SitePair:
+class SitePair(object):
+    """Class for a pair of sites."""
 
-    def __init__(self, D1, D2):
-        self.D1 = D1
-        self.D2 = D2
-        self.label = self.D1.label+'-'+self.D2.label
+    def __init__(self, site1, site2):
+        self.site1 = site1
+        self.site2 = site2
+        self.label = self.site1.label+'-'+self.site2.label
 #        print 'Initialization of site pair ',self.label
 
 
 #TODO: allow to have either dlabel1+'-'dlabel2 or dlbel2+'-'dlabel1 as directory
-        filename = DATADIR+self.D1.label+'-'+self.D2.label+'/ice_depth.txt'
+        filename = DATADIR+self.site1.label+'-'+self.site2.label+'/ice_depth.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
             self.iceicemarkers_depth1 = readarray[:, 0]
@@ -1066,7 +1129,7 @@ class SitePair:
             self.iceicemarkers_depth2 = np.array([])
             self.iceicemarkers_sigma = np.array([])
 
-        filename = DATADIR+self.D1.label+'-'+self.D2.label+'/air_depth.txt'
+        filename = DATADIR+self.site1.label+'-'+self.site2.label+'/air_depth.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
             self.airairmarkers_depth1 = readarray[:, 0]
@@ -1077,7 +1140,7 @@ class SitePair:
             self.airairmarkers_depth2 = np.array([])
             self.airairmarkers_sigma = np.array([])
 
-        filename = DATADIR+self.D1.label+'-'+self.D2.label+'/iceair_depth.txt'
+        filename = DATADIR+self.site1.label+'-'+self.site2.label+'/iceair_depth.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
             self.iceairmarkers_depth1 = readarray[:, 0]
@@ -1088,7 +1151,7 @@ class SitePair:
             self.iceairmarkers_depth2 = np.array([])
             self.iceairmarkers_sigma = np.array([])
 
-        filename = DATADIR+self.D1.label+'-'+self.D2.label+'/airice_depth.txt'
+        filename = DATADIR+self.site1.label+'-'+self.site2.label+'/airice_depth.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
             self.airicemarkers_depth1 = readarray[:, 0]
@@ -1125,21 +1188,22 @@ class SitePair:
 
 
     def residuals(self):
+        """Calculate the residual terms of a pair of sites."""
 
-        resi_iceice = (self.D1.fct_age(self.iceicemarkers_depth1)-\
-                       self.D2.fct_age(self.iceicemarkers_depth2))/self.iceicemarkers_sigma
+        resi_iceice = (self.site1.fct_age(self.iceicemarkers_depth1)-\
+                       self.site2.fct_age(self.iceicemarkers_depth2))/self.iceicemarkers_sigma
         if np.size(self.iceicemarkers_depth1) > 0:
             resi_iceice = lu_solve(self.iceicemarkers_lu_piv, resi_iceice)
-        resi_airair = (self.D1.fct_airage(self.airairmarkers_depth1)-\
-                       self.D2.fct_airage(self.airairmarkers_depth2))/self.airairmarkers_sigma
+        resi_airair = (self.site1.fct_airage(self.airairmarkers_depth1)-\
+                       self.site2.fct_airage(self.airairmarkers_depth2))/self.airairmarkers_sigma
         if np.size(self.airairmarkers_depth1) > 0:
             resi_airair = lu_solve(self.airairmarkers_lu_piv, resi_airair)
-        resi_iceair = (self.D1.fct_age(self.iceairmarkers_depth1)-\
-                       self.D2.fct_airage(self.iceairmarkers_depth2))/self.iceairmarkers_sigma
+        resi_iceair = (self.site1.fct_age(self.iceairmarkers_depth1)-\
+                       self.site2.fct_airage(self.iceairmarkers_depth2))/self.iceairmarkers_sigma
         if np.size(self.iceairmarkers_depth1) > 0:
             resi_iceair = lu_solve(self.iceairmarkers_lu_piv, resi_iceair)
-        resi_airice = (self.D1.fct_airage(self.airicemarkers_depth1)-\
-                       self.D2.fct_age(self.airicemarkers_depth2))/self.airicemarkers_sigma
+        resi_airice = (self.site1.fct_airage(self.airicemarkers_depth1)-\
+                       self.site2.fct_age(self.airicemarkers_depth2))/self.airicemarkers_sigma
         if np.size(self.airicemarkers_depth1) > 0:
             resi_airice = lu_solve(self.airicemarkers_lu_piv, resi_airice)
         resi = np.concatenate((resi_iceice, resi_airair, resi_iceair, resi_airice))
@@ -1148,129 +1212,130 @@ class SitePair:
 
 
     def figures(self):
+        """Build the figures related to a pair of sites."""
 
         if not os.path.isdir(DATADIR+self.label):
             os.mkdir(DATADIR+self.label)
 
 
         mpl.figure(self.label+' ice-ice')
-        mpl.xlabel(self.D1.label+' ice age (yr b1950)')
-        mpl.ylabel(self.D2.label+' ice age (yr b1950)')
+        mpl.xlabel(self.site1.label+' ice age (yr b1950)')
+        mpl.ylabel(self.site2.label+' ice age (yr b1950)')
         if np.size(self.iceicemarkers_depth1) > 0:
-            if show_initial:
-                mpl.errorbar(self.D1.fct_age_init(self.iceicemarkers_depth1),
-                             self.D2.fct_age_init(self.iceicemarkers_depth2), color=color_init,
+            if SHOW_INITIAL:
+                mpl.errorbar(self.site1.fct_age_init(self.iceicemarkers_depth1),
+                             self.site2.fct_age_init(self.iceicemarkers_depth2), color=COLOR_INIT,
                              xerr=self.iceicemarkers_sigma, linestyle='', marker='o', markersize=2,
                              label="Initial")
-            mpl.errorbar(self.D1.fct_age_model(self.iceicemarkers_depth1),
-                         self.D2.fct_age_model(self.iceicemarkers_depth2), color=color_mod,
+            mpl.errorbar(self.site1.fct_age_model(self.iceicemarkers_depth1),
+                         self.site2.fct_age_model(self.iceicemarkers_depth2), color=COLOR_MOD,
                          xerr=self.iceicemarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Prior")
-            mpl.errorbar(self.D1.fct_age(self.iceicemarkers_depth1),
-                         self.D2.fct_age(self.iceicemarkers_depth2), color=color_opt,
+            mpl.errorbar(self.site1.fct_age(self.iceicemarkers_depth1),
+                         self.site2.fct_age(self.iceicemarkers_depth2), color=COLOR_OPT,
                          xerr=self.iceicemarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Posterior")
-        x1, x2, y1, y2 = mpl.axis()
-        x1 = self.D1.age_top
-        y1 = self.D2.age_top
-        mpl.axis((x1, x2, y1, y2))
-        rangefig = np.array([max(x1, y1), min(x2, y2)])
-        mpl.plot(rangefig, rangefig, color=color_obs, label='perfect agreement')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        x_low = self.site1.age_top
+        y_low = self.site2.age_top
+        mpl.axis((x_low, x_up, y_low, y_up))
+        rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+        mpl.plot(rangefig, rangefig, color=COLOR_OBS, label='perfect agreement')
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/ice-ice.pdf')
-        pp.savefig(mpl.figure(self.label+' ice-ice'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/ice-ice.pdf')
+        printed_page.savefig(mpl.figure(self.label+' ice-ice'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' air-air')
-        mpl.xlabel(self.D1.label+' air age (yr b1950)')
-        mpl.ylabel(self.D2.label+' air age (yr b1950)')
+        mpl.xlabel(self.site1.label+' air age (yr b1950)')
+        mpl.ylabel(self.site2.label+' air age (yr b1950)')
         if np.size(self.airairmarkers_depth1) > 0:
-            if show_initial:
-                mpl.errorbar(self.D1.fct_airage_init(self.airairmarkers_depth1),
-                             self.D2.fct_airage_init(self.airairmarkers_depth2),
-                             color=color_init, xerr=self.airairmarkers_sigma, linestyle='',
+            if SHOW_INITIAL:
+                mpl.errorbar(self.site1.fct_airage_init(self.airairmarkers_depth1),
+                             self.site2.fct_airage_init(self.airairmarkers_depth2),
+                             color=COLOR_INIT, xerr=self.airairmarkers_sigma, linestyle='',
                              marker='o', markersize=2, label="Initial")
-            mpl.errorbar(self.D1.fct_airage_model(self.airairmarkers_depth1),
-                         self.D2.fct_airage_model(self.airairmarkers_depth2), color=color_mod,
+            mpl.errorbar(self.site1.fct_airage_model(self.airairmarkers_depth1),
+                         self.site2.fct_airage_model(self.airairmarkers_depth2), color=COLOR_MOD,
                          xerr=self.airairmarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Prior")
-            mpl.errorbar(self.D1.fct_airage(self.airairmarkers_depth1),
-                         self.D2.fct_airage(self.airairmarkers_depth2), color=color_opt,
+            mpl.errorbar(self.site1.fct_airage(self.airairmarkers_depth1),
+                         self.site2.fct_airage(self.airairmarkers_depth2), color=COLOR_OPT,
                          xerr=self.airairmarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Posterior")
-        x1, x2, y1, y2 = mpl.axis()
-        x1 = self.D1.age_top
-        y1 = self.D2.age_top
-        mpl.axis((x1, x2, y1, y2))
-        rangefig = np.array([max(x1, y1), min(x2, y2)])
-        mpl.plot(rangefig, rangefig, color=color_obs, label='perfect agreement')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        x_low = self.site1.age_top
+        y_low = self.site2.age_top
+        mpl.axis((x_low, x_up, y_low, y_up))
+        rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+        mpl.plot(rangefig, rangefig, color=COLOR_OBS, label='perfect agreement')
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/air-air.pdf')
-        pp.savefig(mpl.figure(self.label+' air-air'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/air-air.pdf')
+        printed_page.savefig(mpl.figure(self.label+' air-air'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' ice-air')
-        mpl.xlabel(self.D1.label+' ice age (yr b1950)')
-        mpl.ylabel(self.D2.label+' air age (yr b1950)')
+        mpl.xlabel(self.site1.label+' ice age (yr b1950)')
+        mpl.ylabel(self.site2.label+' air age (yr b1950)')
         if np.size(self.iceairmarkers_depth1) > 0:
-            if show_initial:
-                mpl.errorbar(self.D1.fct_age_init(self.iceairmarkers_depth1),
-                             self.D2.fct_airage_init(self.iceairmarkers_depth2), color=color_init,
-                             xerr=self.iceairmarkers_sigma, linestyle='', marker='o', markersize=2,
-                             label="Initial")
-            mpl.errorbar(self.D1.fct_age_model(self.iceairmarkers_depth1),
-                         self.D2.fct_airage_model(self.iceairmarkers_depth2), color=color_mod,
+            if SHOW_INITIAL:
+                mpl.errorbar(self.site1.fct_age_init(self.iceairmarkers_depth1),
+                             self.site2.fct_airage_init(self.iceairmarkers_depth2),
+                             color=COLOR_INIT, xerr=self.iceairmarkers_sigma, linestyle='',
+                             marker='o', markersize=2, label="Initial")
+            mpl.errorbar(self.site1.fct_age_model(self.iceairmarkers_depth1),
+                         self.site2.fct_airage_model(self.iceairmarkers_depth2), color=COLOR_MOD,
                          xerr=self.iceairmarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Prior")
-            mpl.errorbar(self.D1.fct_age(self.iceairmarkers_depth1),
-                         self.D2.fct_airage(self.iceairmarkers_depth2), color=color_opt,
+            mpl.errorbar(self.site1.fct_age(self.iceairmarkers_depth1),
+                         self.site2.fct_airage(self.iceairmarkers_depth2), color=COLOR_OPT,
                          xerr=self.iceairmarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Posterior")
-        x1, x2, y1, y2 = mpl.axis()
-        x1 = self.D1.age_top
-        y1 = self.D2.age_top
-        mpl.axis((x1, x2, y1, y2))
-        rangefig = np.array([max(x1, y1), min(x2, y2)])
-        mpl.plot(rangefig, rangefig, color=color_obs, label='perfect agreement')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        x_low = self.site1.age_top
+        y_low = self.site2.age_top
+        mpl.axis((x_low, x_up, y_low, y_up))
+        rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+        mpl.plot(rangefig, rangefig, color=COLOR_OBS, label='perfect agreement')
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/ice-air.pdf')
-        pp.savefig(mpl.figure(self.label+' ice-air'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/ice-air.pdf')
+        printed_page.savefig(mpl.figure(self.label+' ice-air'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
         mpl.figure(self.label+' air-ice')
-        mpl.xlabel(self.D1.label+' air age (yr b1950)')
-        mpl.ylabel(self.D2.label+' ice age (yr b1950)')
+        mpl.xlabel(self.site1.label+' air age (yr b1950)')
+        mpl.ylabel(self.site2.label+' ice age (yr b1950)')
         if np.size(self.airicemarkers_depth1) > 0:
-            if show_initial:
-                mpl.errorbar(self.D1.fct_airage_init(self.airicemarkers_depth1),
-                             self.D2.fct_age_init(self.airicemarkers_depth2),
-                             color=color_init, xerr=self.airicemarkers_sigma,
+            if SHOW_INITIAL:
+                mpl.errorbar(self.site1.fct_airage_init(self.airicemarkers_depth1),
+                             self.site2.fct_age_init(self.airicemarkers_depth2),
+                             color=COLOR_INIT, xerr=self.airicemarkers_sigma,
                              linestyle='', marker='o', markersize=2, label="Initial")
-            mpl.errorbar(self.D1.fct_airage_model(self.airicemarkers_depth1),
-                         self.D2.fct_age_model(self.airicemarkers_depth2), color=color_mod,
+            mpl.errorbar(self.site1.fct_airage_model(self.airicemarkers_depth1),
+                         self.site2.fct_age_model(self.airicemarkers_depth2), color=COLOR_MOD,
                          xerr=self.airicemarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Prior")
-            mpl.errorbar(self.D1.fct_airage(self.airicemarkers_depth1),
-                         self.D2.fct_age(self.airicemarkers_depth2), color=color_opt,
+            mpl.errorbar(self.site1.fct_airage(self.airicemarkers_depth1),
+                         self.site2.fct_age(self.airicemarkers_depth2), color=COLOR_OPT,
                          xerr=self.airicemarkers_sigma, linestyle='', marker='o', markersize=2,
                          label="Posterior")
-        x1, x2, y1, y2 = mpl.axis()
-        x1 = self.D1.age_top
-        y1 = self.D2.age_top
-        mpl.axis((x1, x2, y1, y2))
-        rangefig = np.array([max(x1, y1), min(x2, y2)])
-        mpl.plot(rangefig, rangefig, color=color_obs, label='perfect agreement')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        x_low = self.site1.age_top
+        y_low = self.site2.age_top
+        mpl.axis((x_low, x_up, y_low, y_up))
+        rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+        mpl.plot(rangefig, rangefig, color=COLOR_OBS, label='perfect agreement')
         mpl.legend(loc="best")
-        pp = PdfPages(DATADIR+self.label+'/air-ice.pdf')
-        pp.savefig(mpl.figure(self.label+' air-ice'))
-        pp.close()
-        if not show_figures:
+        printed_page = PdfPages(DATADIR+self.label+'/air-ice.pdf')
+        printed_page.savefig(mpl.figure(self.label+' air-ice'))
+        printed_page.close()
+        if not SHOW_FIGURES:
             mpl.close()
 
 
@@ -1288,11 +1353,12 @@ def residuals(var):
     return resi
 
 def cost_function(var):
+    """Calculate the cost function terms related to a pair of sites."""
     cost = np.dot(residuals(var), np.transpose(residuals(var)))
     return cost
 
 
-def Dres(var):
+def deriv_res(var):
     """Calculate derivatives for each parameter using pool."""
     zeropred = residuals(var)
     derivparams = []
@@ -1305,7 +1371,7 @@ def Dres(var):
         derivparams.append(copy)
 #        results.append(residuals(derivparams))
     if __name__ == "__main__":
-        pool = multiprocessing.Pool(nb_nodes)
+        pool = multiprocessing.Pool(NB_NODES)
     results = pool.map(residuals, derivparams)
     derivs = [(r - zeropred)/delta for r in results]
     return derivs
@@ -1321,10 +1387,10 @@ for di, dlabel in enumerate(LIST_SITES):
     D[dlabel] = Site(dlabel)
     D[dlabel].model(D[dlabel].variables)
 #    D[dlabel].a_init=D[dlabel].a
-#    D[dlabel].LID_init=D[dlabel].LID
+#    D[dlabel].lid_init=D[dlabel].lid
     D[dlabel].write_init()
 #    D[dlabel].display_init()
-    variables = np.concatenate((variables, D[dlabel].variables))
+    VARIABLES = np.concatenate((VARIABLES, D[dlabel].variables))
 
 for di, dlabel in enumerate(LIST_SITES):
     for dj, dlabel2 in enumerate(LIST_SITES):
@@ -1336,44 +1402,44 @@ for di, dlabel in enumerate(LIST_SITES):
 
 ##Optimization
 START_TIME_OPT = time.time()
-print 'cost function: ', cost_function(variables)
+print 'cost function: ', cost_function(VARIABLES)
 if OPT_METHOD == 'leastsq':
     print 'Optimization by leastsq'
-    variables, hess, infodict, mesg, ier = leastsq(residuals, variables, full_output=1)
+    VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
 elif OPT_METHOD == 'leastsq-parallel':
     print 'Optimization by leastsq-parallel'
-    variables, hess, infodict, mesg, ier = leastsq(residuals, variables, Dfun=Dres, col_deriv=1,
-                                                   full_output=1)
+    VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
+                                                   col_deriv=1, full_output=1)
 elif OPT_METHOD == "L-BFGS-B":
     print 'Optimization by L-BFGS-B'
-    res = minimize(cost_function, variables, method='L-BFGS-B', jac=False)
-    variables = res.x
-    print 'number of iterations: ', res.nit
-    hess = np.zeros((np.size(variables), np.size(variables)))
-    print 'Message: ', res.message
-#    cost=cost_function(variables)
+    RESULT = minimize(cost_function, VARIABLES, method='L-BFGS-B', jac=False)
+    VARIABLES = RESULT.x
+    print 'number of iterations: ', RESULT.nit
+    HESS = np.zeros((np.size(VARIABLES), np.size(VARIABLES)))
+    print 'Message: ', RESULT.message
+#    cost=cost_function(VARIABLES)
 elif OPT_METHOD == 'none':
     print 'No optimization'
-#    hess=np.zeros((np.size(variables),np.size(variables)))
+#    HESS=np.zeros((np.size(VARIABLES),np.size(VARIABLES)))
 else:
     print OPT_METHOD, ': Optimization method not recognized.'
     sys.exit
 print 'Optimization execution time: ', time.time() - START_TIME_OPT, 'seconds'
-#print 'solution: ',variables
-print 'cost function: ', cost_function(variables)
-if OPT_METHOD != 'none' and np.size(hess) == 1 and hess == None:
+#print 'solution: ',VARIABLES
+print 'cost function: ', cost_function(VARIABLES)
+if OPT_METHOD != 'none' and np.size(HESS) == 1 and HESS is None:
     print 'singular matrix encountered (flat curvature in some direction)'
     sys.exit
 print 'Calculation of confidence intervals'
-indexsite = 0
+INDEXSITE = 0
 for dlabel in LIST_SITES:
     if OPT_METHOD == 'none':
         D[dlabel].sigma_zero()
     else:
-        D[dlabel].variables = variables[indexsite:indexsite+np.size(D[dlabel].variables)]
-        D[dlabel].hess = hess[indexsite:indexsite+np.size(D[dlabel].variables),\
-            indexsite:indexsite+np.size(D[dlabel].variables)]
-        indexsite = indexsite+np.size(D[dlabel].variables)
+        D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
+        D[dlabel].hess = HESS[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
+            INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
+        INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
         D[dlabel].sigma()
 
 ###Final display and output
@@ -1388,11 +1454,11 @@ for di, dlabel in enumerate(LIST_SITES):
             DC[dlabel2+'-'+dlabel].figures()
 
 ###Program execution time
-message = 'Program execution time: '+str(time.clock()-START_TIME)+' seconds.'
-print  message
-OUTPUT_FILE.write(message)
+MESSAGE = 'Program execution time: '+str(time.clock()-START_TIME)+' seconds.'
+print  MESSAGE
+OUTPUT_FILE.write(MESSAGE)
 
-if show_figures:
+if SHOW_FIGURES:
     mpl.show()
 
 ###Closing output file

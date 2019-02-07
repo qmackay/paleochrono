@@ -1,6 +1,6 @@
 LIST_SITES=['EDC','VK','TALDICE','EDML','NGRIP']
 
-OPT_METHOD='leastsq'  #leastsq, leastsq-parallel, none
+opt_method='leastsq'  #leastsq, leastsq-parallel, none
 nb_nodes=6         #Number of nodes for the leastsq-parallel mode
 
 #Defines the colors for the graphs
