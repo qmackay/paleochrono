@@ -18,6 +18,7 @@ TODO: is there really a computation gain with the change of variable for the
     when we have computed A^-1.
 """
 
+import imp
 import sys
 import time
 import multiprocessing
@@ -28,6 +29,9 @@ from scipy.optimize import leastsq, minimize
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
+
+#Reload pccfg
+imp.reload(pccfg)
 
 ###Registration of start time
 START_TIME = time.clock() #Use time.clock() for processor time
