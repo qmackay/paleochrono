@@ -305,15 +305,10 @@ class Site(object):
                 self.chol_tau = cholesky(self.correlation_corr_tau)
 
 
-        self.variables = np.array([])
-#        if self.calc_a==True:
-#            self.variables=np.concatenate((self.variables, np.array([self.accu0]),
-#                                           np.array([self.beta])))
-#        if self.calc_tau==True:
-#            self.variables=np.concatenate((self.variables, np.array([self.pprime]),
-#                                           np.array([self.muprime])))
-        self.variables = np.concatenate((self.variables, self.corr_a, self.corr_tau, self.corr_lid))
-
+        if self.archive == 'icecore':
+            self.variables = np.concatenate((self.corr_a, self.corr_tau, self.corr_lid))
+        else:
+            self.variables = self.corr_a
 
 #Reading of observations
 
@@ -479,7 +474,7 @@ class Site(object):
         if self.archive == 'icecore':
             self.icelayerthick_model = self.tau_model*self.a_model/self.dens
         else:
-            self.icelayerthick = self.a_model
+            self.icelayerthick_model = self.a_model
         self.age_model = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
                          self.depth_inter/self.icelayerthick_model)))
 
@@ -750,10 +745,10 @@ class Site(object):
     def figures(self):
         """Build the figures of a site."""
 
-        mpl.figure(self.label+' sedimentation')
-        mpl.title(self.label+'sedimentation')
+        mpl.figure(self.label+' deporate')
+        mpl.title(self.label+'Deposition rate')
         mpl.xlabel('Optimized age (yr)')
-        mpl.ylabel('Accumulation (m/yr)')
+        mpl.ylabel('Deposition rate (m/yr)')
         if pccfg.SHOW_INITIAL:
             mpl.step(self.age, np.concatenate((self.a_init, np.array([self.a_init[-1]]))),
                      color=pccfg.COLOR_INIT, where='post', label='Initial')
@@ -767,8 +762,8 @@ class Site(object):
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, y_low, y_up))
         mpl.legend(loc="best")
-        printed_page = PdfPages(pccfg.DATADIR+self.label+'/sedimentation.pdf')
-        printed_page.savefig(mpl.figure(self.label+' sedimentation'))
+        printed_page = PdfPages(pccfg.DATADIR+self.label+'/deposition_rate.pdf')
+        printed_page.savefig(mpl.figure(self.label+' deporate'))
         printed_page.close()
         if not pccfg.SHOW_FIGURES:
             mpl.close()
@@ -820,34 +815,29 @@ class Site(object):
         if not pccfg.SHOW_FIGURES:
             mpl.close()
 
-        mpl.figure(self.label+' layer thickness')
-        if self.archive == 'icecore':
-            mpl.title(self.label+' ice layer thickness')
-        else:
-            mpl.title(self.label+' layer thickness')
-        mpl.xlabel('thickness of layers (m/yr)')
-        mpl.ylabel('Depth')
-        if pccfg.SHOW_INITIAL:
-            mpl.plot(self.icelayerthick_init, self.depth_mid, color=pccfg.COLOR_INIT,
-                     label='Initial')
-        mpl.plot(self.icelayerthick_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
-        mpl.plot(self.icelayerthick, self.depth_mid, color=pccfg.COLOR_OPT,
-                 label='Posterior +/-$\sigma$')
-        mpl.fill_betweenx(self.depth_mid, self.icelayerthick-self.sigma_icelayerthick,
-                          self.icelayerthick+self.sigma_icelayerthick, color=pccfg.COLOR_CI)
-        x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
-        mpl.legend(loc="best")
-        if self.archive == 'icecore':
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/icelayerthickness.pdf')
-        else:
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/layerthickness.pdf')
-        printed_page.savefig(mpl.figure(self.label+' layer thickness'))
-        printed_page.close()
-        if not pccfg.SHOW_FIGURES:
-            mpl.close()
 
         if self.archive == 'icecore':
+
+            mpl.figure(self.label+' ice layer thickness')
+            mpl.title(self.label+' ice layer thickness')
+            mpl.xlabel('thickness of layers (m/yr)')
+            mpl.ylabel('Depth (m)')
+            if pccfg.SHOW_INITIAL:
+                mpl.plot(self.icelayerthick_init, self.depth_mid, color=pccfg.COLOR_INIT,
+                         label='Initial')
+            mpl.plot(self.icelayerthick_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
+            mpl.plot(self.icelayerthick, self.depth_mid, color=pccfg.COLOR_OPT,
+                     label='Posterior +/-$\sigma$')
+            mpl.fill_betweenx(self.depth_mid, self.icelayerthick-self.sigma_icelayerthick,
+                              self.icelayerthick+self.sigma_icelayerthick, color=pccfg.COLOR_CI)
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
+            mpl.legend(loc="best")
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_layer_thickness.pdf')
+            printed_page.savefig(mpl.figure(self.label+' ice layer thickness'))
+            printed_page.close()
+            if not pccfg.SHOW_FIGURES:
+                mpl.close()
 
             mpl.figure(self.label+' thinning')
             mpl.title(self.label+' thinning')
@@ -859,7 +849,6 @@ class Site(object):
             mpl.plot(self.tau, self.depth_mid, color=pccfg.COLOR_OPT, label='Posterior +/-$\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.tau-self.sigma_tau, self.tau+self.sigma_tau,
                               color=pccfg.COLOR_CI)
-            mpl.plot(self.tau-self.sigma_tau, self.depth_mid, color='k', linestyle='-')
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
@@ -884,8 +873,8 @@ class Site(object):
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/airlayerthick.pdf')
             if pccfg.SHOW_AIRLAYERTHICK:
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_layer_thickness.pdf')
                 #Fixme: buggy line on anaconda
                 printed_page.savefig(mpl.figure(self.label+' air layer thickness'))
             printed_page.close()
@@ -893,7 +882,7 @@ class Site(object):
                 mpl.close()
 
             mpl.figure(self.label+' LID')
-            mpl.title(self.label+' LID')
+            mpl.title(self.label+' Lock-In Depth')
             mpl.xlabel('Optimized age (yr)')
             mpl.ylabel('LID')
             if pccfg.SHOW_INITIAL:
@@ -905,7 +894,7 @@ class Site(object):
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, y_low, y_up))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/LID.pdf')
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/lock_in_depth.pdf')
             printed_page.savefig(mpl.figure(self.label+' LID'))
             printed_page.close()
             if not pccfg.SHOW_FIGURES:
@@ -972,7 +961,7 @@ class Site(object):
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/Ddepth.pdf')
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/delta_depth.pdf')
             printed_page.savefig(mpl.figure(self.label+' delta_depth'))
             printed_page.close()
             if not pccfg.SHOW_FIGURES:
@@ -1009,7 +998,8 @@ class Site(object):
                                 np.append(self.sigma_icelayerthick, self.sigma_icelayerthick[-1])))
         with open(pccfg.DATADIR+self.label+'/output.txt', 'w') as file_save:
             if self.archive == 'icecore':
-                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\taccu\tsigma_accu\
+                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\tdeporate\
+                                \tsigma_deporate\
                         \tthinning\
                         \tsigma_thinning\tLID\tsigma_LID\tdelta_depth\tsigma_delta_depth\
                         \taccu_model\
@@ -1017,7 +1007,7 @@ class Site(object):
                         \tsigma_LID_model\ticelayerthick\tsigma_icelayerthick\tairlayerthick\
                         \tsigma_airlayerthick\n')
                 file_save.write('#depth\tage\tsigma_age\
-                                \taccu\tsigma_accu\
+                                \tdeporate\tsigma_deporate\
                         \taccu_model\tsigma_accu_model\
                         \tthinning_model\tsigma_thinning_model\
                         \ticelayerthick\tsigma_icelayerthick\n')
