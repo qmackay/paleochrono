@@ -450,49 +450,55 @@ class Site(object):
     def raw_model(self):
         """Calculate the raw model, that is before applying correction functions."""
 
-        #Accumulation
-        if self.calc_a:
-            self.a_model = self.accu0*np.exp(self.beta*(self.deutice_fullcorr-\
-                self.deutice_fullcorr[0])) #Parrenin et al. (CP, 2007a) 2.3 (6)
-
-        #Thinning
-        if self.calc_tau:
-            self.p_def = -1+m.exp(self.pprime)
-            self.mu_melt = m.exp(self.muprime)
-#            self.sliding=m.tanh(self.sprime)
-            #Parrenin et al. (CP, 2007a) 2.2 (3)
-            omega_def = 1-(self.p_def+2)/(self.p_def+1)*(1-self.zeta)+\
-                      1/(self.p_def+1)*(1-self.zeta)**(self.p_def+2)
-            #Parrenin et al. (CP, 2007a) 2.2 (2)
-            omega = self.sliding*self.zeta+(1-self.sliding)*omega_def
-            self.tau_model = (1-self.mu_melt)*omega+self.mu_melt
-
-        #udepth
-        self.udepth_model = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
-                            self.dens/self.tau_model*self.depth_inter)))
-
-        self.lidie_model = self.lid_model*self.dens_firn
-        self.ulidie_model = np.interp(self.lidie_model, self.iedepth, self.udepth_model)
+        if self.archive == 'icecore':
+            #Accumulation
+            if self.calc_a:
+                self.a_model = self.accu0*np.exp(self.beta*(self.deutice_fullcorr-\
+                    self.deutice_fullcorr[0])) #Parrenin et al. (CP, 2007a) 2.3 (6)
+    
+            #Thinning
+            if self.calc_tau:
+                self.p_def = -1+m.exp(self.pprime)
+                self.mu_melt = m.exp(self.muprime)
+    #            self.sliding=m.tanh(self.sprime)
+                #Parrenin et al. (CP, 2007a) 2.2 (3)
+                omega_def = 1-(self.p_def+2)/(self.p_def+1)*(1-self.zeta)+\
+                          1/(self.p_def+1)*(1-self.zeta)**(self.p_def+2)
+                #Parrenin et al. (CP, 2007a) 2.2 (2)
+                omega = self.sliding*self.zeta+(1-self.sliding)*omega_def
+                self.tau_model = (1-self.mu_melt)*omega+self.mu_melt
+    
+            #udepth
+            self.udepth_model = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
+                                self.dens/self.tau_model*self.depth_inter)))
+    
+            self.lidie_model = self.lid_model*self.dens_firn
+            self.ulidie_model = np.interp(self.lidie_model, self.iedepth, self.udepth_model)
 
         #Ice age
-        self.icelayerthick_model = self.tau_model*self.a_model/self.dens
+        if self.archive == 'icecore':
+            self.icelayerthick_model = self.tau_model*self.a_model/self.dens
+        else:
+            self.icelayerthick = self.a_model
         self.age_model = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
-                         self.dens/self.tau_model/self.a_model*self.depth_inter)))
+                         self.depth_inter/self.icelayerthick_model)))
 
         #air age
-        self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ulidie_model,
-                                               self.udepth_model, self.depth)
-        self.delta_depth_model = self.depth-self.ice_equiv_depth_model
-        self.airage_model = np.interp(self.ice_equiv_depth_model, self.depth, self.age_model,
-                                      left=np.nan, right=np.nan)
-        self.airlayerthick_model = 1/np.diff(self.airage_model)
+        if self.archive =='icecore':
+            self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ulidie_model,
+                                                   self.udepth_model, self.depth)
+            self.delta_depth_model = self.depth-self.ice_equiv_depth_model
+            self.airage_model = np.interp(self.ice_equiv_depth_model, self.depth, self.age_model,
+                                          left=np.nan, right=np.nan)
+            self.airlayerthick_model = 1/np.diff(self.airage_model)
 
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
 
         self.correlation_corr_a_before = self.correlation_corr_a+0
-        self.correlation_corr_lid_before = self.correlation_corr_lid+0
-        self.correlation_corr_tau_before = self.correlation_corr_tau+0
+        if self.archive == 'icecore':
+            self.correlation_corr_lid_before = self.correlation_corr_lid+0
+            self.correlation_corr_tau_before = self.correlation_corr_tau+0
 
         filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllSites.py'
         if os.path.isfile(filename):
@@ -503,36 +509,43 @@ class Site(object):
 
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
             self.chol_a = cholesky(self.correlation_corr_a)
-        if (self.correlation_corr_lid_before != self.correlation_corr_lid).any():
-            self.chol_lid = cholesky(self.correlation_corr_lid)
-        if (self.correlation_corr_a_before != self.correlation_corr_a).any():
-            self.chol_tau = cholesky(self.correlation_corr_tau)
+        if self.archive == 'icecore':
+            if (self.correlation_corr_lid_before != self.correlation_corr_lid).any():
+                self.chol_lid = cholesky(self.correlation_corr_lid)
+            if (self.correlation_corr_a_before != self.correlation_corr_a).any():
+                self.chol_tau = cholesky(self.correlation_corr_tau)
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
         #FIXME: we should use mid-age and not age
         self.accu = self.a_model*np.exp(np.interp(self.age_model[:-1], self.corr_a_age, corr))
 
-        #Thinning
-        self.tau = self.tau_model*np.exp(np.interp(self.depth_mid, self.corr_tau_depth,\
-                   np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
-        self.udepth = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
-                      self.dens/self.tau*self.depth_inter)))
-        corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
-        self.lid = self.lid_model*np.exp(np.interp(self.age_model, self.corr_lid_age, corr))
-        self.lidie = self.lid*self.dens_firn
-        self.ulidie = np.interp(self.lidie, self.iedepth, self.udepth)
+        #Thinning and LID
+        if self.archive == 'icecore':
+            self.tau = self.tau_model*np.exp(np.interp(self.depth_mid, self.corr_tau_depth,\
+                       np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
+            self.udepth = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
+                          self.dens/self.tau*self.depth_inter)))
+            corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
+            self.lid = self.lid_model*np.exp(np.interp(self.age_model, self.corr_lid_age, corr))
+            self.lidie = self.lid*self.dens_firn
+            self.ulidie = np.interp(self.lidie, self.iedepth, self.udepth)
 
         #Ice age
-        self.icelayerthick = self.tau*self.accu/self.dens
+        if self.archive == 'icecore':
+            self.icelayerthick = self.tau*self.accu/self.dens
+        else:
+            self.icelayerthick = self.accu
         self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
-                   self.dens/self.tau/self.accu*self.depth_inter)))
+                   self.depth_inter/self.icelayerthick)))
 
-        self.ice_equiv_depth = np.interp(self.udepth-self.ulidie, self.udepth, self.depth)
-        self.delta_depth = self.depth-self.ice_equiv_depth
-        self.airage = np.interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
-                                right=np.nan)
-        self.airlayerthick = 1/np.diff(self.airage)
+        #Air age
+        if self.archive == 'icecore':
+            self.ice_equiv_depth = np.interp(self.udepth-self.ulidie, self.udepth, self.depth)
+            self.delta_depth = self.depth-self.ice_equiv_depth
+            self.airage = np.interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
+                                    right=np.nan)
+            self.airlayerthick = 1/np.diff(self.airage)
 
     def model(self, var):
         """Calculate the model from the vector var containing its variables."""
