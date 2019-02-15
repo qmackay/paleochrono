@@ -162,7 +162,7 @@ class SitePair(object):
             os.mkdir(pccfg.DATADIR+self.label)
 
 
-        mpl.figure(self.label+' ice-ice')
+        mpl.figure(self.label+' main-main')
         if self.site1.archive == 'icecore':
             mpl.xlabel(self.site1.label+' ice age (yr b1950)')
         else:
@@ -193,8 +193,13 @@ class SitePair(object):
         rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
         mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
         mpl.legend(loc="best")
-        printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice-ice.pdf')
-        printed_page.savefig(mpl.figure(self.label+' ice-ice'))
+        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/iceice_synchro.pdf')
+        elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_synchro.pdf')
+        else:
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/synchro.pdf')
+        printed_page.savefig(mpl.figure(self.label+' main-main'))
         printed_page.close()
         if not pccfg.SHOW_FIGURES:
             mpl.close()
@@ -227,14 +232,14 @@ class SitePair(object):
             rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
             mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/air-air.pdf')
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/airair_synchro.pdf')
             printed_page.savefig(mpl.figure(self.label+' air-air'))
             printed_page.close()
             if not pccfg.SHOW_FIGURES:
                 mpl.close()
 
         if self.site2.archive == 'icecore':
-            mpl.figure(self.label+' ice-air')
+            mpl.figure(self.label+' main-air')
             if self.site1.archive == 'icecore':
                 mpl.xlabel(self.site1.label+' ice age (yr b1950)')
             else:
@@ -264,14 +269,17 @@ class SitePair(object):
             rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
             mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice-air.pdf')
-            printed_page.savefig(mpl.figure(self.label+' ice-air'))
+            if self.site1.archive == 'icecore':
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/iceair_synchro.pdf')
+            else:
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_synchro.pdf')
+            printed_page.savefig(mpl.figure(self.label+' main-air'))
             printed_page.close()
             if not pccfg.SHOW_FIGURES:
                 mpl.close()
 
         if self.site1.archive == 'icecore':
-            mpl.figure(self.label+' air-ice')
+            mpl.figure(self.label+' air-main')
             mpl.xlabel(self.site1.label+' air age (yr b1950)')
             if self.site2.archive == 'icecore':
                 mpl.ylabel(self.site2.label+' ice age (yr b1950)')
@@ -299,8 +307,11 @@ class SitePair(object):
             rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
             mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/air-ice.pdf')
-            printed_page.savefig(mpl.figure(self.label+' air-ice'))
+            if self.site2.archive == 'icecore':
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/airice_synchro.pdf')
+            else:
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_synchro.pdf')
+            printed_page.savefig(mpl.figure(self.label+' air-main'))
             printed_page.close()
             if not pccfg.SHOW_FIGURES:
                 mpl.close()
