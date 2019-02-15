@@ -313,9 +313,11 @@ class Site(object):
 #Reading of observations
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/ice_age.txt'
+            filename = pccfg.DATADIR+self.label+'/ice_horizons.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.DATADIR+self.label+'/ice_age.txt'
         else:
-            filename = pccfg.DATADIR+self.label+'/age.txt'
+            filename = pccfg.DATADIR+self.label+'/horizons.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -332,9 +334,11 @@ class Site(object):
                 self.icemarkers_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/ice_age_intervals.txt'
+            filename = pccfg.DATADIR+self.label+'/ice_intervals.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.DATADIR+self.label+'/ice_age_intervals.txt'
         else:
-            filename = pccfg.DATADIR+self.label+'/age_intervals.txt'
+            filename = pccfg.DATADIR+self.label+'/intervals.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -353,7 +357,9 @@ class Site(object):
                 self.iceintervals_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/air_age.txt'
+            filename = pccfg.DATADIR+self.label+'/air_horizons.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.DATADIR+self.label+'/air_age.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -369,7 +375,9 @@ class Site(object):
                     self.airmarkers_age = np.array([])
                     self.airmarkers_sigma = np.array([])
 
-            filename = pccfg.DATADIR+self.label+'/air_age_intervals.txt'
+            filename = pccfg.DATADIR+self.label+'/air_intervals.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.DATADIR+self.label+'/air_age_intervals.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -387,7 +395,9 @@ class Site(object):
                     self.airintervals_duration = np.array([])
                     self.airintervals_sigma = np.array([])
 
-            filename = pccfg.DATADIR+self.label+'/Ddepth.txt'
+            filename = pccfg.DATADIR+self.label+'/delta_depths.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.DATADIR+self.label+'/Ddepth.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -814,7 +824,6 @@ class Site(object):
         printed_page.close()
         if not pccfg.SHOW_FIGURES:
             mpl.close()
-
 
         if self.archive == 'icecore':
 
