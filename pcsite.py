@@ -149,7 +149,10 @@ class Site(object):
                 print 'Accumulation method not recognized'
                 sys.exit()
         else:
-            readarray = np.loadtxt(pccfg.DATADIR+self.label+'/accu-prior.txt')
+            if os.path.isfile(pccfg.DATADIR+self.label+'/deposition.txt'):
+                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/deposition.txt')
+            else:
+                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/accu-prior.txt')
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
             self.a_depth = readarray[:, 0]
@@ -169,7 +172,10 @@ class Site(object):
 
         if self.archive == 'icecore':
 
-            readarray = np.loadtxt(pccfg.DATADIR+self.label+'/density-prior.txt')
+            if os.path.isfile(pccfg.DATADIR+self.label+'/density.txt'):
+                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/density.txt')
+            else:
+                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/density-prior.txt')
             #        self.density_depth=readarray[:,0]
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
@@ -191,7 +197,10 @@ class Site(object):
                     self.lid_lid = np.array([self.lid_value, self.lid_value])
             else:
     #            self.lid_model=np.loadtxt(pccfg.DATADIR+self.label+'/LID-prior.txt')
-                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/LID-prior.txt')
+                if os.path.isfile(pccfg.DATADIR+self.label+'/lock_in_depth.txt'):
+                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/lock_in_depth.txt')
+                else:
+                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/LID-prior.txt')
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 self.lid_depth = readarray[:, 0]
@@ -211,7 +220,10 @@ class Site(object):
                 self.zeta = (self.thicknessie-self.iedepth_mid)/self.thicknessie
                 self.tau = np.empty_like(self.depth_mid)
             else:
-                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/thinning-prior.txt')
+                if os.path.isfile(pccfg.DATADIR+self.label+'/thinning.txt'):
+                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/thinning.txt')
+                else:
+                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/thinning-prior.txt')
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 self.tau_depth = readarray[:, 0]
