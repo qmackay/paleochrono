@@ -325,11 +325,11 @@ class Site(object):
 #Reading of observations
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/ice_horizons.txt'
+            filename = pccfg.DATADIR+self.label+'/ice_age_horizons.txt'
             if not os.path.isfile(filename):
                 filename = pccfg.DATADIR+self.label+'/ice_age.txt'
         else:
-            filename = pccfg.DATADIR+self.label+'/horizons.txt'
+            filename = pccfg.DATADIR+self.label+'/age_horizons.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -346,11 +346,9 @@ class Site(object):
                 self.icemarkers_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/ice_intervals.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.DATADIR+self.label+'/ice_age_intervals.txt'
+            filename = pccfg.DATADIR+self.label+'/ice_age_intervals.txt'
         else:
-            filename = pccfg.DATADIR+self.label+'/intervals.txt'
+            filename = pccfg.DATADIR+self.label+'/age_intervals.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -369,7 +367,7 @@ class Site(object):
                 self.iceintervals_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/air_horizons.txt'
+            filename = pccfg.DATADIR+self.label+'/air_age_horizons.txt'
             if not os.path.isfile(filename):
                 filename = pccfg.DATADIR+self.label+'/air_age.txt'
             with warnings.catch_warnings():
@@ -387,9 +385,7 @@ class Site(object):
                     self.airmarkers_age = np.array([])
                     self.airmarkers_sigma = np.array([])
 
-            filename = pccfg.DATADIR+self.label+'/air_intervals.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.DATADIR+self.label+'/air_age_intervals.txt'
+            filename = pccfg.DATADIR+self.label+'/air_age_intervals.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
