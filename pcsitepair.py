@@ -25,13 +25,15 @@ class SitePair(object):
 
 #TODO: allow to have either dlabel1+'-'dlabel2 or dlbel2+'-'dlabel1 as directory
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/iceice_horizons.txt'
+            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+\
+                       '/iceice_synchro_horizons.txt'
             if not os.path.isfile(filename):
                 filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/ice_depth.txt'
         elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
-            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/ice_horizons.txt'
+            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+\
+                       '/ice_synchro_horizons.txt'
         else:
-            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/horizons.txt'
+            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/synchro_horizons.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
             self.iceicemarkers_depth1 = readarray[:, 0]
@@ -44,7 +46,8 @@ class SitePair(object):
         self.iceicemarkers_correlation = np.diag(np.ones(np.size(self.iceicemarkers_depth1)))
 
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/airair_horizons.txt'
+            filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+\
+                       '/airair_synchro_horizons.txt'
             if not os.path.isfile(filename):
                 filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/air_depth.txt'
             if os.path.isfile(filename) and open(filename).read():
@@ -61,12 +64,13 @@ class SitePair(object):
         if self.site2.archive == 'icecore':
             if self.site1.archive == 'icecore':
                 filename = pccfg.DATADIR+self.site1.label+'-'+\
-                            self.site2.label+'/iceair_horizons.txt'
+                            self.site2.label+'/iceair_synchro_horizons.txt'
                 if not os.path.isfile(filename):
                     filename = pccfg.DATADIR+self.site1.label+'-'+\
                                 self.site2.label+'/iceair_depth.txt'
             else:
-                filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/air_horizons.txt'
+                filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+\
+                           '/air_synchro_horizons.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
                 self.iceairmarkers_depth1 = readarray[:, 0]
@@ -81,12 +85,13 @@ class SitePair(object):
         if self.site1.archive == 'icecore':
             if self.site2.archive == 'icecore':
                 filename = pccfg.DATADIR+self.site1.label+'-'+\
-                            self.site2.label+'/airice_horizons.txt'
+                            self.site2.label+'/airice_synchro_horizons.txt'
                 if not os.path.isfile(filename):
                     filename = pccfg.DATADIR+self.site1.label+'-'+\
                                 self.site2.label+'/airice_depth.txt'
             else:
-                filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/air_horizons.txt'
+                filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+\
+                           '/air_synchro_horizons.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
                 self.airicemarkers_depth1 = readarray[:, 0]
