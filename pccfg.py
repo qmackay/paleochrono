@@ -28,10 +28,10 @@ SHOW_AIRLAYERTHICK = False #whether to show the air layer thickness figure (bugg
 DATADIR = sys.argv[1]
 if DATADIR[-1] != '/':
     DATADIR = DATADIR+'/'
-print 'Parameters directory is: ', DATADIR
+print('Parameters directory is: ', DATADIR)
 #os.chdir(DATADIR)
 
-execfile(DATADIR+'/parameters.py')
+exec(open(DATADIR+'/parameters.py').read())
 
 try:
     LIST_SITES = list_drillings

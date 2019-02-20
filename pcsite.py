@@ -57,12 +57,12 @@ class Site(object):
         #Setting the parameters from the parameter files
         filename = pccfg.DATADIR+'/parameters-AllSites.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         else:
             filename = pccfg.DATADIR+'/parameters-AllDrillings.py'
             if os.path.isfile(filename):
-                execfile(filename)
-        execfile(pccfg.DATADIR+self.label+'/parameters.py')
+                exec(open(filename).read())
+        exec(open(pccfg.DATADIR+self.label+'/parameters.py').read())
 
         try:
             self.calc_lid = self.calc_LID
@@ -146,7 +146,7 @@ class Site(object):
                 self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
                                                             self.iso_d18o_ice)
             else:
-                print 'Accumulation method not recognized'
+                print('Accumulation method not recognized')
                 sys.exit()
         else:
             if os.path.isfile(pccfg.DATADIR+self.label+'/deposition.txt'):
@@ -164,7 +164,7 @@ class Site(object):
             elif self.accu_prior_rep == 'linear':
                 self.a_model = interp_lin_aver(self.depth, self.a_depth, self.a_a)
             else:
-                print 'Representation of prior accu scenario not recognized'
+                print('Representation of prior accu scenario not recognized')
             self.accu = self.a_model
 
         self.age = np.empty_like(self.depth)
@@ -251,7 +251,7 @@ class Site(object):
                 self.corr_tau = np.random.normal(loc=0., scale=1.,
                                                  size=np.size(self.corr_tau_depth))
         else:
-            print 'Start option not recognized.'
+            print('Start option not recognized.')
 
 ## Now we set up the correlation matrices
 
@@ -272,7 +272,7 @@ class Site(object):
             self.sigmap_corr_a = np.interp(self.corr_a_age, self.fct_age_model(self.a_depth),
                                            self.a_sigma)
         except AttributeError:
-            print 'Sigma on prior accu scenario not defined in the accu-prior.txt file'
+            print('Sigma on prior accu scenario not defined in the accu-prior.txt file')
 
         if self.archive == 'icecore':
             try:
@@ -281,14 +281,14 @@ class Site(object):
                                                  self.fct_airage_model(self.lid_depth),
                                                  self.lid_sigma)
             except AttributeError:
-                print 'Sigma on prior LID scenario not defined in the LID-prior.txt file'
+                print('Sigma on prior LID scenario not defined in the LID-prior.txt file')
 
             try:
                 #FIXME: we should average here since it would be more representative
                 self.sigmap_corr_tau = np.interp(self.corr_tau_depth, self.tau_depth,
                                                  self.tau_sigma)
             except AttributeError:
-                print 'Sigma on prior thinning scenario not defined in the thinning-prior.txt file'
+                print('Sigma on prior thinning scenario not defined in the thinning-prior.txt file')
 
         self.correlation_corr_a_before = self.correlation_corr_a+0
         if self.archive == 'icecore':
@@ -297,15 +297,15 @@ class Site(object):
 
         filename = pccfg.DATADIR+self.label+'/parameters-CovariancePrior-init.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         else:
             filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllSites-init.py'
             if os.path.isfile(filename):
-                execfile(filename)
+                exec(open(filename).read())
             else:
                 filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllDrillings-init.py'
                 if os.path.isfile(filename):
-                    execfile(filename)
+                    exec(open(filename).read())
 
 
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
@@ -432,15 +432,15 @@ class Site(object):
 
         filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllSites.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         else:
             filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllDrillings.py'
             if os.path.isfile(filename):
-                execfile(filename)
+                exec(open(filename).read())
 
         filename = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         if np.size(self.icemarkers_depth) > 0:
             self.icemarkers_chol = cholesky(self.icemarkers_correlation)
             #FIXME: we LU factor a triangular matrix. This is suboptimal.
@@ -515,10 +515,10 @@ class Site(object):
 
         filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllSites.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         filename = pccfg.DATADIR+self.label+'/parameters-CovariancePrior.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
 
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
             self.chol_a = cholesky(self.correlation_corr_a)
@@ -690,8 +690,8 @@ class Site(object):
     def optimisation(self):
         """Optimize a site."""
         self.variables, self.hess = leastsq(self.residuals, self.variables, full_output=1)
-        print self.variables
-        print self.hess
+        print(self.variables)
+        print(self.hess)
         return self.variables, self.hess
 
     def sigma(self):

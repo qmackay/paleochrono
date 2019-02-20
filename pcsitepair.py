@@ -106,10 +106,10 @@ class SitePair(object):
 
         filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllSitePairs.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         filename = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
-            execfile(filename)
+            exec(open(filename).read())
         if np.size(self.iceicemarkers_depth1) > 0:
             self.iceicemarkers_chol = cholesky(self.iceicemarkers_correlation)
             self.iceicemarkers_lu_piv = lu_factor(self.iceicemarkers_chol)

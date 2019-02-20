@@ -90,7 +90,7 @@ def deriv_res(var):
 ##Initialisation
 for di, dlabel in enumerate(pccfg.LIST_SITES):
 
-    print 'Initialization of site '+dlabel
+    print('Initialization of site '+dlabel)
 
     D[dlabel] = Site(dlabel)
     D[dlabel].model(D[dlabel].variables)
@@ -103,42 +103,42 @@ for di, dlabel in enumerate(pccfg.LIST_SITES):
 for di, dlabel in enumerate(pccfg.LIST_SITES):
     for dj, dlabel2 in enumerate(pccfg.LIST_SITES):
         if dj < di:
-            print 'Initialization of site pair '+dlabel2+'-'+dlabel
+            print('Initialization of site pair '+dlabel2+'-'+dlabel)
             DC[dlabel2+'-'+dlabel] = SitePair(D[dlabel2], D[dlabel])
 #            DC[dlabel2+'-'+dlabel].display_init()
 
 
 ##Optimization
 START_TIME_OPT = time.time()
-print 'cost function: ', cost_function(VARIABLES)
+print('cost function: ', cost_function(VARIABLES))
 if pccfg.OPT_METHOD == 'leastsq':
-    print 'Optimization by leastsq'
+    print('Optimization by leastsq')
     VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
 elif pccfg.OPT_METHOD == 'leastsq-parallel':
-    print 'Optimization by leastsq-parallel'
+    print('Optimization by leastsq-parallel')
     VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
                                                    col_deriv=1, full_output=1)
 elif pccfg.OPT_METHOD == "L-BFGS-B":
-    print 'Optimization by L-BFGS-B'
+    print('Optimization by L-BFGS-B')
     RESULT = minimize(cost_function, VARIABLES, method='L-BFGS-B', jac=False)
     VARIABLES = RESULT.x
-    print 'number of iterations: ', RESULT.nit
+    print('number of iterations: ', RESULT.nit)
     HESS = np.zeros((np.size(VARIABLES), np.size(VARIABLES)))
-    print 'Message: ', RESULT.message
+    print('Message: ', RESULT.message)
 #    cost=cost_function(VARIABLES)
 elif pccfg.OPT_METHOD == 'none':
-    print 'No optimization'
+    print('No optimization')
 #    HESS=np.zeros((np.size(VARIABLES),np.size(VARIABLES)))
 else:
-    print pccfg.OPT_METHOD, ': Optimization method not recognized.'
+    print(pccfg.OPT_METHOD, ': Optimization method not recognized.')
     sys.exit()
-print 'Optimization execution time: ', time.time() - START_TIME_OPT, 'seconds'
+print('Optimization execution time: ', time.time() - START_TIME_OPT, 'seconds')
 #print 'solution: ',VARIABLES
-print 'cost function: ', cost_function(VARIABLES)
+print('cost function: ', cost_function(VARIABLES))
 if pccfg.OPT_METHOD != 'none' and np.size(HESS) == 1 and HESS is None:
-    print 'singular matrix encountered (flat curvature in some direction)'
+    print('singular matrix encountered (flat curvature in some direction)')
     sys.exit()
-print 'Calculation of confidence intervals'
+print('Calculation of confidence intervals')
 INDEXSITE = 0
 for dlabel in pccfg.LIST_SITES:
     if pccfg.OPT_METHOD == 'none':
@@ -151,7 +151,7 @@ for dlabel in pccfg.LIST_SITES:
         D[dlabel].sigma()
 
 ###Final display and output
-print 'Display of results'
+print('Display of results')
 for di, dlabel in enumerate(pccfg.LIST_SITES):
 #    print dlabel+'\n'
     D[dlabel].save()
@@ -163,7 +163,7 @@ for di, dlabel in enumerate(pccfg.LIST_SITES):
 
 ###Program execution time
 MESSAGE = 'Program execution time: '+str(time.clock()-START_TIME)+' seconds.'
-print  MESSAGE
+print(MESSAGE)
 OUTPUT_FILE.write(MESSAGE)
 
 if pccfg.SHOW_FIGURES:
