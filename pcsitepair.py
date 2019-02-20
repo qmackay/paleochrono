@@ -36,14 +36,14 @@ class SitePair(object):
             filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/synchro_horizons.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
-            self.iceicemarkers_depth1 = readarray[:, 0]
-            self.iceicemarkers_depth2 = readarray[:, 1]
-            self.iceicemarkers_sigma = readarray[:, 2]
+            self.iceicehorizons_depth1 = readarray[:, 0]
+            self.iceicehorizons_depth2 = readarray[:, 1]
+            self.iceicehorizons_sigma = readarray[:, 2]
         else:
-            self.iceicemarkers_depth1 = np.array([])
-            self.iceicemarkers_depth2 = np.array([])
-            self.iceicemarkers_sigma = np.array([])
-        self.iceicemarkers_correlation = np.diag(np.ones(np.size(self.iceicemarkers_depth1)))
+            self.iceicehorizons_depth1 = np.array([])
+            self.iceicehorizons_depth2 = np.array([])
+            self.iceicehorizons_sigma = np.array([])
+        self.iceicehorizons_correlation = np.diag(np.ones(np.size(self.iceicehorizons_depth1)))
 
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
             filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+\
@@ -52,14 +52,14 @@ class SitePair(object):
                 filename = pccfg.DATADIR+self.site1.label+'-'+self.site2.label+'/air_depth.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
-                self.airairmarkers_depth1 = readarray[:, 0]
-                self.airairmarkers_depth2 = readarray[:, 1]
-                self.airairmarkers_sigma = readarray[:, 2]
+                self.airairhorizons_depth1 = readarray[:, 0]
+                self.airairhorizons_depth2 = readarray[:, 1]
+                self.airairhorizons_sigma = readarray[:, 2]
             else:
-                self.airairmarkers_depth1 = np.array([])
-                self.airairmarkers_depth2 = np.array([])
-                self.airairmarkers_sigma = np.array([])
-            self.airairmarkers_correlation = np.diag(np.ones(np.size(self.airairmarkers_depth1)))
+                self.airairhorizons_depth1 = np.array([])
+                self.airairhorizons_depth2 = np.array([])
+                self.airairhorizons_sigma = np.array([])
+            self.airairhorizons_correlation = np.diag(np.ones(np.size(self.airairhorizons_depth1)))
 
         if self.site2.archive == 'icecore':
             if self.site1.archive == 'icecore':
@@ -73,14 +73,14 @@ class SitePair(object):
                            '/air_synchro_horizons.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
-                self.iceairmarkers_depth1 = readarray[:, 0]
-                self.iceairmarkers_depth2 = readarray[:, 1]
-                self.iceairmarkers_sigma = readarray[:, 2]
+                self.iceairhorizons_depth1 = readarray[:, 0]
+                self.iceairhorizons_depth2 = readarray[:, 1]
+                self.iceairhorizons_sigma = readarray[:, 2]
             else:
-                self.iceairmarkers_depth1 = np.array([])
-                self.iceairmarkers_depth2 = np.array([])
-                self.iceairmarkers_sigma = np.array([])
-            self.iceairmarkers_correlation = np.diag(np.ones(np.size(self.iceairmarkers_depth1)))
+                self.iceairhorizons_depth1 = np.array([])
+                self.iceairhorizons_depth2 = np.array([])
+                self.iceairhorizons_sigma = np.array([])
+            self.iceairhorizons_correlation = np.diag(np.ones(np.size(self.iceairhorizons_depth1)))
 
         if self.site1.archive == 'icecore':
             if self.site2.archive == 'icecore':
@@ -94,14 +94,14 @@ class SitePair(object):
                            '/air_synchro_horizons.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
-                self.airicemarkers_depth1 = readarray[:, 0]
-                self.airicemarkers_depth2 = readarray[:, 1]
-                self.airicemarkers_sigma = readarray[:, 2]
+                self.airicehorizons_depth1 = readarray[:, 0]
+                self.airicehorizons_depth2 = readarray[:, 1]
+                self.airicehorizons_sigma = readarray[:, 2]
             else:
-                self.airicemarkers_depth1 = np.array([])
-                self.airicemarkers_depth2 = np.array([])
-                self.airicemarkers_sigma = np.array([])
-            self.airicemarkers_correlation = np.diag(np.ones(np.size(self.airicemarkers_depth1)))
+                self.airicehorizons_depth1 = np.array([])
+                self.airicehorizons_depth2 = np.array([])
+                self.airicehorizons_sigma = np.array([])
+            self.airicehorizons_correlation = np.diag(np.ones(np.size(self.airicehorizons_depth1)))
 
 
         filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllSitePairs.py'
@@ -110,51 +110,53 @@ class SitePair(object):
         filename = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
-        if np.size(self.iceicemarkers_depth1) > 0:
-            self.iceicemarkers_chol = cholesky(self.iceicemarkers_correlation)
-            self.iceicemarkers_lu_piv = lu_factor(self.iceicemarkers_chol)
+        if np.size(self.iceicehorizons_depth1) > 0:
+            self.iceicehorizons_chol = cholesky(self.iceicehorizons_correlation)
+            self.iceicehorizons_lu_piv = lu_factor(self.iceicehorizons_chol)
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            if np.size(self.airairmarkers_depth1) > 0:
-                self.airairmarkers_chol = cholesky(self.airairmarkers_correlation)
-                self.airairmarkers_lu_piv = lu_factor(self.airairmarkers_chol)
+            if np.size(self.airairhorizons_depth1) > 0:
+                self.airairhorizons_chol = cholesky(self.airairhorizons_correlation)
+                self.airairhorizons_lu_piv = lu_factor(self.airairhorizons_chol)
         if self.site2.archive == 'icecore':
-            if np.size(self.iceairmarkers_depth1) > 0:
-                self.iceairmarkers_chol = cholesky(self.iceairmarkers_correlation)
-                self.iceairmarkers_lu_piv = lu_factor(self.iceairmarkers_chol)
+            if np.size(self.iceairhorizons_depth1) > 0:
+                self.iceairhorizons_chol = cholesky(self.iceairhorizons_correlation)
+                self.iceairhorizons_lu_piv = lu_factor(self.iceairhorizons_chol)
         if self.site1.archive == 'icecore':
-            if np.size(self.airicemarkers_depth1) > 0:
-                self.airicemarkers_chol = cholesky(self.airicemarkers_correlation)
-                self.airicemarkers_lu_piv = lu_factor(self.airicemarkers_chol)
+            if np.size(self.airicehorizons_depth1) > 0:
+                self.airicehorizons_chol = cholesky(self.airicehorizons_correlation)
+                self.airicehorizons_lu_piv = lu_factor(self.airicehorizons_chol)
 
 
     def residuals(self):
         """Calculate the residual terms of a pair of sites."""
 
-        resi_iceice = (self.site1.fct_age(self.iceicemarkers_depth1)-\
-                       self.site2.fct_age(self.iceicemarkers_depth2))/self.iceicemarkers_sigma
-        if np.size(self.iceicemarkers_depth1) > 0:
-            resi_iceice = lu_solve(self.iceicemarkers_lu_piv, resi_iceice)
+        resi_iceice = (self.site1.fct_age(self.iceicehorizons_depth1)-\
+                       self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
+        if np.size(self.iceicehorizons_depth1) > 0:
+            resi_iceice = lu_solve(self.iceicehorizons_lu_piv, resi_iceice)
         resi = resi_iceice
 
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            resi_airair = (self.site1.fct_airage(self.airairmarkers_depth1)-\
-                          self.site2.fct_airage(self.airairmarkers_depth2))/self.airairmarkers_sigma
-            if np.size(self.airairmarkers_depth1) > 0:
-                resi_airair = lu_solve(self.airairmarkers_lu_piv, resi_airair)
+            resi_airair = (self.site1.fct_airage(self.airairhorizons_depth1)-\
+                          self.site2.fct_airage(self.airairhorizons_depth2))/\
+                          self.airairhorizons_sigma
+            if np.size(self.airairhorizons_depth1) > 0:
+                resi_airair = lu_solve(self.airairhorizons_lu_piv, resi_airair)
             resi = np.concatenate((resi, resi_airair))
 
         if self.site2.archive == 'icecore':
-            resi_iceair = (self.site1.fct_age(self.iceairmarkers_depth1)-\
-                          self.site2.fct_airage(self.iceairmarkers_depth2))/self.iceairmarkers_sigma
-            if np.size(self.iceairmarkers_depth1) > 0:
-                resi_iceair = lu_solve(self.iceairmarkers_lu_piv, resi_iceair)
+            resi_iceair = (self.site1.fct_age(self.iceairhorizons_depth1)-\
+                          self.site2.fct_airage(self.iceairhorizons_depth2))/\
+                          self.iceairhorizons_sigma
+            if np.size(self.iceairhorizons_depth1) > 0:
+                resi_iceair = lu_solve(self.iceairhorizons_lu_piv, resi_iceair)
             resi = np.concatenate((resi, resi_iceair))
 
         if self.site1.archive == 'icecore':
-            resi_airice = (self.site1.fct_airage(self.airicemarkers_depth1)-\
-                           self.site2.fct_age(self.airicemarkers_depth2))/self.airicemarkers_sigma
-            if np.size(self.airicemarkers_depth1) > 0:
-                resi_airice = lu_solve(self.airicemarkers_lu_piv, resi_airice)
+            resi_airice = (self.site1.fct_airage(self.airicehorizons_depth1)-\
+                           self.site2.fct_age(self.airicehorizons_depth2))/self.airicehorizons_sigma
+            if np.size(self.airicehorizons_depth1) > 0:
+                resi_airice = lu_solve(self.airicehorizons_lu_piv, resi_airice)
                 resi = np.concatenate((resi, resi_airice))
 
         return resi
@@ -176,20 +178,20 @@ class SitePair(object):
             mpl.ylabel(self.site2.label+' ice age (yr b1950)')
         else:
             mpl.ylabel(self.site2.label+' age (yr b1950)')
-        if np.size(self.iceicemarkers_depth1) > 0:
+        if np.size(self.iceicehorizons_depth1) > 0:
             if pccfg.SHOW_INITIAL:
-                mpl.errorbar(self.site1.fct_age_init(self.iceicemarkers_depth1),
-                             self.site2.fct_age_init(self.iceicemarkers_depth2),
+                mpl.errorbar(self.site1.fct_age_init(self.iceicehorizons_depth1),
+                             self.site2.fct_age_init(self.iceicehorizons_depth2),
                              color=pccfg.COLOR_INIT,
-                             xerr=self.iceicemarkers_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Initial")
-            mpl.errorbar(self.site1.fct_age_model(self.iceicemarkers_depth1),
-                         self.site2.fct_age_model(self.iceicemarkers_depth2), color=pccfg.COLOR_MOD,
-                         xerr=self.iceicemarkers_sigma, linestyle='', marker='o', markersize=2,
+            mpl.errorbar(self.site1.fct_age_model(self.iceicehorizons_depth1),
+                         self.site2.fct_age_model(self.iceicehorizons_depth2), color=pccfg.COLOR_MOD,
+                         xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="Prior")
-            mpl.errorbar(self.site1.fct_age(self.iceicemarkers_depth1),
-                         self.site2.fct_age(self.iceicemarkers_depth2), color=pccfg.COLOR_OPT,
-                         xerr=self.iceicemarkers_sigma, linestyle='', marker='o', markersize=2,
+            mpl.errorbar(self.site1.fct_age(self.iceicehorizons_depth1),
+                         self.site2.fct_age(self.iceicehorizons_depth2), color=pccfg.COLOR_OPT,
+                         xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="Posterior")
         x_low, x_up, y_low, y_up = mpl.axis()
         x_low = self.site1.age_top
@@ -213,22 +215,22 @@ class SitePair(object):
             mpl.figure(self.label+' air-air')
             mpl.xlabel(self.site1.label+' air age (yr b1950)')
             mpl.ylabel(self.site2.label+' air age (yr b1950)')
-            if np.size(self.airairmarkers_depth1) > 0:
+            if np.size(self.airairhorizons_depth1) > 0:
                 if pccfg.SHOW_INITIAL:
-                    mpl.errorbar(self.site1.fct_airage_init(self.airairmarkers_depth1),
-                                 self.site2.fct_airage_init(self.airairmarkers_depth2),
-                                 color=pccfg.COLOR_INIT, xerr=self.airairmarkers_sigma,
+                    mpl.errorbar(self.site1.fct_airage_init(self.airairhorizons_depth1),
+                                 self.site2.fct_airage_init(self.airairhorizons_depth2),
+                                 color=pccfg.COLOR_INIT, xerr=self.airairhorizons_sigma,
                                  linestyle='',
                                  marker='o', markersize=2, label="Initial")
-                mpl.errorbar(self.site1.fct_airage_model(self.airairmarkers_depth1),
-                             self.site2.fct_airage_model(self.airairmarkers_depth2),
+                mpl.errorbar(self.site1.fct_airage_model(self.airairhorizons_depth1),
+                             self.site2.fct_airage_model(self.airairhorizons_depth2),
                              color=pccfg.COLOR_MOD,
-                             xerr=self.airairmarkers_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=self.airairhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Prior")
-                mpl.errorbar(self.site1.fct_airage(self.airairmarkers_depth1),
-                             self.site2.fct_airage(self.airairmarkers_depth2),
+                mpl.errorbar(self.site1.fct_airage(self.airairhorizons_depth1),
+                             self.site2.fct_airage(self.airairhorizons_depth2),
                              color=pccfg.COLOR_OPT,
-                             xerr=self.airairmarkers_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=self.airairhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Posterior")
             x_low, x_up, y_low, y_up = mpl.axis()
             x_low = self.site1.age_top
@@ -250,22 +252,22 @@ class SitePair(object):
             else:
                 mpl.xlabel(self.site1.label+' age (yr b1950)')
             mpl.ylabel(self.site2.label+' air age (yr b1950)')
-            if np.size(self.iceairmarkers_depth1) > 0:
+            if np.size(self.iceairhorizons_depth1) > 0:
                 if pccfg.SHOW_INITIAL:
-                    mpl.errorbar(self.site1.fct_age_init(self.iceairmarkers_depth1),
-                                 self.site2.fct_airage_init(self.iceairmarkers_depth2),
-                                 color=pccfg.COLOR_INIT, xerr=self.iceairmarkers_sigma,
+                    mpl.errorbar(self.site1.fct_age_init(self.iceairhorizons_depth1),
+                                 self.site2.fct_airage_init(self.iceairhorizons_depth2),
+                                 color=pccfg.COLOR_INIT, xerr=self.iceairhorizons_sigma,
                                  linestyle='',
                                  marker='o', markersize=2, label="Initial")
-                mpl.errorbar(self.site1.fct_age_model(self.iceairmarkers_depth1),
-                             self.site2.fct_airage_model(self.iceairmarkers_depth2),
+                mpl.errorbar(self.site1.fct_age_model(self.iceairhorizons_depth1),
+                             self.site2.fct_airage_model(self.iceairhorizons_depth2),
                              color=pccfg.COLOR_MOD,
-                             xerr=self.iceairmarkers_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=self.iceairhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Prior")
-                mpl.errorbar(self.site1.fct_age(self.iceairmarkers_depth1),
-                             self.site2.fct_airage(self.iceairmarkers_depth2),
+                mpl.errorbar(self.site1.fct_age(self.iceairhorizons_depth1),
+                             self.site2.fct_airage(self.iceairhorizons_depth2),
                              color=pccfg.COLOR_OPT,
-                             xerr=self.iceairmarkers_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=self.iceairhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Posterior")
             x_low, x_up, y_low, y_up = mpl.axis()
             x_low = self.site1.age_top
@@ -290,20 +292,20 @@ class SitePair(object):
                 mpl.ylabel(self.site2.label+' ice age (yr b1950)')
             else:
                 mpl.ylabel(self.site2.label+' age (yr b1950)')
-            if np.size(self.airicemarkers_depth1) > 0:
+            if np.size(self.airicehorizons_depth1) > 0:
                 if pccfg.SHOW_INITIAL:
-                    mpl.errorbar(self.site1.fct_airage_init(self.airicemarkers_depth1),
-                                 self.site2.fct_age_init(self.airicemarkers_depth2),
-                                 color=pccfg.COLOR_INIT, xerr=self.airicemarkers_sigma,
+                    mpl.errorbar(self.site1.fct_airage_init(self.airicehorizons_depth1),
+                                 self.site2.fct_age_init(self.airicehorizons_depth2),
+                                 color=pccfg.COLOR_INIT, xerr=self.airicehorizons_sigma,
                                  linestyle='', marker='o', markersize=2, label="Initial")
-                mpl.errorbar(self.site1.fct_airage_model(self.airicemarkers_depth1),
-                             self.site2.fct_age_model(self.airicemarkers_depth2),
+                mpl.errorbar(self.site1.fct_airage_model(self.airicehorizons_depth1),
+                             self.site2.fct_age_model(self.airicehorizons_depth2),
                              color=pccfg.COLOR_MOD,
-                             xerr=self.airicemarkers_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=self.airicehorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Prior")
-                mpl.errorbar(self.site1.fct_airage(self.airicemarkers_depth1),
-                             self.site2.fct_age(self.airicemarkers_depth2), color=pccfg.COLOR_OPT,
-                             xerr=self.airicemarkers_sigma, linestyle='', marker='o', markersize=2,
+                mpl.errorbar(self.site1.fct_airage(self.airicehorizons_depth1),
+                             self.site2.fct_age(self.airicehorizons_depth2), color=pccfg.COLOR_OPT,
+                             xerr=self.airicehorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Posterior")
             x_low, x_up, y_low, y_up = mpl.axis()
             x_low = self.site1.age_top

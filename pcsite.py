@@ -339,13 +339,13 @@ class Site(object):
                 readarray = np.loadtxt(filename)
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
-                self.icemarkers_depth = readarray[:, 0]
-                self.icemarkers_age = readarray[:, 1]
-                self.icemarkers_sigma = readarray[:, 2]
+                self.icehorizons_depth = readarray[:, 0]
+                self.icehorizons_age = readarray[:, 1]
+                self.icehorizons_sigma = readarray[:, 2]
             else:
-                self.icemarkers_depth = np.array([])
-                self.icemarkers_age = np.array([])
-                self.icemarkers_sigma = np.array([])
+                self.icehorizons_depth = np.array([])
+                self.icehorizons_age = np.array([])
+                self.icehorizons_sigma = np.array([])
 
         if self.archive == 'icecore':
             filename = pccfg.DATADIR+self.label+'/ice_age_intervals.txt'
@@ -379,13 +379,13 @@ class Site(object):
                     readarray = np.loadtxt(filename)
                     if np.size(readarray) == np.shape(readarray)[0]:
                         readarray.resize(1, np.size(readarray))
-                    self.airmarkers_depth = readarray[:, 0]
-                    self.airmarkers_age = readarray[:, 1]
-                    self.airmarkers_sigma = readarray[:, 2]
+                    self.airhorizons_depth = readarray[:, 0]
+                    self.airhorizons_age = readarray[:, 1]
+                    self.airhorizons_sigma = readarray[:, 2]
                 else:
-                    self.airmarkers_depth = np.array([])
-                    self.airmarkers_age = np.array([])
-                    self.airmarkers_sigma = np.array([])
+                    self.airhorizons_depth = np.array([])
+                    self.airhorizons_age = np.array([])
+                    self.airhorizons_sigma = np.array([])
 
             filename = pccfg.DATADIR+self.label+'/air_age_intervals.txt'
             with warnings.catch_warnings():
@@ -424,13 +424,13 @@ class Site(object):
                     self.delta_depth_sigma = np.array([])
 
 
-        self.icemarkers_correlation = np.diag(np.ones(np.size(self.icemarkers_depth)))
+        self.icehorizons_correlation = np.diag(np.ones(np.size(self.icehorizons_depth)))
         self.iceintervals_correlation = np.diag(np.ones(np.size(self.iceintervals_depthtop)))
         if self.archive == 'icecore':
-            self.airmarkers_correlation = np.diag(np.ones(np.size(self.airmarkers_depth)))
+            self.airhorizons_correlation = np.diag(np.ones(np.size(self.airhorizons_depth)))
             self.airintervals_correlation = np.diag(np.ones(np.size(self.airintervals_depthtop)))
             self.delta_depth_correlation = np.diag(np.ones(np.size(self.delta_depth_depth)))
-#        print self.icemarkers_correlation
+#        print self.icehorizons_correlation
 
         filename = pccfg.DATADIR+'/parameters_covariance_observations_all_sites.py'
         filename2 = pccfg.DATADIR+'/parameters-CovarianceObservations-AllDrillings.py'
@@ -443,18 +443,18 @@ class Site(object):
         filename2 = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
-        if np.size(self.icemarkers_depth) > 0:
-            self.icemarkers_chol = cholesky(self.icemarkers_correlation)
+        if np.size(self.icehorizons_depth) > 0:
+            self.icehorizons_chol = cholesky(self.icehorizons_correlation)
             #FIXME: we LU factor a triangular matrix. This is suboptimal.
             #We should set lu_piv directly instead.
-            self.icemarkers_lu_piv = lu_factor(np.transpose(self.icemarkers_chol))
+            self.icehorizons_lu_piv = lu_factor(np.transpose(self.icehorizons_chol))
         if np.size(self.iceintervals_depthtop) > 0:
             self.iceintervals_chol = cholesky(self.iceintervals_correlation)
             self.iceintervals_lu_piv = lu_factor(np.transpose(self.iceintervals_chol))
         if self.archive == 'icecore':
-            if np.size(self.airmarkers_depth) > 0:
-                self.airmarkers_chol = cholesky(self.airmarkers_correlation)
-                self.airmarkers_lu_piv = lu_factor(np.transpose(self.airmarkers_chol))
+            if np.size(self.airhorizons_depth) > 0:
+                self.airhorizons_chol = cholesky(self.airhorizons_correlation)
+                self.airhorizons_lu_piv = lu_factor(np.transpose(self.airhorizons_chol))
             if np.size(self.airintervals_depthtop) > 0:
                 self.airintervals_chol = cholesky(self.airintervals_correlation)
                 self.airintervals_lu_piv = lu_factor(np.transpose(self.airintervals_chol))
@@ -641,9 +641,10 @@ class Site(object):
         """Calculate the residuals from the vector of the variables"""
         self.model(var)
         resi_corr_a = self.corr_a
-        resi_age = (self.fct_age(self.icemarkers_depth)-self.icemarkers_age)/self.icemarkers_sigma
-        if np.size(self.icemarkers_depth) > 0:
-            resi_age = lu_solve(self.icemarkers_lu_piv, resi_age)
+        resi_age = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
+                   /self.icehorizons_sigma
+        if np.size(self.icehorizons_depth) > 0:
+            resi_age = lu_solve(self.icehorizons_lu_piv, resi_age)
         resi_iceint = (self.fct_age(self.iceintervals_depthbot)-\
                       self.fct_age(self.iceintervals_depthtop)-\
                       self.iceintervals_duration)/self.iceintervals_sigma
@@ -653,10 +654,10 @@ class Site(object):
         if self.archive == 'icecore':
             resi_corr_lid = self.corr_lid
             resi_corr_tau = self.corr_tau
-            resi_airage = (self.fct_airage(self.airmarkers_depth)-self.airmarkers_age)/\
-                          self.airmarkers_sigma
-            if np.size(self.airmarkers_depth) > 0:
-                resi_airage = lu_solve(self.airmarkers_lu_piv, resi_airage)
+            resi_airage = (self.fct_airage(self.airhorizons_depth)-self.airhorizons_age)/\
+                          self.airhorizons_sigma
+            if np.size(self.airhorizons_depth) > 0:
+                resi_airage = lu_solve(self.airhorizons_lu_piv, resi_airage)
             resi_airint = (self.fct_airage(self.airintervals_depthbot)-\
                            self.fct_airage(self.airintervals_depthtop)-\
                            self.airintervals_duration)/self.airintervals_sigma
@@ -797,9 +798,9 @@ class Site(object):
         mpl.ylabel('depth (m)')
         if pccfg.SHOW_INITIAL:
             mpl.plot(self.age_init, self.depth, color=pccfg.COLOR_INIT, label='Initial')
-        if np.size(self.icemarkers_depth) > 0:
-            mpl.errorbar(self.icemarkers_age, self.icemarkers_depth, color=pccfg.COLOR_OBS,
-                         xerr=self.icemarkers_sigma, linestyle='', marker='o', markersize=2,
+        if np.size(self.icehorizons_depth) > 0:
+            mpl.errorbar(self.icehorizons_age, self.icehorizons_depth, color=pccfg.COLOR_OBS,
+                         xerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="dated horizons")
 #        mpl.ylim(mpl.ylim()[::-1])
         for i in range(np.size(self.iceintervals_duration)):
@@ -925,9 +926,9 @@ class Site(object):
             mpl.ylabel('depth (m)')
             if pccfg.SHOW_INITIAL:
                 mpl.plot(self.airage_init, self.depth, color=pccfg.COLOR_INIT, label='Initial')
-            if np.size(self.airmarkers_depth) > 0:
-                mpl.errorbar(self.airmarkers_age, self.airmarkers_depth, color=pccfg.COLOR_OBS,
-                             xerr=self.airmarkers_sigma, linestyle='', marker='o', markersize=2,
+            if np.size(self.airhorizons_depth) > 0:
+                mpl.errorbar(self.airhorizons_age, self.airhorizons_depth, color=pccfg.COLOR_OBS,
+                             xerr=self.airhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="observations")
     #        mpl.ylim(mpl.ylim()[::-1])
             for i in range(np.size(self.airintervals_duration)):
