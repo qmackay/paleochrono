@@ -186,7 +186,8 @@ class SitePair(object):
                              xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="Initial")
             mpl.errorbar(self.site1.fct_age_model(self.iceicehorizons_depth1),
-                         self.site2.fct_age_model(self.iceicehorizons_depth2), color=pccfg.COLOR_MOD,
+                         self.site2.fct_age_model(self.iceicehorizons_depth2),
+                         color=pccfg.COLOR_MOD,
                          xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="Prior")
             mpl.errorbar(self.site1.fct_age(self.iceicehorizons_depth1),

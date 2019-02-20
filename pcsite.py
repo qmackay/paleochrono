@@ -300,13 +300,13 @@ class Site(object):
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
-                exec(open(filename2).read())
+            exec(open(filename2).read())
         filename = pccfg.DATADIR+self.label+'/parameters_covariance_prior_init.py'
         filename2 = pccfg.DATADIR+self.label+'/parameters-CovariancePrior-init.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
-                exec(open(filename2).read())
+            exec(open(filename2).read())
 
 
 
@@ -437,7 +437,7 @@ class Site(object):
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
-                exec(open(filename2).read())
+            exec(open(filename2).read())
 
         filename = pccfg.DATADIR+self.label+'/parameters_covariance_observations.py'
         filename2 = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
