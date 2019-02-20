@@ -34,7 +34,7 @@ from pcsitepair import SitePair
 imp.reload(pccfg)
 
 ###Registration of start time
-START_TIME = time.clock() #Use time.clock() for processor time
+START_TIME = time.perf_counter()
 
 
 ###Opening of output.txt file
@@ -109,7 +109,7 @@ for di, dlabel in enumerate(pccfg.LIST_SITES):
 
 
 ##Optimization
-START_TIME_OPT = time.time()
+START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
 if pccfg.OPT_METHOD == 'leastsq':
     print('Optimization by leastsq')
@@ -162,7 +162,7 @@ for di, dlabel in enumerate(pccfg.LIST_SITES):
             DC[dlabel2+'-'+dlabel].figures()
 
 ###Program execution time
-MESSAGE = 'Program execution time: '+str(time.clock()-START_TIME)+' seconds.'
+MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds.'
 print(MESSAGE)
 OUTPUT_FILE.write(MESSAGE)
 
