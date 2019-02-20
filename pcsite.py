@@ -55,7 +55,7 @@ class Site(object):
         self.dens_firn = None
 
         #Setting the parameters from the parameter files
-        filename = pccfg.DATADIR+'/parameters-AllSites.py'
+        filename = pccfg.DATADIR+'/parameters_all_sites.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         else:
@@ -295,17 +295,19 @@ class Site(object):
             self.correlation_corr_lid_before = self.correlation_corr_lid+0
             self.correlation_corr_tau_before = self.correlation_corr_tau+0
 
-        filename = pccfg.DATADIR+self.label+'/parameters-CovariancePrior-init.py'
+        filename = pccfg.DATADIR+'/parameters_covariance_prior_all_sites_init.py'
+        filename2 = pccfg.DATADIR+'/parameters-CovariancePrior-AllDrillings-init.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
-        else:
-            filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllSites-init.py'
-            if os.path.isfile(filename):
-                exec(open(filename).read())
-            else:
-                filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllDrillings-init.py'
-                if os.path.isfile(filename):
-                    exec(open(filename).read())
+        elif os.path.isfile(filename2):
+                exec(open(filename2).read())
+        filename = pccfg.DATADIR+self.label+'/parameters_covariance_prior_init.py'
+        filename2 = pccfg.DATADIR+self.label+'/parameters-CovariancePrior-init.py'
+        if os.path.isfile(filename):
+            exec(open(filename).read())
+        elif os.path.isfile(filename2):
+                exec(open(filename2).read())
+
 
 
         if (self.correlation_corr_a_before != self.correlation_corr_a).any():
@@ -430,15 +432,15 @@ class Site(object):
             self.delta_depth_correlation = np.diag(np.ones(np.size(self.delta_depth_depth)))
 #        print self.icemarkers_correlation
 
-        filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllSites.py'
+        filename = pccfg.DATADIR+'/parameters_covariance_observations_all_sites.py'
+        filename2 = pccfg.DATADIR+'/parameters-CovarianceObservations-AllDrillings.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
-        else:
-            filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllDrillings.py'
-            if os.path.isfile(filename):
-                exec(open(filename).read())
+        elif os.path.isfile(filename2):
+                exec(open(filename2).read())
 
-        filename = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
+        filename = pccfg.DATADIR+self.label+'/parameters_covariance_observations.py'
+        filename2 = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         if np.size(self.icemarkers_depth) > 0:
