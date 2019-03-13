@@ -1,5 +1,5 @@
-IceChrono
-=========
+paleochrono
+===========
 
 A statistical and physical model to optimize chronologies of deep polar ice cores.
 
@@ -7,33 +7,40 @@ A statistical and physical model to optimize chronologies of deep polar ice core
 What this manual is and is not?
 -------------------------------
 
-This manual is a documentation on how to use the IceChrono software.  
-It is _not_ a description of the IceChrono principles. Please read to the scientific articles describing IceChrono for that purpose:  
-Parrenin, F., Bazin, L., Capron, E., Landais, A., Lemieux-Dudon, B. and Masson-Delmotte, V.: IceChrono1: a probabilistic model to compute a common and optimal chronology for several ice cores, _Geosci. Model Dev._, 8(5), 1473–1492, doi:10.5194/gmd-8-1473-2015, 2015.  
-It is _not_ an operating system or python documentation. Please use your operating system or python documentation instead.
+This manual is a documentation on how to use the paleochrono software.  
+It is _not_ a description of the paleochrono principles. Please read to the scientific articles\
+describing IceChrono for that purpose:  
+Parrenin, F., Bazin, L., Capron, E., Landais, A., Lemieux-Dudon, B. and Masson-Delmotte, V.:\
+IceChrono1: a probabilistic model to compute a common and optimal chronology for several ice cores,\
+_Geosci. Model Dev._, 8(5), 1473–1492, doi:10.5194/gmd-8-1473-2015, 2015.  
+It is _not_ an operating system or python documentation.\
+Please use your operating system or python documentation instead.
 
 
-Where can I get help on IceChrono?
-----------------------------------
+Where can I get help on paleochrono?
+------------------------------------
 
 A mailing list has been set up on Google Groups:  
 https://groups.google.com/forum/?hl=en#!forum/icechrono  
 You just need a google account to access this mailing list.
+You can also directly email to Frédéric Parrenin: frederic.parrenin@univ-grenoble-alpes.fr
 
-
-How to download IceChrono?
---------------------------
+How to download paleochrono?
+----------------------------
 
 Go here:  
-https://github.com/parrenin/IceChrono/releases  
+https://github.com/parrenin/paleochrono/releases  
 and choose the release you want to download (usually the latest one).  
 In the downloaded folder, you will find the following files:
-- README.md		: is the current documentation of IceChrono.
-- LICENCE		: is the IceChrono licence file.
-- IceChrono.py		: is the main IceChrono program that you will run.
-- IceChronoClasses	: is a set of instructions used by IceChrono.py
+- README.md		: is the current documentation of paleochrono.
+- LICENCE		: is the paleochrono licence file.
+- paleochrono.py		: is the main paleochrono program that you will run.
+- pccfg.py, pcmath.py, pcsite.py and pcsitepair.py	: are python modules used by paleochrono.py
 - Clean.py		: is a python script to clean all experiment sub-directories
-- AICC2012-VLR		: is an example experiment directory for the AICC2012 dating experiment: it contains all the necessary numerical settings, prior information and observations for the different ice cores. It has a Very Low Resolution (VLR) and takes about 5 mn to run an a recent computer.
+- AICC2012-Hulu-VLR		: is an example experiment directory: it contains all the necessary\
+numerical settings, prior information and observations for the different ice cores and for the MSD\
+Hulu speleothem. It has a Very Low Resolution (VLR) and takes about 5 mn to run an a recent\
+computer.
 
 
 What do I need to run IceChrono?
