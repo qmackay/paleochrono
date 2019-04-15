@@ -443,6 +443,8 @@ class Site(object):
         filename2 = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
+        elif os.path.isfile(filename2):
+            exec(open(filename2).read())
         if np.size(self.icehorizons_depth) > 0:
             self.icehorizons_chol = cholesky(self.icehorizons_correlation)
             #FIXME: we LU factor a triangular matrix. This is suboptimal.
@@ -783,7 +785,7 @@ class Site(object):
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, y_low, y_up))
         mpl.legend(loc="best")
-        printed_page = PdfPages(pccfg.DATADIR+self.label+'/deposition_rate.pdf')
+        printed_page = PdfPages(pccfg.DATADIR+self.label+'/deposition.pdf')
         printed_page.savefig(mpl.figure(self.label+' deporate'))
         printed_page.close()
         if not pccfg.SHOW_FIGURES:
@@ -897,7 +899,7 @@ class Site(object):
                 printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_layer_thickness.pdf')
                 #Fixme: buggy line on anaconda
                 printed_page.savefig(mpl.figure(self.label+' air layer thickness'))
-            printed_page.close()
+                printed_page.close()
             if not pccfg.SHOW_FIGURES:
                 mpl.close()
 

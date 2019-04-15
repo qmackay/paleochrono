@@ -37,21 +37,22 @@ In the downloaded folder, you will find the following files:
 - paleochrono.py		: is the main paleochrono program that you will run.
 - pccfg.py, pcmath.py, pcsite.py and pcsitepair.py	: are python modules used by paleochrono.py
 - Clean.py		: is a python script to clean all experiment sub-directories
-- AICC2012-Hulu-VLR		: is an example experiment directory: it contains all the necessary\
-numerical settings, prior information and observations for the different ice cores and for the MSD\
-Hulu speleothem. It has a Very Low Resolution (VLR) and takes about 5 mn to run an a recent\
+- AICC2012-Hulu-VLR		: is an example experiment directory: it contains all the necessary
+numerical settings, prior information and observations for the different ice cores and for the MSD
+Hulu speleothem. It has a Very Low Resolution (VLR) and takes about 5 mn to run an a recent
 computer.
 
 
-What do I need to run IceChrono?
---------------------------------
+What do I need to run paleochrono?
+----------------------------------
 
-IceChrono is a scientific python software, therefore you need a scipy distribution.  
-IceChrono is developed and tested using the anaconda distribution, therefore we recommend it.  
-Anaconda can be downloaded here (use the python2 version):  
+paleochrono is a scientific python3 software, therefore you need a scipy distribution.  
+paleochrono is developed and tested using the anaconda distribution, therefore we recommend it.  
+Anaconda can be downloaded here (use the python3 version):  
 http://continuum.io/downloads  
 
-IceChrono probably works on other scipy distributions, provided they contain the following python modules:  
+IceChrono probably works on other scipy distributions, provided they contain the following python
+modules:  
 - sys
 - os
 - time
@@ -63,27 +64,22 @@ IceChrono probably works on other scipy distributions, provided they contain the
 - scipy
 
 
-How to run IceChrono?
+How to run paleochrono?
 ---------------------
 
-Assuming you use anaconda, you can go in the spyder shell and type the following commands:
+Assuming you use anaconda, you can go in the spyder shell and type the following commands in the
+ipython interpreter:
 
 ```
-cd path-to-IceChrono
-import sys
-sys.argv=['IceChrono.py','exp_directory']
-execfile('IceChrono.py')
+cd path-to-palechrono
+run paleochron.py exp_directory
 ```
 
-where `path-to-IceChrono` is the directory containing IceChrono and `exp_directory` is the name of your experiment directory. 
-The `AICC2012-VLR` experiment directory is provided for you convenience. It is an AICC2012-like experiment, albeit whith a Very Low Resolution. It takes about 5 mn to run on a recent computer.
-
-Alternatively, you can run IceChrono from your operating system shell. For example, on linux, enter the following commands in bash:
-
-```
-cd path-to-IceChrono
-python IceChrono.py exp_directory
-```
+where `path-to-paleochrono` is the directory containing IceChrono and `exp_directory` is the name of
+your experiment directory. 
+The `AICC2012-Hulu-VLR` experiment directory is provided for you convenience.
+It is an AICC2012 + Hulu experiment, albeit whith a Very Low Resolution.
+It takes about 5 mn to run on a recent computer.
 
 
 What are the outputs of a run:
@@ -92,75 +88,92 @@ What are the outputs of a run:
 If the run went correctly, it has created output files.
 
 In the main directory, you have the following output file:
-- `output.txt`		: only contains the program execution time for now.
+- `output.txt`: only contains the program execution time for now.
 
 In each site directory, you have the following output files:
-- `output.txt`			: is the main output file. It gives you the posterior estimates and uncertainties of the three input variables (accumulation, LID and thinning) and of the output variables (ice age, air age, Δdepth, etc.). The header in the file tells you which column is which variable.
-- `restart.txt`			: is a restart file, which can be used to start an optimization experiment from the result of a previous optimization experiment, for a faster convergence.
-- `accumulation.pdf`	: is the accumulation figure (with prior and posterior estimates)
-- `Ddepth.pdf`			: is the Δdepth figure (with prior estimates, observations and posterior estimates)
-- `air_age.pdf`			: is the air age figure (with prior estimates, observations and posterior estimates)
-- `airlayerthick.pdf`	: is the air layer thickness figure (with prior estimates, observations of dated intervals and posterior estimates)
-- `ice_age.pdf`			: is the ice age figure (with prior estimates, observations and posterior estimates)
-- `icelayerthick.pdf`	: is the ice layer thickness figure (with prior estimates, observations of dated intervals and posterior estimates)
-- `LID.pdf`				: is the Lock-In Depth figure (with prior estimates, observations and posterior estimates)
-- `thinning.pdf`		: is the thinning figure (with prior and posterior estimates)
+- `output.txt`: is the main output file. It gives you the posterior estimates and
+uncertainties of the three input variables (accumulation, LID and thinning) and of the output
+ variables (ice age, air age, Δdepth, etc.). The header in the file tells you which column is which
+ variable.
+- `restart.txt`: is a restart file, which can be used to start an optimization experiment from the
+result of a previous optimization experiment, for a faster convergence.
+- `deposition.pdf`: is the deposition rate figure
+- `age.pdf`: is the age for a non-ice-core archive
+- `ice_age.pdf` and `air_age.pdf`: are the ice and air age figures for an ice core
+- `delta_depth.pdf`: is the Δdepth figure for an ice core
+- `ice_layer_thickness` and `air_layer_thickness.pdf`: are the ice and air layer thickness figures
+for an ice core
+- `lock_in_depth.pdf`: is the Lock-In Depth figure for an ice core
+- `thinning.pdf`		: is the thinning figure for an ice core
 
 In each site-pair directory, you have the following output files:
-- `air-air.pdf`		: is the air-air stratigraphic links figure (with prior and posterior estimates)
-- `air-ice.pdf`		: is the air-ice stratigraphic links figure (with prior and posterior estimates)
-- `ice-air.pdf`		: is the ice-air stratigraphic links figure (with prior and posterior estimates)
-- `ice-ice.pdf`		: is the ice-ice stratigraphic links figure (with prior and posterior estimates)
+- `synchro.pdf`: is the stratigraphic links figure for a pair of non-ice-cores archives
+- `ice_synchro.pdf`: is the ice stratigraphic links figure when there is one ice core in the pair
+- `air_synchro.pdf`: is the air stratigraphic links figure when there is one ice core in the pair
+- `air_air_synchro.pdf`		: is the air-air stratigraphic links figure for a pair of ice cores
+- `air_ice_synchro.pdf`		: is the air-ice stratigraphic links figure for a pair of ice cores
+- `ice_air_synchro.pdf`		: is the ice-air stratigraphic links figure for a pair of ice cores
+- `ice_ice_synchro.pdf`		: is the ice-ice stratigraphic links figure for a pair of ice cores
 
 
 How to clean an experiment directory after a run?
 -------------------------------------------------
 
-If your run was successful, it has produced output files and figure files. If your experiment directory is placed under the IceChrono main directory, you can run the following command in an os shell:
+If your run was successful, it has produced output files and figure files.
+If your experiment directory is placed under the paleochrono main directory,
+you can run the following command in ipython:
 
 ```
-python Clean.py
-```
-
-or in a python shell:
-
-```
-execfile('Clean.py')
+run Clean.py
 ```
 
 
 What is the structure of an experiment directory?
 -------------------------------------------------
 
-You can have a look at the provided `AICC2012-LR` directory.
-You need to specify your prior scenarios for accumulation, LID and thinning (for each ice core) and your age observations.
+You can have a look at the provided `AICC2012-Hulu-VLR` directory.
+You need to specify your prior scenarios for deposition rate (in all cases) and LID and thinning
+(for an ice core) and your age observations.
 
 You have five general files:
-- `parameters.py`                                           : contains general parameters for the experiment
-- `parameters-AllSites.py`                              : defines site parameters that are the same for all sites (there are overidded by site specific parameters).
-- `parameters-CovariancePrior-AllSites-init.py`         : defines the covariance matrices of the background
-- `parameters-CovarianceObservations-AllSites.py`       : defines the covariance of the observations that are the same for all sites  (there are overidded by site specific parameters).
-- `parameters-CovarianceObservations-AllSitePairs.py` : defines the covariance for the observations that are the same for all site pairs  (there are overidded by site pair specific parameters).
+- `parameters.py`: contains general parameters for the
+experiment
+- `parameters_all_sites.py`: defines site parameters that are the same
+for all sites (there are overidded by site specific parameters).
+- `parameters_covariance_prior_all_sites-init.py`: defines the covariance matrices of the
+background
+- `parameters_covariance_observations_all_sites.py`: defines the covariance of the
+observations that are the same for all sites  (there are overidded by site specific parameters).
+- `parameters_covariance_observations_all_site_pairs.py`: defines the covariance for the
+observations that are the same for all site pairs  (there are overidded by site pair specific
+parameters).
 
 Then you have one directory per site, which contains:
-- `parameters.py`                           : all the site specific parameters
-- `parameters-CovarianceObservations.py`    : this file allows to define the correlation of site specific observations
-- `density-prior.txt`                       : depth / relative density
-- `accu-prior.txt`                          : depth / background accu (in ice-equivalent) / standard deviation (opt, in %)
-- `LID-prior.txt`                           : depth / background Lock-in-Depth / standard deviation (opt, in %)
-- `thinning-prior.txt`                      : depth / background thinning function / standard deviation (opt, in %)
-- `ice_age.txt`                             : depth / age / sigma for ice age observations
-- `air_age.txt`                             : depth / age / sigma for air age observations
-- `Ddepth.txt`                              : depth / Delta-depth / sigma for Delta-depth observations
-- `ice_age_intervals.txt`		   			: depth\_top / depth\_bottom / duration / sigma for dated ice intervals observations
-- `air_age_intervals.txt`   		    	: depth\_top / depth\_bottom / duration / sigma for dated air intervals observations
+- `parameters.py`: all the site specific parameters
+- `parameters_covariance_observations.py`: this file allows to define the correlation of site
+ specific observations
+- `deposition.txt`: depth / background accu (in ice-equivalent) / standard deviation (opt, in %)
+- `age_horizons.txt`: depth / age / sigma for dated horizons for a non-ice-core
+- `age_intervals.txt`: epth\_top / depth\_bottom / duration / sigma for intervals for a non-ice-core
+- `ice_age_horizons.txt`: depth / age / sigma for ice dated horizons for an ice core
+- `air_age_horizons.txt`: depth / age / sigma for air dated horizons for an ice core
+- `ice_age_intervals.txt`: depth\_top / depth\_bottom / duration / sigma for ice intervals for an
+ice core
+- `air_age_intervals.txt`: depth\_top / depth\_bottom / duration / sigma for air intervals for an
+ice core
+- `density.txt`: depth / relative density for an ice core
+- `lock_in_depth.txt`: depth / Lock-in-Depth / standard deviation (opt, in %) for an ice core
+- `thinning.txt`: depth / thinning function / standard deviation (opt, in %) for an ice core
+- `delta_depths.txt`: depth / Delta-depth / standard deviation for an ice core
 
 Then you have one directory per site pair, which contains:
-- `parameters-CovarianceObservations.py`    : this file allows to define the correlation of site pair specific observations
-- `ice_depth.txt`           : depth1 / depth2 / sigma on age for ice-ice stratigraphic links observations
-- `air_depth.txt`           : depth1 / depth2 / sigma on age for air-air stratigraphic links observations
-- `iceair_depth.txt`        : depth1 / depth2 / sigma on age for ice-air stratigraphic links observations
-- `airice_depth.txt`        : depth1 / depth2 / sigma on age for air-ice stratigraphic links observations
+- `parameters_covariance_observations.py`: this file allows to define the correlation of site pair
+specific observations
+- `
+- `ice_depth.txt`: depth1 / depth2 / sigma on age for ice-ice stratigraphic links observations
+- `air_depth.txt`: depth1 / depth2 / sigma on age for air-air stratigraphic links observations
+- `iceair_depth.txt`: depth1 / depth2 / sigma on age for ice-air stratigraphic links observations
+- `airice_depth.txt`: depth1 / depth2 / sigma on age for air-ice stratigraphic links observations
 
 A few things you need to know to use Icechrono:
 1) You can use whatever units you want but they need to be consistent. For example, if you use meters for the depths and years for the dated horizons, you need to use meters per years for the accumulation rates. 

@@ -104,12 +104,18 @@ class SitePair(object):
             self.airicehorizons_correlation = np.diag(np.ones(np.size(self.airicehorizons_depth1)))
 
 
-        filename = pccfg.DATADIR+'/parameters-CovarianceObservations-AllSitePairs.py'
+        filename = pccfg.DATADIR+'/parameters_covariance_observations_all_site_pairs.py'
+        filename2 = pccfg.DATADIR+'/parameters-CovarianceObservations-AllDrillings.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
-        filename = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
+        elif os.path.isfile(filename2):
+            exec(open(filename2).read())
+        filename = pccfg.DATADIR+self.label+'/parameters_covariance_observations.py'
+        filename2 = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
+        elif os.path.isfile(filename2):
+            exec(open(filename2).read())
         if np.size(self.iceicehorizons_depth1) > 0:
             self.iceicehorizons_chol = cholesky(self.iceicehorizons_correlation)
             self.iceicehorizons_lu_piv = lu_factor(self.iceicehorizons_chol)
@@ -202,7 +208,7 @@ class SitePair(object):
         mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
         mpl.legend(loc="best")
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/iceice_synchro.pdf')
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_ice_synchro.pdf')
         elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
             printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_synchro.pdf')
         else:
@@ -240,7 +246,7 @@ class SitePair(object):
             rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
             mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/airair_synchro.pdf')
+            printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_air_synchro.pdf')
             printed_page.savefig(mpl.figure(self.label+' air-air'))
             printed_page.close()
             if not pccfg.SHOW_FIGURES:
@@ -278,7 +284,7 @@ class SitePair(object):
             mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
             mpl.legend(loc="best")
             if self.site1.archive == 'icecore':
-                printed_page = PdfPages(pccfg.DATADIR+self.label+'/iceair_synchro.pdf')
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_air_synchro.pdf')
             else:
                 printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_synchro.pdf')
             printed_page.savefig(mpl.figure(self.label+' main-air'))
@@ -316,7 +322,7 @@ class SitePair(object):
             mpl.plot(rangefig, rangefig, color=pccfg.COLOR_OBS, label='perfect agreement')
             mpl.legend(loc="best")
             if self.site2.archive == 'icecore':
-                printed_page = PdfPages(pccfg.DATADIR+self.label+'/airice_synchro.pdf')
+                printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_ice_synchro.pdf')
             else:
                 printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_synchro.pdf')
             printed_page.savefig(mpl.figure(self.label+' air-main'))
