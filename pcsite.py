@@ -1020,19 +1020,16 @@ class Site(object):
                                 np.append(self.sigma_icelayerthick, self.sigma_icelayerthick[-1])))
         with open(pccfg.DATADIR+self.label+'/output.txt', 'w') as file_save:
             if self.archive == 'icecore':
-                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\tdeporate\
-                                \tsigma_deporate\
-                        \tthinning\
-                        \tsigma_thinning\tLID\tsigma_LID\tdelta_depth\tsigma_delta_depth\
-                        \taccu_model\
-                        \tsigma_accu_model\tthinning_model\tsigma_thinning_model\tLID_model\
-                        \tsigma_LID_model\ticelayerthick\tsigma_icelayerthick\tairlayerthick\
-                        \tsigma_airlayerthick\n')
-                file_save.write('#depth\tage\tsigma_age\
-                                \tdeporate\tsigma_deporate\
-                        \taccu_model\tsigma_accu_model\
-                        \tthinning_model\tsigma_thinning_model\
-                        \ticelayerthick\tsigma_icelayerthick\n')
+                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\tdeporate'
+                                '\tsigma_deporate\tthinning\tsigma_thinning\tLID\tsigma_LID'
+                                 '\tdelta_depth\tsigma_delta_depth\taccu_model\tsigma_accu_model'
+                                 '\tthinning_model\tsigma_thinning_model\tLID_model'
+                                 '\tsigma_LID_model\ticelayerthick\tsigma_icelayerthick'
+                                 '\tairlayerthick\tsigma_airlayerthick\n')
+            else:
+                file_save.write('#depth\tage\tsigma_age\tdeporate\tsigma_deporate\taccu_model\t'
+                                'sigma_accu_model\tthinning_model\tsigma_thinning_model'
+                                '\ticelayerthick\tsigma_icelayerthick\n')
             np.savetxt(file_save, np.transpose(output), delimiter='\t')
         np.savetxt(pccfg.DATADIR+self.label+'/restart.txt', np.transpose(self.variables))
 
