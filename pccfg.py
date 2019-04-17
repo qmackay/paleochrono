@@ -6,6 +6,7 @@ Global variables used across all modules.
 @author: parrenif
 """
 import sys
+import yaml
 
 ##Default Parameters
 LIST_SITES = []
@@ -31,61 +32,6 @@ if DATADIR[-1] != '/':
 print('Parameters directory is: ', DATADIR)
 #os.chdir(DATADIR)
 
-exec(open(DATADIR+'/parameters.py').read())
-
-try:
-    LIST_SITES = list_drillings
-except NameError:
-    pass
-try:
-    OPT_METHOD = opt_method
-except NameError:
-    pass
-try:
-    NB_NODES = nb_nodes
-except NameError:
-    pass
-try:
-    COLOR_OBS = color_obs
-except NameError:
-    pass
-try:
-    COLOR_OPT = color_opt
-except NameError:
-    pass
-try:
-    COLOR_MOD = color_mod
-except NameError:
-    pass
-try:
-    COLOR_CI = color_ci
-except NameError:
-    pass
-try:
-    COLOR_SIGMA = color_sigma
-except NameError:
-    pass
-try:
-    COLOR_DI = color_di
-except NameError:
-    pass
-try:
-    SHOW_INITIAL = show_initial
-except NameError:
-    pass
-try:
-    COLOR_INIT = color_init
-except NameError:
-    pass
-try:
-    SCALE_AGECI = scale_ageci
-except NameError:
-    pass
-try:
-    SHOW_FIGURES = show_figures
-except NameError:
-    pass
-try:
-    SHOW_AIRLAYERTHICK = show_airlayerthick
-except NameError:
-    pass
+with open(DATADIR+"parameters.yml", "r") as f:
+    data = yaml.load(f)
+    globals().update(data)
