@@ -690,7 +690,8 @@ class Site(object):
             var = self.variables+0
             var[i] = var[i]+epsilon[i]
             model1 = self.model(var)
-            jacob[:, i] = (model1-model0)/epsilon[i]
+            with np.errstate(invalid='ignore'):
+                jacob[:, i] = (model1-model0)/epsilon[i]
         model0 = self.model(self.variables)
         return jacob
 
