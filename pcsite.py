@@ -507,7 +507,8 @@ class Site(object):
             self.delta_depth_model = self.depth-self.ice_equiv_depth_model
             self.airage_model = np.interp(self.ice_equiv_depth_model, self.depth, self.age_model,
                                           left=np.nan, right=np.nan)
-            self.airlayerthick_model = 1/np.diff(self.airage_model)
+            with np.errstate(divide='ignore'):
+                self.airlayerthick_model = 1/np.diff(self.airage_model)
 
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
@@ -562,7 +563,8 @@ class Site(object):
             self.delta_depth = self.depth-self.ice_equiv_depth
             self.airage = np.interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
                                     right=np.nan)
-            self.airlayerthick = 1/np.diff(self.airage)
+            with np.errstate(divide='ignore'):
+                self.airlayerthick = 1/np.diff(self.airage)
 
     def model(self, var):
         """Calculate the model from the vector var containing its variables."""
@@ -880,28 +882,27 @@ class Site(object):
             if not pccfg.SHOW_FIGURES:
                 mpl.close()
 
-            mpl.figure(self.label+' air layer thickness')
-            mpl.title(self.label+' air layer thickness')
-            mpl.xlabel('thickness of annual layers (m/yr)')
-            mpl.ylabel('Depth')
-            if pccfg.SHOW_INITIAL:
-                mpl.plot(self.airlayerthick_init, self.depth_mid, color=pccfg.COLOR_INIT,
-                         label='Initial')
-            mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
-            mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.COLOR_OPT,
-                     label='Posterior +/-$\sigma$')
-            mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
-                              self.airlayerthick+self.sigma_airlayerthick, color=pccfg.COLOR_CI)
-            x_low, x_up, y_low, y_up = mpl.axis()
-            mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
-            mpl.legend(loc="best")
             if pccfg.SHOW_AIRLAYERTHICK:
+                mpl.figure(self.label+' air layer thickness')
+                mpl.title(self.label+' air layer thickness')
+                mpl.xlabel('thickness of annual layers (m/yr)')
+                mpl.ylabel('Depth')
+                if pccfg.SHOW_INITIAL:
+                    mpl.plot(self.airlayerthick_init, self.depth_mid, color=pccfg.COLOR_INIT,
+                             label='Initial')
+                mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
+                mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.COLOR_OPT,
+                         label='Posterior +/-$\sigma$')
+                mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
+                                  self.airlayerthick+self.sigma_airlayerthick, color=pccfg.COLOR_CI)
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
+                mpl.legend(loc="best")
                 printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_layer_thickness.pdf')
-                #Fixme: buggy line on anaconda
                 printed_page.savefig(mpl.figure(self.label+' air layer thickness'))
                 printed_page.close()
-            if not pccfg.SHOW_FIGURES:
-                mpl.close()
+                if not pccfg.SHOW_FIGURES:
+                    mpl.close()
 
             mpl.figure(self.label+' LID')
             mpl.title(self.label+' Lock-In Depth')
