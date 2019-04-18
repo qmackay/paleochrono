@@ -55,14 +55,14 @@ class Site(object):
         self.dens_firn = None
 
         #Setting the parameters from the parameter files
-        filename = pccfg.DATADIR+'/parameters_all_sites.py'
+        filename = pccfg.datadir+'/parameters_all_sites.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         else:
-            filename = pccfg.DATADIR+'/parameters-AllDrillings.py'
+            filename = pccfg.datadir+'/parameters-AllDrillings.py'
             if os.path.isfile(filename):
                 exec(open(filename).read())
-        exec(open(pccfg.DATADIR+self.label+'/parameters.py').read())
+        exec(open(pccfg.datadir+self.label+'/parameters.py').read())
 
         try:
             self.calc_lid = self.calc_LID
@@ -117,7 +117,7 @@ class Site(object):
 
 ## We set up the raw model
         if self.calc_a:
-            readarray = np.loadtxt(pccfg.DATADIR+self.label+'/isotopes.txt')
+            readarray = np.loadtxt(pccfg.datadir+self.label+'/isotopes.txt')
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
             self.iso_depth = readarray[:, 0]
@@ -149,10 +149,10 @@ class Site(object):
                 print('Accumulation method not recognized')
                 sys.exit()
         else:
-            if os.path.isfile(pccfg.DATADIR+self.label+'/deposition.txt'):
-                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/deposition.txt')
+            if os.path.isfile(pccfg.datadir+self.label+'/deposition.txt'):
+                readarray = np.loadtxt(pccfg.datadir+self.label+'/deposition.txt')
             else:
-                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/accu-prior.txt')
+                readarray = np.loadtxt(pccfg.datadir+self.label+'/accu-prior.txt')
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
             self.a_depth = readarray[:, 0]
@@ -172,10 +172,10 @@ class Site(object):
 
         if self.archive == 'icecore':
 
-            if os.path.isfile(pccfg.DATADIR+self.label+'/density.txt'):
-                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/density.txt')
+            if os.path.isfile(pccfg.datadir+self.label+'/density.txt'):
+                readarray = np.loadtxt(pccfg.datadir+self.label+'/density.txt')
             else:
-                readarray = np.loadtxt(pccfg.DATADIR+self.label+'/density-prior.txt')
+                readarray = np.loadtxt(pccfg.datadir+self.label+'/density-prior.txt')
             #        self.density_depth=readarray[:,0]
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
@@ -196,11 +196,11 @@ class Site(object):
                     self.lid_depth = np.array([self.depth[0], self.depth[-1]])
                     self.lid_lid = np.array([self.lid_value, self.lid_value])
             else:
-    #            self.lid_model=np.loadtxt(pccfg.DATADIR+self.label+'/LID-prior.txt')
-                if os.path.isfile(pccfg.DATADIR+self.label+'/lock_in_depth.txt'):
-                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/lock_in_depth.txt')
+    #            self.lid_model=np.loadtxt(pccfg.datadir+self.label+'/LID-prior.txt')
+                if os.path.isfile(pccfg.datadir+self.label+'/lock_in_depth.txt'):
+                    readarray = np.loadtxt(pccfg.datadir+self.label+'/lock_in_depth.txt')
                 else:
-                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/LID-prior.txt')
+                    readarray = np.loadtxt(pccfg.datadir+self.label+'/LID-prior.txt')
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 self.lid_depth = readarray[:, 0]
@@ -220,10 +220,10 @@ class Site(object):
                 self.zeta = (self.thicknessie-self.iedepth_mid)/self.thicknessie
                 self.tau = np.empty_like(self.depth_mid)
             else:
-                if os.path.isfile(pccfg.DATADIR+self.label+'/thinning.txt'):
-                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/thinning.txt')
+                if os.path.isfile(pccfg.datadir+self.label+'/thinning.txt'):
+                    readarray = np.loadtxt(pccfg.datadir+self.label+'/thinning.txt')
                 else:
-                    readarray = np.loadtxt(pccfg.DATADIR+self.label+'/thinning-prior.txt')
+                    readarray = np.loadtxt(pccfg.datadir+self.label+'/thinning-prior.txt')
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 self.tau_depth = readarray[:, 0]
@@ -238,7 +238,7 @@ class Site(object):
 ## Now we set up the correction functions
 
         if self.start == 'restart':
-            self.variables = np.loadtxt(pccfg.DATADIR+self.label+'/restart.txt')
+            self.variables = np.loadtxt(pccfg.datadir+self.label+'/restart.txt')
         elif self.start == 'default':
             self.corr_a = np.zeros(np.size(self.corr_a_age))
             if self.archive == 'icecore':
@@ -295,14 +295,14 @@ class Site(object):
             self.correlation_corr_lid_before = self.correlation_corr_lid+0
             self.correlation_corr_tau_before = self.correlation_corr_tau+0
 
-        filename = pccfg.DATADIR+'/parameters_covariance_prior_all_sites_init.py'
-        filename2 = pccfg.DATADIR+'/parameters-CovariancePrior-AllDrillings-init.py'
+        filename = pccfg.datadir+'/parameters_covariance_prior_all_sites_init.py'
+        filename2 = pccfg.datadir+'/parameters-CovariancePrior-AllDrillings-init.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
             exec(open(filename2).read())
-        filename = pccfg.DATADIR+self.label+'/parameters_covariance_prior_init.py'
-        filename2 = pccfg.DATADIR+self.label+'/parameters-CovariancePrior-init.py'
+        filename = pccfg.datadir+self.label+'/parameters_covariance_prior_init.py'
+        filename2 = pccfg.datadir+self.label+'/parameters-CovariancePrior-init.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
@@ -327,11 +327,11 @@ class Site(object):
 #Reading of observations
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/ice_age_horizons.txt'
+            filename = pccfg.datadir+self.label+'/ice_age_horizons.txt'
             if not os.path.isfile(filename):
-                filename = pccfg.DATADIR+self.label+'/ice_age.txt'
+                filename = pccfg.datadir+self.label+'/ice_age.txt'
         else:
-            filename = pccfg.DATADIR+self.label+'/age_horizons.txt'
+            filename = pccfg.datadir+self.label+'/age_horizons.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -348,9 +348,9 @@ class Site(object):
                 self.icehorizons_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/ice_age_intervals.txt'
+            filename = pccfg.datadir+self.label+'/ice_age_intervals.txt'
         else:
-            filename = pccfg.DATADIR+self.label+'/age_intervals.txt'
+            filename = pccfg.datadir+self.label+'/age_intervals.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -369,9 +369,9 @@ class Site(object):
                 self.iceintervals_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.DATADIR+self.label+'/air_age_horizons.txt'
+            filename = pccfg.datadir+self.label+'/air_age_horizons.txt'
             if not os.path.isfile(filename):
-                filename = pccfg.DATADIR+self.label+'/air_age.txt'
+                filename = pccfg.datadir+self.label+'/air_age.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -387,7 +387,7 @@ class Site(object):
                     self.airhorizons_age = np.array([])
                     self.airhorizons_sigma = np.array([])
 
-            filename = pccfg.DATADIR+self.label+'/air_age_intervals.txt'
+            filename = pccfg.datadir+self.label+'/air_age_intervals.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -405,9 +405,9 @@ class Site(object):
                     self.airintervals_duration = np.array([])
                     self.airintervals_sigma = np.array([])
 
-            filename = pccfg.DATADIR+self.label+'/delta_depths.txt'
+            filename = pccfg.datadir+self.label+'/delta_depths.txt'
             if not os.path.isfile(filename):
-                filename = pccfg.DATADIR+self.label+'/Ddepth.txt'
+                filename = pccfg.datadir+self.label+'/Ddepth.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -432,15 +432,15 @@ class Site(object):
             self.delta_depth_correlation = np.diag(np.ones(np.size(self.delta_depth_depth)))
 #        print self.icehorizons_correlation
 
-        filename = pccfg.DATADIR+'/parameters_covariance_observations_all_sites.py'
-        filename2 = pccfg.DATADIR+'/parameters-CovarianceObservations-AllDrillings.py'
+        filename = pccfg.datadir+'/parameters_covariance_observations_all_sites.py'
+        filename2 = pccfg.datadir+'/parameters-CovarianceObservations-AllDrillings.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
             exec(open(filename2).read())
 
-        filename = pccfg.DATADIR+self.label+'/parameters_covariance_observations.py'
-        filename2 = pccfg.DATADIR+self.label+'/parameters-CovarianceObservations.py'
+        filename = pccfg.datadir+self.label+'/parameters_covariance_observations.py'
+        filename2 = pccfg.datadir+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
@@ -518,10 +518,10 @@ class Site(object):
             self.correlation_corr_lid_before = self.correlation_corr_lid+0
             self.correlation_corr_tau_before = self.correlation_corr_tau+0
 
-        filename = pccfg.DATADIR+'/parameters-CovariancePrior-AllSites.py'
+        filename = pccfg.datadir+'/parameters-CovariancePrior-AllSites.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
-        filename = pccfg.DATADIR+self.label+'/parameters-CovariancePrior.py'
+        filename = pccfg.datadir+self.label+'/parameters-CovariancePrior.py'
         if os.path.isfile(filename):
             exec(open(filename).read())
 
@@ -775,23 +775,23 @@ class Site(object):
         mpl.title(self.label+'Deposition rate')
         mpl.xlabel('Optimized age (yr)')
         mpl.ylabel('Deposition rate (m/yr)')
-        if pccfg.SHOW_INITIAL:
+        if pccfg.show_initial:
             mpl.step(self.age, np.concatenate((self.a_init, np.array([self.a_init[-1]]))),
-                     color=pccfg.COLOR_INIT, where='post', label='Initial')
+                     color=pccfg.color_init, where='post', label='Initial')
         mpl.step(self.age, np.concatenate((self.a_model, np.array([self.a_model[-1]]))),
-                 color=pccfg.COLOR_MOD, where='post', label='Prior')
+                 color=pccfg.color_mod, where='post', label='Prior')
         mpl.step(self.age, np.concatenate((self.accu, np.array([self.accu[-1]]))),
-                 color=pccfg.COLOR_OPT,
+                 color=pccfg.color_opt,
                  where='post', label='Posterior +/-$\sigma$')
         mpl.fill_between(self.age[:-1], self.accu-self.sigma_accu, self.accu+self.sigma_accu,
-                         color=pccfg.COLOR_CI)
+                         color=pccfg.color_ci)
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, y_low, y_up))
         mpl.legend(loc="best")
-        printed_page = PdfPages(pccfg.DATADIR+self.label+'/deposition.pdf')
+        printed_page = PdfPages(pccfg.datadir+self.label+'/deposition.pdf')
         printed_page.savefig(mpl.figure(self.label+' deporate'))
         printed_page.close()
-        if not pccfg.SHOW_FIGURES:
+        if not pccfg.show_figures:
             mpl.close()
 
         mpl.figure(self.label+' age')
@@ -801,10 +801,10 @@ class Site(object):
             mpl.title(self.label+' age')
         mpl.xlabel('age (yr b1950)')
         mpl.ylabel('depth (m)')
-        if pccfg.SHOW_INITIAL:
-            mpl.plot(self.age_init, self.depth, color=pccfg.COLOR_INIT, label='Initial')
+        if pccfg.show_initial:
+            mpl.plot(self.age_init, self.depth, color=pccfg.color_init, label='Initial')
         if np.size(self.icehorizons_depth) > 0:
-            mpl.errorbar(self.icehorizons_age, self.icehorizons_depth, color=pccfg.COLOR_OBS,
+            mpl.errorbar(self.icehorizons_age, self.icehorizons_depth, color=pccfg.color_obs,
                          xerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="dated horizons")
 #        mpl.ylim(mpl.ylim()[::-1])
@@ -816,29 +816,29 @@ class Site(object):
             xseries = np.array([x_low, x_up, x_up, x_low, x_low])
             yseries = np.array([y_low, y_low, y_up, y_up, y_low])
             if i == 0:
-                mpl.plot(xseries, yseries, color=pccfg.COLOR_DI, label="dated intervals")
-                mpl.errorbar(x_up, y_up, color=pccfg.COLOR_DI, xerr=self.iceintervals_sigma[i],
+                mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+                mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
                              capsize=1)
             else:
-                mpl.plot(xseries, yseries, color=pccfg.COLOR_DI)
-                mpl.errorbar(x_up, y_up, color=pccfg.COLOR_DI, xerr=self.iceintervals_sigma[i],
+                mpl.plot(xseries, yseries, color=pccfg.color_di)
+                mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
                              capsize=1)
-        mpl.plot(self.age_model, self.depth, color=pccfg.COLOR_MOD, label='Prior')
-        mpl.plot(self.age, self.depth, color=pccfg.COLOR_OPT, label='Posterior +/-$\sigma$')
+        mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
+        mpl.plot(self.age, self.depth, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
         mpl.fill_betweenx(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
-                          color=pccfg.COLOR_CI)
-        mpl.plot(self.sigma_age*pccfg.SCALE_AGECI, self.depth, color=pccfg.COLOR_SIGMA,
-                 label='$\sigma$ x'+str(pccfg.SCALE_AGECI))
+                          color=pccfg.color_ci)
+        mpl.plot(self.sigma_age*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
+                 label='$\sigma$ x'+str(pccfg.scale_ageci))
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
         mpl.legend(loc="best")
         if self.archive == 'icecore':
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_age.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/ice_age.pdf')
         else:
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/age.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/age.pdf')
         printed_page.savefig(mpl.figure(self.label+' age'))
         printed_page.close()
-        if not pccfg.SHOW_FIGURES:
+        if not pccfg.show_figures:
             mpl.close()
 
         if self.archive == 'icecore':
@@ -847,91 +847,91 @@ class Site(object):
             mpl.title(self.label+' ice layer thickness')
             mpl.xlabel('thickness of layers (m/yr)')
             mpl.ylabel('Depth (m)')
-            if pccfg.SHOW_INITIAL:
-                mpl.plot(self.icelayerthick_init, self.depth_mid, color=pccfg.COLOR_INIT,
+            if pccfg.show_initial:
+                mpl.plot(self.icelayerthick_init, self.depth_mid, color=pccfg.color_init,
                          label='Initial')
-            mpl.plot(self.icelayerthick_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
-            mpl.plot(self.icelayerthick, self.depth_mid, color=pccfg.COLOR_OPT,
+            mpl.plot(self.icelayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+            mpl.plot(self.icelayerthick, self.depth_mid, color=pccfg.color_opt,
                      label='Posterior +/-$\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.icelayerthick-self.sigma_icelayerthick,
-                              self.icelayerthick+self.sigma_icelayerthick, color=pccfg.COLOR_CI)
+                              self.icelayerthick+self.sigma_icelayerthick, color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/ice_layer_thickness.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/ice_layer_thickness.pdf')
             printed_page.savefig(mpl.figure(self.label+' ice layer thickness'))
             printed_page.close()
-            if not pccfg.SHOW_FIGURES:
+            if not pccfg.show_figures:
                 mpl.close()
 
             mpl.figure(self.label+' thinning')
             mpl.title(self.label+' thinning')
             mpl.xlabel('Thinning')
             mpl.ylabel('Depth')
-            if pccfg.SHOW_INITIAL:
-                mpl.plot(self.tau_init, self.depth_mid, color=pccfg.COLOR_INIT, label='Initial')
-            mpl.plot(self.tau_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
-            mpl.plot(self.tau, self.depth_mid, color=pccfg.COLOR_OPT, label='Posterior +/-$\sigma$')
+            if pccfg.show_initial:
+                mpl.plot(self.tau_init, self.depth_mid, color=pccfg.color_init, label='Initial')
+            mpl.plot(self.tau_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+            mpl.plot(self.tau, self.depth_mid, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.tau-self.sigma_tau, self.tau+self.sigma_tau,
-                              color=pccfg.COLOR_CI)
+                              color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/thinning.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/thinning.pdf')
             printed_page.savefig(mpl.figure(self.label+' thinning'))
             printed_page.close()
-            if not pccfg.SHOW_FIGURES:
+            if not pccfg.show_figures:
                 mpl.close()
 
-            if pccfg.SHOW_AIRLAYERTHICK:
+            if pccfg.show_airlayerthick:
                 mpl.figure(self.label+' air layer thickness')
                 mpl.title(self.label+' air layer thickness')
                 mpl.xlabel('thickness of annual layers (m/yr)')
                 mpl.ylabel('Depth')
-                if pccfg.SHOW_INITIAL:
-                    mpl.plot(self.airlayerthick_init, self.depth_mid, color=pccfg.COLOR_INIT,
+                if pccfg.show_initial:
+                    mpl.plot(self.airlayerthick_init, self.depth_mid, color=pccfg.color_init,
                              label='Initial')
-                mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.COLOR_MOD, label='Prior')
-                mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.COLOR_OPT,
+                mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+                mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.color_opt,
                          label='Posterior +/-$\sigma$')
                 mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
-                                  self.airlayerthick+self.sigma_airlayerthick, color=pccfg.COLOR_CI)
+                                  self.airlayerthick+self.sigma_airlayerthick, color=pccfg.color_ci)
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
                 mpl.legend(loc="best")
-                printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_layer_thickness.pdf')
+                printed_page = PdfPages(pccfg.datadir+self.label+'/air_layer_thickness.pdf')
                 printed_page.savefig(mpl.figure(self.label+' air layer thickness'))
                 printed_page.close()
-                if not pccfg.SHOW_FIGURES:
+                if not pccfg.show_figures:
                     mpl.close()
 
             mpl.figure(self.label+' LID')
             mpl.title(self.label+' Lock-In Depth')
             mpl.xlabel('Optimized age (yr)')
             mpl.ylabel('LID')
-            if pccfg.SHOW_INITIAL:
-                mpl.plot(self.age, self.lid_init, color=pccfg.COLOR_INIT, label='Initial')
-            mpl.plot(self.age, self.lid_model, color=pccfg.COLOR_MOD, label='Prior')
-            mpl.plot(self.age, self.lid, color=pccfg.COLOR_OPT, label='Posterior +/-$\sigma$')
+            if pccfg.show_initial:
+                mpl.plot(self.age, self.lid_init, color=pccfg.color_init, label='Initial')
+            mpl.plot(self.age, self.lid_model, color=pccfg.color_mod, label='Prior')
+            mpl.plot(self.age, self.lid, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
             mpl.fill_between(self.age, self.lid-self.sigma_lid, self.lid+self.sigma_lid,
-                             color=pccfg.COLOR_CI)
+                             color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, y_low, y_up))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/lock_in_depth.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/lock_in_depth.pdf')
             printed_page.savefig(mpl.figure(self.label+' LID'))
             printed_page.close()
-            if not pccfg.SHOW_FIGURES:
+            if not pccfg.show_figures:
                 mpl.close()
 
             mpl.figure(self.label+' air age')
             mpl.title(self.label+' air age')
             mpl.xlabel('age (yr b1950)')
             mpl.ylabel('depth (m)')
-            if pccfg.SHOW_INITIAL:
-                mpl.plot(self.airage_init, self.depth, color=pccfg.COLOR_INIT, label='Initial')
+            if pccfg.show_initial:
+                mpl.plot(self.airage_init, self.depth, color=pccfg.color_init, label='Initial')
             if np.size(self.airhorizons_depth) > 0:
-                mpl.errorbar(self.airhorizons_age, self.airhorizons_depth, color=pccfg.COLOR_OBS,
+                mpl.errorbar(self.airhorizons_age, self.airhorizons_depth, color=pccfg.color_obs,
                              xerr=self.airhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="observations")
     #        mpl.ylim(mpl.ylim()[::-1])
@@ -943,52 +943,52 @@ class Site(object):
                 xseries = np.array([x_low, x_up, x_up, x_low, x_low])
                 yseries = np.array([y_low, y_low, y_up, y_up, y_low])
                 if i == 0:
-                    mpl.plot(xseries, yseries, color=pccfg.COLOR_DI, label="dated intervals")
-                    mpl.errorbar(x_up, y_up, color=pccfg.COLOR_DI, xerr=self.airintervals_sigma[i],
+                    mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+                    mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
                                  capsize=1)
                 else:
-                    mpl.plot(xseries, yseries, color=pccfg.COLOR_DI)
-                    mpl.errorbar(x_up, y_up, color=pccfg.COLOR_DI, xerr=self.airintervals_sigma[i],
+                    mpl.plot(xseries, yseries, color=pccfg.color_di)
+                    mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
                                  capsize=1)
-            mpl.plot(self.airage_model, self.depth, color=pccfg.COLOR_MOD, label='Prior')
+            mpl.plot(self.airage_model, self.depth, color=pccfg.color_mod, label='Prior')
             mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage,
                               self.airage+self.sigma_airage,
-                              color=pccfg.COLOR_CI)
-            mpl.plot(self.airage, self.depth, color=pccfg.COLOR_OPT, label='Posterior +/-$\sigma$')
-            mpl.plot(self.sigma_airage*pccfg.SCALE_AGECI, self.depth, color=pccfg.COLOR_SIGMA,
-                     label='$\sigma$ x'+str(pccfg.SCALE_AGECI))
+                              color=pccfg.color_ci)
+            mpl.plot(self.airage, self.depth, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
+            mpl.plot(self.sigma_airage*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
+                     label='$\sigma$ x'+str(pccfg.scale_ageci))
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/air_age.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/air_age.pdf')
             printed_page.savefig(mpl.figure(self.label+' air age'))
             printed_page.close()
-            if not pccfg.SHOW_FIGURES:
+            if not pccfg.show_figures:
                 mpl.close()
 
             mpl.figure(self.label+' delta_depth')
             mpl.title(self.label+' $\Delta$depth')
             mpl.xlabel('$\Delta$depth (m)')
             mpl.ylabel('Air depth (m)')
-            if pccfg.SHOW_INITIAL:
-                mpl.plot(self.delta_depth_init, self.depth, color=pccfg.COLOR_INIT, label='Initial')
+            if pccfg.show_initial:
+                mpl.plot(self.delta_depth_init, self.depth, color=pccfg.color_init, label='Initial')
             if np.size(self.delta_depth_depth) > 0:
                 mpl.errorbar(self.delta_depth_delta_depth, self.delta_depth_depth,
-                             color=pccfg.COLOR_OBS,
+                             color=pccfg.color_obs,
                              xerr=self.delta_depth_sigma, linestyle='', marker='o', markersize=2,
                              label="observations")
-            mpl.plot(self.delta_depth_model, self.depth, color=pccfg.COLOR_MOD, label='Prior')
-            mpl.plot(self.delta_depth, self.depth, color=pccfg.COLOR_OPT,
+            mpl.plot(self.delta_depth_model, self.depth, color=pccfg.color_mod, label='Prior')
+            mpl.plot(self.delta_depth, self.depth, color=pccfg.color_opt,
                      label='Posterior +/-$\sigma$')
             mpl.fill_betweenx(self.depth, self.delta_depth-self.sigma_delta_depth,
-                              self.delta_depth+self.sigma_delta_depth, color=pccfg.COLOR_CI)
+                              self.delta_depth+self.sigma_delta_depth, color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.DATADIR+self.label+'/delta_depth.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/delta_depth.pdf')
             printed_page.savefig(mpl.figure(self.label+' delta_depth'))
             printed_page.close()
-            if not pccfg.SHOW_FIGURES:
+            if not pccfg.show_figures:
                 mpl.close()
 
 
@@ -1020,7 +1020,7 @@ class Site(object):
                                 np.append(self.sigma_accu_model, self.sigma_accu_model[-1]),
                                 np.append(self.icelayerthick, self.icelayerthick[-1]),
                                 np.append(self.sigma_icelayerthick, self.sigma_icelayerthick[-1])))
-        with open(pccfg.DATADIR+self.label+'/output.txt', 'w') as file_save:
+        with open(pccfg.datadir+self.label+'/output.txt', 'w') as file_save:
             if self.archive == 'icecore':
                 file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\tdeporate'
                                 '\tsigma_deporate\tthinning\tsigma_thinning\tLID\tsigma_LID'
@@ -1033,7 +1033,7 @@ class Site(object):
                                 'sigma_accu_model\tthinning_model\tsigma_thinning_model'
                                 '\ticelayerthick\tsigma_icelayerthick\n')
             np.savetxt(file_save, np.transpose(output), delimiter='\t')
-        np.savetxt(pccfg.DATADIR+self.label+'/restart.txt', np.transpose(self.variables))
+        np.savetxt(pccfg.datadir+self.label+'/restart.txt', np.transpose(self.variables))
 
 #    def udepth_save(self):
-#        np.savetxt(pccfg.DATADIR+self.label+'/udepth.txt',self.udepth)
+#        np.savetxt(pccfg.datadir+self.label+'/udepth.txt',self.udepth)

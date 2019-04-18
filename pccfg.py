@@ -8,84 +8,32 @@ Global variables used across all modules.
 import sys
 
 ##Default Parameters
-LIST_SITES = []
-OPT_METHOD = 'none'  #leastsq, leastsq-parallel, none
-NB_NODES = 6         #Number of nodes for the leastsq-parallel mode
-DATADIR='./'
-COLOR_OBS = 'r'       #color for the observations
-COLOR_OPT = 'k'       #color for the posterior scenario
-COLOR_MOD = 'b'       #color for the prior scenario
-COLOR_CI = '0.8'      #color for the confidence intervals
-COLOR_SIGMA = 'm'     #color for the uncertainty
-COLOR_DI = 'g'        #color for the dated intervals
-SHOW_INITIAL = False  #always put to False for now
-COLOR_INIT = 'c'      #always put to 'c' for now
-SCALE_AGECI = 10.     #scaling of the confidence interval in the ice and air age figures
-SHOW_FIGURES = False  #whether to show or not the figures at the end of the run
-SHOW_AIRLAYERTHICK = False #whether to show the air layer thickness figure (buggy on anaconda)
+list_sites = []
+opt_method = 'none'  #leastsq, leastsq-parallel, none
+nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
+datadir = './'
+color_obs = 'r'       #color for the observations
+color_opt = 'k'       #color for the posterior scenario
+color_mod = 'b'       #color for the prior scenario
+color_ci = '0.8'      #color for the confidence intervals
+color_sigma = 'm'     #color for the uncertainty
+color_di = 'g'        #color for the dated intervals
+show_initial = False  #always put to False for now
+color_init = 'c'      #always put to 'c' for now
+scale_ageci = 10.     #scaling of the confidence interval in the ice and air age figures
+show_figures = False  #whether to show or not the figures at the end of the run
+show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
 
 ###Reading parameters directory
-DATADIR = sys.argv[1]
-if DATADIR[-1] != '/':
-    DATADIR = DATADIR+'/'
-print('Parameters directory is: ', DATADIR)
-#os.chdir(DATADIR)
+datadir = sys.argv[1]
+if datadir[-1] != '/':
+    datadir = datadir+'/'
+print('Parameters directory is: ', datadir)
+#os.chdir(datadir)
 
-exec(open(DATADIR+'/parameters.py').read())
+exec(open(datadir+'/parameters.py').read())
 
 try:
-    LIST_SITES = list_drillings
-except NameError:
-    pass
-try:
-    OPT_METHOD = opt_method
-except NameError:
-    pass
-try:
-    NB_NODES = nb_nodes
-except NameError:
-    pass
-try:
-    COLOR_OBS = color_obs
-except NameError:
-    pass
-try:
-    COLOR_OPT = color_opt
-except NameError:
-    pass
-try:
-    COLOR_MOD = color_mod
-except NameError:
-    pass
-try:
-    COLOR_CI = color_ci
-except NameError:
-    pass
-try:
-    COLOR_SIGMA = color_sigma
-except NameError:
-    pass
-try:
-    COLOR_DI = color_di
-except NameError:
-    pass
-try:
-    SHOW_INITIAL = show_initial
-except NameError:
-    pass
-try:
-    COLOR_INIT = color_init
-except NameError:
-    pass
-try:
-    SCALE_AGECI = scale_ageci
-except NameError:
-    pass
-try:
-    SHOW_FIGURES = show_figures
-except NameError:
-    pass
-try:
-    SHOW_AIRLAYERTHICK = show_airlayerthick
+    list_sites = list_drillings
 except NameError:
     pass

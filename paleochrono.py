@@ -38,7 +38,7 @@ START_TIME = time.perf_counter()
 
 
 ###Opening of output.txt file
-OUTPUT_FILE = open(pccfg.DATADIR+'output.txt', 'a')
+OUTPUT_FILE = open(pccfg.datadir+'output.txt', 'a')
 
 ##Global
 VARIABLES = np.array([])
@@ -51,11 +51,11 @@ def residuals(var):
     """Calculate the residuals."""
     resi = np.array([])
     index = 0
-    for i, dlab in enumerate(pccfg.LIST_SITES):
+    for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].variables = var[index:index+np.size(D[dlab].variables)]
         index = index+np.size(D[dlab].variables)
         resi = np.concatenate((resi, D[dlab].residuals(D[dlab].variables)))
-        for j, dlab2 in enumerate(pccfg.LIST_SITES):
+        for j, dlab2 in enumerate(pccfg.list_sites):
             if j < i:
                 resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
     return resi
@@ -79,7 +79,7 @@ def deriv_res(var):
         derivparams.append(copy)
 #        results.append(residuals(derivparams))
     if __name__ == "__main__":
-        pool = multiprocessing.Pool(pccfg.NB_NODES)
+        pool = multiprocessing.Pool(pccfg.nb_nodes)
     results = pool.map(residuals, derivparams)
     derivs = [(r - zeropred)/delta for r in results]
     return derivs
@@ -88,7 +88,7 @@ def deriv_res(var):
 
 
 ##Initialisation
-for di, dlabel in enumerate(pccfg.LIST_SITES):
+for di, dlabel in enumerate(pccfg.list_sites):
 
     print('Initialization of site '+dlabel)
 
@@ -100,8 +100,8 @@ for di, dlabel in enumerate(pccfg.LIST_SITES):
 #    D[dlabel].display_init()
     VARIABLES = np.concatenate((VARIABLES, D[dlabel].variables))
 
-for di, dlabel in enumerate(pccfg.LIST_SITES):
-    for dj, dlabel2 in enumerate(pccfg.LIST_SITES):
+for di, dlabel in enumerate(pccfg.list_sites):
+    for dj, dlabel2 in enumerate(pccfg.list_sites):
         if dj < di:
             print('Initialization of site pair '+dlabel2+'-'+dlabel)
             DC[dlabel2+'-'+dlabel] = SitePair(D[dlabel2], D[dlabel])
@@ -111,14 +111,14 @@ for di, dlabel in enumerate(pccfg.LIST_SITES):
 ##Optimization
 START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
-if pccfg.OPT_METHOD == 'leastsq':
+if pccfg.opt_method == 'leastsq':
     print('Optimization by leastsq')
     VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
-elif pccfg.OPT_METHOD == 'leastsq-parallel':
+elif pccfg.opt_method == 'leastsq-parallel':
     print('Optimization by leastsq-parallel')
     VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
                                                    col_deriv=1, full_output=1)
-elif pccfg.OPT_METHOD == "L-BFGS-B":
+elif pccfg.opt_method == "L-BFGS-B":
     print('Optimization by L-BFGS-B')
     RESULT = minimize(cost_function, VARIABLES, method='L-BFGS-B', jac=False)
     VARIABLES = RESULT.x
@@ -126,22 +126,22 @@ elif pccfg.OPT_METHOD == "L-BFGS-B":
     HESS = np.zeros((np.size(VARIABLES), np.size(VARIABLES)))
     print('Message: ', RESULT.message)
 #    cost=cost_function(VARIABLES)
-elif pccfg.OPT_METHOD == 'none':
+elif pccfg.opt_method == 'none':
     print('No optimization')
 #    HESS=np.zeros((np.size(VARIABLES),np.size(VARIABLES)))
 else:
-    print(pccfg.OPT_METHOD, ': Optimization method not recognized.')
+    print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
 print('Optimization execution time: ', time.time() - START_TIME_OPT, 'seconds')
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
-if pccfg.OPT_METHOD != 'none' and np.size(HESS) == 1 and HESS is None:
+if pccfg.opt_method != 'none' and np.size(HESS) == 1 and HESS is None:
     print('singular matrix encountered (flat curvature in some direction)')
     sys.exit()
 print('Calculation of confidence intervals')
 INDEXSITE = 0
-for dlabel in pccfg.LIST_SITES:
-    if pccfg.OPT_METHOD == 'none':
+for dlabel in pccfg.list_sites:
+    if pccfg.opt_method == 'none':
         D[dlabel].sigma_zero()
     else:
         D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
@@ -152,11 +152,11 @@ for dlabel in pccfg.LIST_SITES:
 
 ###Final display and output
 print('Display of results')
-for di, dlabel in enumerate(pccfg.LIST_SITES):
+for di, dlabel in enumerate(pccfg.list_sites):
 #    print dlabel+'\n'
     D[dlabel].save()
     D[dlabel].figures()
-    for dj, dlabel2 in enumerate(pccfg.LIST_SITES):
+    for dj, dlabel2 in enumerate(pccfg.list_sites):
         if dj < di:
 #            print dlabel2+'-'+dlabel+'\n'
             DC[dlabel2+'-'+dlabel].figures()
@@ -166,7 +166,7 @@ MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' secon
 print(MESSAGE)
 OUTPUT_FILE.write(MESSAGE)
 
-if pccfg.SHOW_FIGURES:
+if pccfg.show_figures:
     mpl.show()
 
 ###Closing output file
