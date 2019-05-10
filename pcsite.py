@@ -253,16 +253,6 @@ class Site(object):
         else:
             print('Start option not recognized.')
 
-## Now we set up the correlation matrices
-
-        self.correlation_corr_a = np.diag(np.ones(np.size(self.corr_a)))
-        self.chol_a = np.diag(np.ones(np.size(self.corr_a)))
-        if self.archive == 'icecore':
-            self.correlation_corr_lid = np.diag(np.ones(np.size(self.corr_lid)))
-            self.correlation_corr_tau = np.diag(np.ones(np.size(self.corr_tau)))
-            self.chol_lid = np.diag(np.ones(np.size(self.corr_lid)))
-            self.chol_tau = np.diag(np.ones(np.size(self.corr_tau)))
-
 
 
 ## Definition of the covariance matrix of the background
@@ -290,33 +280,31 @@ class Site(object):
             except AttributeError:
                 print('Sigma on prior thinning scenario not defined in the thinning-prior.txt file')
 
-        self.correlation_corr_a_before = self.correlation_corr_a+0
+
+        #Accu correlation matrix
+        self.correlation_corr_a = np.interp(np.abs(np.ones((np.size(self.corr_a_age),\
+            np.size(self.corr_a_age)))*self.corr_a_age-np.transpose(np.ones((np.size(self.corr_a_age),\
+            np.size(self.corr_a_age)))*self.corr_a_age)), np.array([0,self.lambda_a]),np.array([1, 0]))
+        
+        
         if self.archive == 'icecore':
-            self.correlation_corr_lid_before = self.correlation_corr_lid+0
-            self.correlation_corr_tau_before = self.correlation_corr_tau+0
+            #LID correlation matrix
+            self.correlation_corr_lid = np.interp(np.abs(np.ones((np.size(self.corr_LID_age),\
+                np.size(self.corr_lid_age)))*self.corr_LID_age-np.transpose(np.ones((np.size(\
+                self.corr_LID_age),np.size(self.corr_LID_age)))*self.corr_LID_age)),\
+                np.array([0,self.lambda_LID]),np.array([1, 0]))
+            
+            #Thinning correlation matrix
+            self.correlation_corr_tau = np.interp(np.abs(np.ones((np.size(self.corr_tau_depth),\
+                np.size(self.corr_tau_depth)))*self.corr_tau_depth-np.transpose(np.ones((np.size(\
+                self.corr_tau_depth),np.size(self.corr_tau_depth)))*self.corr_tau_depth)),\
+                np.array([0,self.lambda_tau]),np.array([1, 0]) )
+    
 
-        filename = pccfg.datadir+'/parameters_covariance_prior_all_sites_init.py'
-        filename2 = pccfg.datadir+'/parameters-CovariancePrior-AllDrillings-init.py'
-        if os.path.isfile(filename):
-            exec(open(filename).read())
-        elif os.path.isfile(filename2):
-            exec(open(filename2).read())
-        filename = pccfg.datadir+self.label+'/parameters_covariance_prior_init.py'
-        filename2 = pccfg.datadir+self.label+'/parameters-CovariancePrior-init.py'
-        if os.path.isfile(filename):
-            exec(open(filename).read())
-        elif os.path.isfile(filename2):
-            exec(open(filename2).read())
-
-
-
-        if (self.correlation_corr_a_before != self.correlation_corr_a).any():
-            self.chol_a = cholesky(self.correlation_corr_a)
+        self.chol_a = cholesky(self.correlation_corr_a)
         if self.archive == 'icecore':
-            if (self.correlation_corr_lid_before != self.correlation_corr_lid).any():
-                self.chol_lid = cholesky(self.correlation_corr_lid)
-            if (self.correlation_corr_a_before != self.correlation_corr_a).any():
-                self.chol_tau = cholesky(self.correlation_corr_tau)
+            self.chol_lid = cholesky(self.correlation_corr_lid)
+            self.chol_tau = cholesky(self.correlation_corr_tau)
 
 
         if self.archive == 'icecore':
