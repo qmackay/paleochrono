@@ -263,6 +263,7 @@ class Site(object):
                                            self.a_sigma)
         except AttributeError:
             print('Sigma on prior accu scenario not defined in the accu-prior.txt file')
+            self.sigmap_corr_a=self.sigmap_corr_a*np.ones(np.size(self.corr_a_age))
 
         if self.archive == 'icecore':
             try:
@@ -272,6 +273,7 @@ class Site(object):
                                                  self.lid_sigma)
             except AttributeError:
                 print('Sigma on prior LID scenario not defined in the LID-prior.txt file')
+                self.sigmap_corr_lid=self.sigmap_corr_lid*np.ones(np.size(self.corr_lid_age))
 
             try:
                 #FIXME: we should average here since it would be more representative
@@ -279,7 +281,8 @@ class Site(object):
                                                  self.tau_sigma)
             except AttributeError:
                 print('Sigma on prior thinning scenario not defined in the thinning-prior.txt file')
-
+                self.sigmap_corr_tau=self.k/self.thickness_ie*np.interp(self.corr_tau_depth,
+                                                                        self.depth, self.iedepth)
 
         #Accu correlation matrix
         self.correlation_corr_a = np.interp(np.abs(np.ones((np.size(self.corr_a_age),\
@@ -289,9 +292,9 @@ class Site(object):
         
         if self.archive == 'icecore':
             #LID correlation matrix
-            self.correlation_corr_lid = np.interp(np.abs(np.ones((np.size(self.corr_LID_age),\
-                np.size(self.corr_lid_age)))*self.corr_LID_age-np.transpose(np.ones((np.size(\
-                self.corr_LID_age),np.size(self.corr_LID_age)))*self.corr_LID_age)),\
+            self.correlation_corr_lid = np.interp(np.abs(np.ones((np.size(self.corr_lid_age),\
+                np.size(self.corr_lid_age)))*self.corr_lid_age-np.transpose(np.ones((np.size(\
+                self.corr_lid_age),np.size(self.corr_lid_age)))*self.corr_lid_age)),\
                 np.array([0,self.lambda_LID]),np.array([1, 0]))
             
             #Thinning correlation matrix
