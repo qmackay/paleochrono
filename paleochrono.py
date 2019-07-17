@@ -132,7 +132,7 @@ elif pccfg.opt_method == 'none':
 else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
-print('Optimization execution time: ', time.time() - START_TIME_OPT, 'seconds')
+print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
 if pccfg.opt_method != 'none' and np.size(HESS) == 1 and HESS is None:

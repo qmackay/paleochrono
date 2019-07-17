@@ -1,6 +1,6 @@
 list_sites = ['EDC','VK','TALDICE','EDML','NGRIP', 'MSD']
 
-opt_method = 'leastsq'  #leastsq, leastsq-parallel, none
+opt_method = 'leastsq-parallel'  #leastsq, leastsq-parallel, none
 nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
 
 #Defines the colors for the graphs
