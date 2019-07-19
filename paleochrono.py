@@ -16,7 +16,7 @@ TODO: is there really a computation gain with the change of variable for the
     when we have computed A^-1.
 """
 
-import imp
+import importlib
 import sys
 import time
 import multiprocessing
@@ -29,7 +29,7 @@ from pcsite import Site
 from pcsitepair import SitePair
 
 #Reload pccfg
-imp.reload(pccfg)
+importlib.reload(pccfg)
 
 ###Registration of start time
 START_TIME = time.perf_counter()
