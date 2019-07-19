@@ -36,6 +36,8 @@ class SitePair(object):
             filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/synchro_horizons.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
+            if np.size(readarray) == np.shape(readarray)[0]:
+                readarray.resize(1, np.size(readarray))
             self.iceicehorizons_depth1 = readarray[:, 0]
             self.iceicehorizons_depth2 = readarray[:, 1]
             self.iceicehorizons_sigma = readarray[:, 2]
@@ -52,6 +54,8 @@ class SitePair(object):
                 filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/air_depth.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
+                if np.size(readarray) == np.shape(readarray)[0]:
+                    readarray.resize(1, np.size(readarray))
                 self.airairhorizons_depth1 = readarray[:, 0]
                 self.airairhorizons_depth2 = readarray[:, 1]
                 self.airairhorizons_sigma = readarray[:, 2]
@@ -73,6 +77,8 @@ class SitePair(object):
                            '/air_synchro_horizons.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
+                if np.size(readarray) == np.shape(readarray)[0]:
+                    readarray.resize(1, np.size(readarray))
                 self.iceairhorizons_depth1 = readarray[:, 0]
                 self.iceairhorizons_depth2 = readarray[:, 1]
                 self.iceairhorizons_sigma = readarray[:, 2]
@@ -94,6 +100,8 @@ class SitePair(object):
                            '/air_synchro_horizons.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
+                if np.size(readarray) == np.shape(readarray)[0]:
+                    readarray.resize(1, np.size(readarray))
                 self.airicehorizons_depth1 = readarray[:, 0]
                 self.airicehorizons_depth2 = readarray[:, 1]
                 self.airicehorizons_sigma = readarray[:, 2]

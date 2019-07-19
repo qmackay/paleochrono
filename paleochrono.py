@@ -9,8 +9,6 @@ TODO: Delta-depth observations should be lognormal?
 TODO: we should superpose two charts for ice and air ages, one for the age and
     one for the uncertainty, since the min age is not always near 0.
 TODO: also compute the prior uncertainties and show them in the figures.
-TODO: the reading of observations does not work if there is only one observation
-    (since the readed matrix is 1D in this case).
 TODO: is there really a computation gain with the change of variable for the
     correction functions? Avoiding this change of variables would make the code
     easier to understand. I think there is no gain since solving A^-1 b when we
