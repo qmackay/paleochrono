@@ -768,7 +768,7 @@ class Site(object):
         """Build the figures of a site."""
 
         mpl.figure(self.label+' deporate')
-        mpl.title(self.label+'Deposition rate')
+        mpl.title(self.label+' Deposition rate')
         mpl.xlabel('Optimized age (yr)')
         mpl.ylabel('Deposition rate (m/yr)')
         if pccfg.show_initial:
