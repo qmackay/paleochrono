@@ -177,6 +177,7 @@ class SitePair(object):
 
 
     def figures(self):
+        
         """Build the figures related to a pair of sites."""
         if np.size(self.iceicehorizons_depth1)>0:
             mpl.figure(self.label+' main-main')
@@ -192,8 +193,8 @@ class SitePair(object):
                 if pccfg.show_initial:
                     mpl.errorbar(self.site1.fct_age_init(self.iceicehorizons_depth1),
                                  self.site2.fct_age_init(self.iceicehorizons_depth2),
-                                 color=pccfg.color_init,
-                                 xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_init, xerr=self.iceicehorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Initial")
                 mpl.errorbar(self.site1.fct_age_model(self.iceicehorizons_depth1),
                              self.site2.fct_age_model(self.iceicehorizons_depth2),
@@ -236,13 +237,13 @@ class SitePair(object):
                                      marker='o', markersize=2, label="Initial")
                     mpl.errorbar(self.site1.fct_airage_model(self.airairhorizons_depth1),
                                  self.site2.fct_airage_model(self.airairhorizons_depth2),
-                                 color=pccfg.color_mod,
-                                 xerr=self.airairhorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_mod, xerr=self.airairhorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_airage(self.airairhorizons_depth1),
                                  self.site2.fct_airage(self.airairhorizons_depth2),
-                                 color=pccfg.color_opt,
-                                 xerr=self.airairhorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_opt, xerr=self.airairhorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Posterior")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 x_low = self.site1.age_top
@@ -274,13 +275,13 @@ class SitePair(object):
                                      marker='o', markersize=2, label="Initial")
                     mpl.errorbar(self.site1.fct_age_model(self.iceairhorizons_depth1),
                                  self.site2.fct_airage_model(self.iceairhorizons_depth2),
-                                 color=pccfg.color_mod,
-                                 xerr=self.iceairhorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_mod, xerr=self.iceairhorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_age(self.iceairhorizons_depth1),
                                  self.site2.fct_airage(self.iceairhorizons_depth2),
-                                 color=pccfg.color_opt,
-                                 xerr=self.iceairhorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_opt, xerr=self.iceairhorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Posterior")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 x_low = self.site1.age_top
@@ -314,12 +315,13 @@ class SitePair(object):
                                      linestyle='', marker='o', markersize=2, label="Initial")
                     mpl.errorbar(self.site1.fct_airage_model(self.airicehorizons_depth1),
                                  self.site2.fct_age_model(self.airicehorizons_depth2),
-                                 color=pccfg.color_mod,
-                                 xerr=self.airicehorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_mod, xerr=self.airicehorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_airage(self.airicehorizons_depth1),
-                                 self.site2.fct_age(self.airicehorizons_depth2), color=pccfg.color_opt,
-                                 xerr=self.airicehorizons_sigma, linestyle='', marker='o', markersize=2,
+                                 self.site2.fct_age(self.airicehorizons_depth2),
+                                 color=pccfg.color_opt, xerr=self.airicehorizons_sigma,
+                                 linestyle='', marker='o', markersize=2,
                                  label="Posterior")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 x_low = self.site1.age_top
