@@ -1008,21 +1008,19 @@ class Site(object):
                                 np.append(self.accu, self.accu[-1]),
                                 np.append(self.sigma_accu, self.sigma_accu[-1]),
                                 np.append(self.a_model, self.a_model[-1]),
-                                np.append(self.sigma_accu_model, self.sigma_accu_model[-1]),
-                                np.append(self.icelayerthick, self.icelayerthick[-1]),
-                                np.append(self.sigma_icelayerthick, self.sigma_icelayerthick[-1])))
+                                np.append(self.sigma_accu_model, self.sigma_accu_model[-1])))
         with open(pccfg.datadir+self.label+'/output.txt', 'w') as file_save:
             if self.archive == 'icecore':
                 file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\tdeporate'
                                 '\tsigma_deporate\tthinning\tsigma_thinning\tLID\tsigma_LID'
-                                 '\tdelta_depth\tsigma_delta_depth\taccu_model\tsigma_accu_model'
+                                 '\tdelta_depth\tsigma_delta_depth\tdeporate_model'
+                                 '\tsigma_deporate_model'
                                  '\tthinning_model\tsigma_thinning_model\tLID_model'
                                  '\tsigma_LID_model\ticelayerthick\tsigma_icelayerthick'
                                  '\tairlayerthick\tsigma_airlayerthick\n')
             else:
-                file_save.write('#depth\tage\tsigma_age\tdeporate\tsigma_deporate\taccu_model\t'
-                                'sigma_accu_model\tthinning_model\tsigma_thinning_model'
-                                '\ticelayerthick\tsigma_icelayerthick\n')
+                file_save.write('#depth\tage\tsigma_age\tdeporate\tsigma_deporate\tdeporate_model'
+                                '\tsigma_deporate_model\n')
             np.savetxt(file_save, np.transpose(output), delimiter='\t')
         np.savetxt(pccfg.datadir+self.label+'/restart.txt', np.transpose(self.variables))
 
