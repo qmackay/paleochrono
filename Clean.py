@@ -1,6 +1,7 @@
 import os,re
+import sys
 
-dir='./'
+dir=sys.argv[1]
 inclusive=True
 
 pattern='.pdf'
