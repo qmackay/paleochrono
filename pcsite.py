@@ -117,37 +117,38 @@ class Site(object):
 
 ## We set up the raw model
         if self.calc_a:
-            readarray = np.loadtxt(pccfg.datadir+self.label+'/isotopes.txt')
-            if np.size(readarray) == np.shape(readarray)[0]:
-                readarray.resize(1, np.size(readarray))
-            self.iso_depth = readarray[:, 0]
-            if self.calc_a_method == 'fullcorr':
-                self.iso_d18o_ice = readarray[:, 1]
-                self.d18o_ice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_ice)
-                self.iso_deutice = readarray[:, 2]
-                self.deutice = interp_stair_aver(self.depth, self.iso_depth, self.iso_deutice)
-                self.iso_d18o_sw = readarray[:, 3]
-                self.d18o_sw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_sw)
-                self.excess = self.deutice-8*self.d18o_ice   # dans Uemura : d=excess
-                self.accu = np.empty_like(self.deutice)
-                self.d18o_ice_corr = self.d18o_ice-self.d18o_sw*(1+self.d18o_ice/1000)/\
-                    (1+self.d18o_sw/1000)	#Uemura (1)
-                self.deutice_corr = self.deutice-8*self.d18o_sw*(1+self.deutice/1000)/\
-                    (1+8*self.d18o_sw/1000) #Uemura et al. (CP, 2012) (2)
-                self.excess_corr = self.deutice_corr-8*self.d18o_ice_corr
-                self.deutice_fullcorr = self.deutice_corr+self.gamma_source/self.beta_source*\
-                    self.excess_corr
-            elif self.calc_a_method == 'deut':
-                self.iso_deutice = readarray[:, 1]
-                self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
-                                                          self.iso_deutice)
-            elif self.calc_a_method == 'd18O':
-                self.d18o_ice = readarray[:, 1]
-                self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
-                                                            self.iso_d18o_ice)
-            else:
-                print('Accumulation method not recognized')
-                sys.exit()
+            if self.archive == 'icecore':
+                readarray = np.loadtxt(pccfg.datadir+self.label+'/isotopes.txt')
+                if np.size(readarray) == np.shape(readarray)[0]:
+                    readarray.resize(1, np.size(readarray))
+                self.iso_depth = readarray[:, 0]
+                if self.calc_a_method == 'fullcorr':
+                    self.iso_d18o_ice = readarray[:, 1]
+                    self.d18o_ice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_ice)
+                    self.iso_deutice = readarray[:, 2]
+                    self.deutice = interp_stair_aver(self.depth, self.iso_depth, self.iso_deutice)
+                    self.iso_d18o_sw = readarray[:, 3]
+                    self.d18o_sw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_sw)
+                    self.excess = self.deutice-8*self.d18o_ice   # dans Uemura : d=excess
+                    self.accu = np.empty_like(self.deutice)
+                    self.d18o_ice_corr = self.d18o_ice-self.d18o_sw*(1+self.d18o_ice/1000)/\
+                        (1+self.d18o_sw/1000)	#Uemura (1)
+                    self.deutice_corr = self.deutice-8*self.d18o_sw*(1+self.deutice/1000)/\
+                        (1+8*self.d18o_sw/1000) #Uemura et al. (CP, 2012) (2)
+                    self.excess_corr = self.deutice_corr-8*self.d18o_ice_corr
+                    self.deutice_fullcorr = self.deutice_corr+self.gamma_source/self.beta_source*\
+                        self.excess_corr
+                elif self.calc_a_method == 'deut':
+                    self.iso_deutice = readarray[:, 1]
+                    self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
+                                                              self.iso_deutice)
+                elif self.calc_a_method == 'd18O':
+                    self.d18o_ice = readarray[:, 1]
+                    self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
+                                                                self.iso_d18o_ice)
+                else:
+                    print('Accumulation method not recognized')
+                    sys.exit()
         else:
             if os.path.isfile(pccfg.datadir+self.label+'/deposition.txt'):
                 readarray = np.loadtxt(pccfg.datadir+self.label+'/deposition.txt')
@@ -482,6 +483,10 @@ class Site(object):
 
             self.lidie_model = self.lid_model*self.dens_firn
             self.ulidie_model = np.interp(self.lidie_model, self.iedepth, self.udepth_model)
+
+        else:
+            if self.calc_a:
+                self.a_model = self.accu0*np.ones(np.size(self.depth_inter))
 
         #Ice age
         if self.archive == 'icecore':
