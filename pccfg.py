@@ -10,6 +10,7 @@ import sys
 ##Default Parameters
 list_sites = []
 opt_method = 'none'  #leastsq, leastsq-parallel, none
+is_parallel = False
 nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
 datadir = './'
 color_obs = 'r'       #color for the observations

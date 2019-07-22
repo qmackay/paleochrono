@@ -23,7 +23,7 @@ import multiprocessing
 import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
-from scipy.optimize import leastsq, minimize
+from scipy.optimize import leastsq, least_squares
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
@@ -64,7 +64,7 @@ def cost_function(var):
     return cost
 
 
-def deriv_res(var):
+def jacobian(var):
     """Calculate derivatives for each parameter using pool."""
     zeropred = residuals(var)
     derivparams = []
@@ -80,10 +80,9 @@ def deriv_res(var):
         pool = multiprocessing.Pool(pccfg.nb_nodes)
     results = pool.map(residuals, derivparams)
     derivs = [(r - zeropred)/delta for r in results]
-    return derivs
+    return np.transpose(derivs)
 
 ##MAIN
-
 
 ##Initialisation
 for di, dlabel in enumerate(pccfg.list_sites):
@@ -116,14 +115,24 @@ elif pccfg.opt_method == 'leastsq-parallel':
     print('Optimization by leastsq-parallel')
     VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
                                                    col_deriv=1, full_output=1)
-elif pccfg.opt_method == "L-BFGS-B":
-    print('Optimization by L-BFGS-B')
-    RESULT = minimize(cost_function, VARIABLES, method='L-BFGS-B', jac=False)
-    VARIABLES = RESULT.x
-    print('number of iterations: ', RESULT.nit)
-    HESS = np.zeros((np.size(VARIABLES), np.size(VARIABLES)))
-    print('Message: ', RESULT.message)
-#    cost=cost_function(VARIABLES)
+elif pccfg.opt_method == "trf":
+    print('Optimization by trf')
+    if pccfg.is_parallel:
+        OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian, verbose=2)
+    else:
+        OptimizeResult = least_squares(residuals, VARIABLES, verbose=2)
+    VARIABLES = OptimizeResult.x
+    HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
+    HESS = np.linalg.inv(HESS)
+elif pccfg.opt_method == "lm":
+    print('Optimization by lm')
+    if pccfg.is_parallel:
+        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian, verbose=2)
+    else:
+        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', verbose=2)
+    VARIABLES = OptimizeResult.x
+    HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
+    HESS = np.linalg.inv(HESS)
 elif pccfg.opt_method == 'none':
     print('No optimization')
 #    HESS=np.zeros((np.size(VARIABLES),np.size(VARIABLES)))
