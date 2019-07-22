@@ -790,7 +790,7 @@ class Site(object):
         if not pccfg.show_figures:
             mpl.close()
 
-        mpl.figure(self.label+' age')
+        fig, ax1 = mpl.subplots()
         if self.archive == 'icecore':
             mpl.title(self.label+' ice age')
         else:
@@ -803,7 +803,6 @@ class Site(object):
             mpl.errorbar(self.icehorizons_age, self.icehorizons_depth, color=pccfg.color_obs,
                          xerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="dated horizons")
-#        mpl.ylim(mpl.ylim()[::-1])
         for i in range(np.size(self.iceintervals_duration)):
             y_low = self.iceintervals_depthtop[i]
             y_up = self.iceintervals_depthbot[i]
@@ -820,19 +819,26 @@ class Site(object):
                 mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
                              capsize=1)
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
-        mpl.plot(self.age, self.depth, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
+        mpl.plot(self.age, self.depth, color=pccfg.color_opt, label='Posterior +/- 1$\sigma$')
         mpl.fill_betweenx(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
                           color=pccfg.color_ci)
-        mpl.plot(self.sigma_age*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
-                 label='$\sigma$ x'+str(pccfg.scale_ageci))
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
-        mpl.legend(loc="best")
+        ax2 = ax1.twiny()
+        ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
+                 label='1$\sigma$')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((0., x_up, y_low, y_up))
+        ax2.set_xlabel('1$\sigma$ uncertainty (yr)')
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+        fig.tight_layout()
         if self.archive == 'icecore':
             printed_page = PdfPages(pccfg.datadir+self.label+'/ice_age.pdf')
         else:
             printed_page = PdfPages(pccfg.datadir+self.label+'/age.pdf')
-        printed_page.savefig(mpl.figure(self.label+' age'))
+        printed_page.savefig(fig)
         printed_page.close()
         if not pccfg.show_figures:
             mpl.close()
@@ -920,7 +926,8 @@ class Site(object):
             if not pccfg.show_figures:
                 mpl.close()
 
-            mpl.figure(self.label+' air age')
+            fig, ax1 = mpl.subplots()
+#            mpl.figure(self.label+' air age')
             mpl.title(self.label+' air age')
             mpl.xlabel('age (yr b1950)')
             mpl.ylabel('depth (m)')
@@ -950,14 +957,23 @@ class Site(object):
             mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage,
                               self.airage+self.sigma_airage,
                               color=pccfg.color_ci)
-            mpl.plot(self.airage, self.depth, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
-            mpl.plot(self.sigma_airage*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
-                     label='$\sigma$ x'+str(pccfg.scale_ageci))
+            mpl.plot(self.airage, self.depth, color=pccfg.color_opt, label='Posterior +/- 1$\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
-            mpl.legend(loc="best")
+            ax2 = ax1.twiny()
+            ax2.plot(self.sigma_airage, self.depth, color=pccfg.color_sigma,
+                     label='1$\sigma$')
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((0., x_up, y_low, y_up))
+            ax2.set_xlabel('1$\sigma$ uncertainty (yr)')
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+            fig.tight_layout()
+#            mpl.plot(self.sigma_airage*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
+#                     label='1$\sigma$')            
             printed_page = PdfPages(pccfg.datadir+self.label+'/air_age.pdf')
-            printed_page.savefig(mpl.figure(self.label+' air age'))
+            printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
                 mpl.close()
