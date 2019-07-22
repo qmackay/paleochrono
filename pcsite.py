@@ -1049,6 +1049,7 @@ class Site(object):
                 file_save.write('#depth\tage\tsigma_age\tdeporate\tsigma_deporate\tdeporate_model'
                                 '\tsigma_deporate_model\n')
             np.savetxt(file_save, np.transpose(output), delimiter='\t')
+            file_save.close()
         np.savetxt(pccfg.datadir+self.label+'/restart.txt', np.transpose(self.variables))
 
 #    def udepth_save(self):
