@@ -110,10 +110,10 @@ START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
 if pccfg.opt_method == 'leastsq':
     print('Optimization by leastsq')
-    VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
+    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
 elif pccfg.opt_method == 'leastsq-parallel':
     print('Optimization by leastsq-parallel')
-    VARIABLES, HESS, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
+    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
                                                    col_deriv=1, full_output=1)
 elif pccfg.opt_method == "trf":
     print('Optimization by trf')
@@ -123,7 +123,7 @@ elif pccfg.opt_method == "trf":
         OptimizeResult = least_squares(residuals, VARIABLES, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
-    HESS = np.linalg.inv(HESS)
+    COV = np.linalg.inv(HESS)
 elif pccfg.opt_method == "lm":
     print('Optimization by lm')
     if pccfg.is_parallel:
@@ -132,7 +132,7 @@ elif pccfg.opt_method == "lm":
         OptimizeResult = least_squares(residuals, VARIABLES, method='lm', verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
-    HESS = np.linalg.inv(HESS)
+    COV = np.linalg.inv(HESS)
 elif pccfg.opt_method == 'none':
     print('No optimization')
 #    HESS=np.zeros((np.size(VARIABLES),np.size(VARIABLES)))
@@ -142,7 +142,7 @@ else:
 print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
-if pccfg.opt_method != 'none' and np.size(HESS) == 1 and HESS is None:
+if pccfg.opt_method == 'leastsq' and np.size(COV) == 1 and COV is None:
     print('singular matrix encountered (flat curvature in some direction)')
     sys.exit()
 print('Calculation of confidence intervals')
@@ -152,7 +152,7 @@ for dlabel in pccfg.list_sites:
         D[dlabel].sigma_zero()
     else:
         D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
-        D[dlabel].hess = HESS[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
+        D[dlabel].cov = COV[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
             INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
         INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
         D[dlabel].sigma()

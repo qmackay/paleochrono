@@ -113,7 +113,7 @@ class Site(object):
         self.lidie = np.empty_like(self.depth)
         self.sigma_lid = np.empty_like(self.depth)
         self.ulidie = np.empty_like(self.depth)
-        self.hess = np.array([])
+        self.cov = np.array([])
 
 ## We set up the raw model
         if self.calc_a:
@@ -679,7 +679,7 @@ class Site(object):
 
     def jacobian(self):
         """Calculate the jacobian."""
-        epsilon = np.sqrt(np.diag(self.hess))/100000000.
+        epsilon = np.sqrt(np.diag(self.cov))/100000000.
         model0 = self.model(self.variables)
         jacob = np.empty((np.size(model0), np.size(self.variables)))
         for i in np.arange(np.size(self.variables)):
@@ -693,25 +693,25 @@ class Site(object):
 
     def optimisation(self):
         """Optimize a site."""
-        self.variables, self.hess = leastsq(self.residuals, self.variables, full_output=1)
+        self.variables, self.cov = leastsq(self.residuals, self.variables, full_output=1)
         print(self.variables)
-        print(self.hess)
-        return self.variables, self.hess
+        print(self.cov)
+        return self.variables, self.cov
 
     def sigma(self):
         """Calculate the error of various variables."""
         jacob = self.jacobian()
 
         index = 0
-        c_model = np.dot(jacob[index:index+np.size(self.age), :], np.dot(self.hess,\
+        c_model = np.dot(jacob[index:index+np.size(self.age), :], np.dot(self.cov,\
                                np.transpose(jacob[index:index+np.size(self.age), :])))
         self.sigma_age = np.sqrt(np.diag(c_model))
         index = index+np.size(self.age)
-        c_model = np.dot(jacob[index:index+np.size(self.accu), :], np.dot(self.hess,\
+        c_model = np.dot(jacob[index:index+np.size(self.accu), :], np.dot(self.cov,\
                                np.transpose(jacob[index:index+np.size(self.accu), :])))
         self.sigma_accu = np.sqrt(np.diag(c_model))
         index = index+np.size(self.accu)
-        c_model = np.dot(jacob[index:index+np.size(self.icelayerthick), :], np.dot(self.hess,\
+        c_model = np.dot(jacob[index:index+np.size(self.icelayerthick), :], np.dot(self.cov,\
                                np.transpose(jacob[index:index+np.size(self.icelayerthick), :])))
         self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
         index = index+np.size(self.icelayerthick)
@@ -720,23 +720,23 @@ class Site(object):
                                           self.corr_a_age, self.sigmap_corr_a)
 
         if self.archive == 'icecore':
-            c_model = np.dot(jacob[index:index+np.size(self.airage), :], np.dot(self.hess,\
+            c_model = np.dot(jacob[index:index+np.size(self.airage), :], np.dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.airage), :])))
             self.sigma_airage = np.sqrt(np.diag(c_model))
             index = index+np.size(self.airage)
-            c_model = np.dot(jacob[index:index+np.size(self.delta_depth), :], np.dot(self.hess,\
+            c_model = np.dot(jacob[index:index+np.size(self.delta_depth), :], np.dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.delta_depth), :])))
             self.sigma_delta_depth = np.sqrt(np.diag(c_model))
             index = index+np.size(self.delta_depth)
-            c_model = np.dot(jacob[index:index+np.size(self.tau), :], np.dot(self.hess,\
+            c_model = np.dot(jacob[index:index+np.size(self.tau), :], np.dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.tau), :])))
             self.sigma_tau = np.sqrt(np.diag(c_model))
             index = index+np.size(self.tau)
-            c_model = np.dot(jacob[index:index+np.size(self.lid), :], np.dot(self.hess,\
+            c_model = np.dot(jacob[index:index+np.size(self.lid), :], np.dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.lid), :])))
             self.sigma_lid = np.sqrt(np.diag(c_model))
             index = index+np.size(self.lid)
-            c_model = np.dot(jacob[index:index+np.size(self.airlayerthick), :], np.dot(self.hess,\
+            c_model = np.dot(jacob[index:index+np.size(self.airlayerthick), :], np.dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.airlayerthick), :])))
             self.sigma_airlayerthick = np.sqrt(np.diag(c_model))
 
