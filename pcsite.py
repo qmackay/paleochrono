@@ -749,7 +749,7 @@ class Site(object):
     def figures(self):
         """Build the figures of a site."""
 
-        mpl.figure(self.label+' deporate')
+        fig, ax = mpl.subplots()
         mpl.title(self.label+' Deposition rate')
         mpl.xlabel('Optimized age (yr)')
         mpl.ylabel('Deposition rate (m/yr)')
@@ -767,7 +767,7 @@ class Site(object):
         mpl.axis((self.age_top, x_up, y_low, y_up))
         mpl.legend(loc="best")
         printed_page = PdfPages(pccfg.datadir+self.label+'/deposition.pdf')
-        printed_page.savefig(mpl.figure(self.label+' deporate'))
+        printed_page.savefig(fig)
         printed_page.close()
         if not pccfg.show_figures:
             mpl.close()
@@ -830,7 +830,7 @@ class Site(object):
 
         if self.archive == 'icecore':
 
-            mpl.figure(self.label+' ice layer thickness')
+            fig, ax = mpl.subplots()
             mpl.title(self.label+' ice layer thickness')
             mpl.xlabel('thickness of layers (m/yr)')
             mpl.ylabel('Depth (m)')
@@ -846,12 +846,12 @@ class Site(object):
             mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
             printed_page = PdfPages(pccfg.datadir+self.label+'/ice_layer_thickness.pdf')
-            printed_page.savefig(mpl.figure(self.label+' ice layer thickness'))
+            printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
                 mpl.close()
 
-            mpl.figure(self.label+' thinning')
+            fig, ax = mpl.subplots()
             mpl.title(self.label+' thinning')
             mpl.xlabel('Thinning')
             mpl.ylabel('Depth')
@@ -865,13 +865,13 @@ class Site(object):
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
             printed_page = PdfPages(pccfg.datadir+self.label+'/thinning.pdf')
-            printed_page.savefig(mpl.figure(self.label+' thinning'))
+            printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
                 mpl.close()
 
             if pccfg.show_airlayerthick:
-                mpl.figure(self.label+' air layer thickness')
+                fig, ax = mpl.subplots()
                 mpl.title(self.label+' air layer thickness')
                 mpl.xlabel('thickness of annual layers (m/yr)')
                 mpl.ylabel('Depth')
@@ -887,12 +887,12 @@ class Site(object):
                 mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
                 mpl.legend(loc="best")
                 printed_page = PdfPages(pccfg.datadir+self.label+'/air_layer_thickness.pdf')
-                printed_page.savefig(mpl.figure(self.label+' air layer thickness'))
+                printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
                     mpl.close()
 
-            mpl.figure(self.label+' LID')
+            fig, ax = mpl.subplots()
             mpl.title(self.label+' Lock-In Depth')
             mpl.xlabel('Optimized age (yr)')
             mpl.ylabel('LID')
@@ -906,7 +906,7 @@ class Site(object):
             mpl.axis((self.age_top, x_up, y_low, y_up))
             mpl.legend(loc="best")
             printed_page = PdfPages(pccfg.datadir+self.label+'/lock_in_depth.pdf')
-            printed_page.savefig(mpl.figure(self.label+' LID'))
+            printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
                 mpl.close()
@@ -966,7 +966,7 @@ class Site(object):
             if not pccfg.show_figures:
                 mpl.close()
 
-            mpl.figure(self.label+' delta_depth')
+            fig, ax = mpl.subplots()
             mpl.title(self.label+' $\Delta$depth')
             mpl.xlabel('$\Delta$depth (m)')
             mpl.ylabel('Air depth (m)')
@@ -986,7 +986,7 @@ class Site(object):
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
             printed_page = PdfPages(pccfg.datadir+self.label+'/delta_depth.pdf')
-            printed_page.savefig(mpl.figure(self.label+' delta_depth'))
+            printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
                 mpl.close()
