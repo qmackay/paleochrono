@@ -180,7 +180,7 @@ class SitePair(object):
         
         """Build the figures related to a pair of sites."""
         if np.size(self.iceicehorizons_depth1)>0:
-            mpl.figure(self.label+' main-main')
+            fig, ax = mpl.subplots()
             if self.site1.archive == 'icecore':
                 mpl.xlabel(self.site1.label+' ice age (yr b1950)')
             else:
@@ -214,24 +214,24 @@ class SitePair(object):
 #            x_low = self.site1.age_top
 #            y_low = self.site2.age_top
 #            mpl.axis((x_low, x_up, y_low, y_up))
-            rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+            rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
             mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement', zorder=0)
             mpl.legend(loc="best")
-            mpl.axis('equal')
+            ax.set_aspect('equal')
             if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
                 printed_page = PdfPages(pccfg.datadir+self.label+'/ice_ice_synchro.pdf')
             elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
                 printed_page = PdfPages(pccfg.datadir+self.label+'/ice_synchro.pdf')
             else:
                 printed_page = PdfPages(pccfg.datadir+self.label+'/synchro.pdf')
-            printed_page.savefig(mpl.figure(self.label+' main-main'))
+            printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
                 mpl.close()
 
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
             if np.size(self.airairhorizons_depth1)>0:
-                mpl.figure(self.label+' air-air')
+                fig, ax = mpl.subplots()
                 mpl.xlabel(self.site1.label+' air age (yr b1950)')
                 mpl.ylabel(self.site2.label+' air age (yr b1950)')
                 if np.size(self.airairhorizons_depth1) > 0:
@@ -264,20 +264,20 @@ class SitePair(object):
 #                x_low = self.site1.age_top
 #                y_low = self.site2.age_top
 #                mpl.axis((x_low, x_up, y_low, y_up))
-                rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+                rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement',
                          zorder=0)
                 mpl.legend(loc="best")
-                mpl.axis('equal')
+                ax.set_aspect('equal')
                 printed_page = PdfPages(pccfg.datadir+self.label+'/air_air_synchro.pdf')
-                printed_page.savefig(mpl.figure(self.label+' air-air'))
+                printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
                     mpl.close()
 
         if self.site2.archive == 'icecore':
             if np.size(self.iceairhorizons_depth1)>0:
-                mpl.figure(self.label+' main-air')
+                fig, ax = mpl.subplots()
                 if self.site1.archive == 'icecore':
                     mpl.xlabel(self.site1.label+' ice age (yr b1950)')
                 else:
@@ -313,22 +313,23 @@ class SitePair(object):
 #                x_low = self.site1.age_top
 #                y_low = self.site2.age_top
 #                mpl.axis((x_low, x_up, y_low, y_up))
-                rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+                rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement',
                          zorder=0)
                 mpl.legend(loc="best")
+                ax.set_aspect('equal')
                 if self.site1.archive == 'icecore':
                     printed_page = PdfPages(pccfg.datadir+self.label+'/ice_air_synchro.pdf')
                 else:
                     printed_page = PdfPages(pccfg.datadir+self.label+'/air_synchro.pdf')
-                printed_page.savefig(mpl.figure(self.label+' main-air'))
+                printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
                     mpl.close()
 
         if self.site1.archive == 'icecore':
             if np.size(self.airicehorizons_depth1)>0:
-                mpl.figure(self.label+' air-main')
+                fig, ax = mpl.subplots()
                 mpl.xlabel(self.site1.label+' air age (yr b1950)')
                 if self.site2.archive == 'icecore':
                     mpl.ylabel(self.site2.label+' ice age (yr b1950)')
@@ -363,14 +364,15 @@ class SitePair(object):
 #                x_low = self.site1.age_top
 #                y_low = self.site2.age_top
 #                mpl.axis((x_low, x_up, y_low, y_up))
-                rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
+                rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement')
                 mpl.legend(loc="best")
+                ax.set_aspect('equal')
                 if self.site2.archive == 'icecore':
                     printed_page = PdfPages(pccfg.datadir+self.label+'/air_ice_synchro.pdf')
                 else:
                     printed_page = PdfPages(pccfg.datadir+self.label+'/air_synchro.pdf')
-                printed_page.savefig(mpl.figure(self.label+' air-main'))
+                printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
                     mpl.close()
