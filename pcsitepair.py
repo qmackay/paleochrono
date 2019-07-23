@@ -210,12 +210,13 @@ class SitePair(object):
                     mpl.arrow(xstart[i], ystart[i], self.iceicehorizons_sigma[i],
                               -self.iceicehorizons_sigma[i], color=pccfg.color_opt)
             x_low, x_up, y_low, y_up = mpl.axis()
-            x_low = self.site1.age_top
-            y_low = self.site2.age_top
-            mpl.axis((x_low, x_up, y_low, y_up))
+#            x_low = self.site1.age_top
+#            y_low = self.site2.age_top
+#            mpl.axis((x_low, x_up, y_low, y_up))
             rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
             mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement', zorder=0)
             mpl.legend(loc="best")
+            mpl.axis('equal')
             if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
                 printed_page = PdfPages(pccfg.datadir+self.label+'/ice_ice_synchro.pdf')
             elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
@@ -258,13 +259,14 @@ class SitePair(object):
                         mpl.arrow(xstart[i], ystart[i], self.airairhorizons_sigma[i],
                                   -self.airairhorizons_sigma[i], color=pccfg.color_opt)
                 x_low, x_up, y_low, y_up = mpl.axis()
-                x_low = self.site1.age_top
-                y_low = self.site2.age_top
-                mpl.axis((x_low, x_up, y_low, y_up))
+#                x_low = self.site1.age_top
+#                y_low = self.site2.age_top
+#                mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement',
                          zorder=0)
                 mpl.legend(loc="best")
+                mpl.axis('equal')
                 printed_page = PdfPages(pccfg.datadir+self.label+'/air_air_synchro.pdf')
                 printed_page.savefig(mpl.figure(self.label+' air-air'))
                 printed_page.close()
@@ -305,9 +307,9 @@ class SitePair(object):
                         mpl.arrow(xstart[i], ystart[i], self.iceairhorizons_sigma[i],
                                   -self.iceairhorizons_sigma[i], color=pccfg.color_opt)                    
                 x_low, x_up, y_low, y_up = mpl.axis()
-                x_low = self.site1.age_top
-                y_low = self.site2.age_top
-                mpl.axis((x_low, x_up, y_low, y_up))
+#                x_low = self.site1.age_top
+#                y_low = self.site2.age_top
+#                mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement',
                          zorder=0)
@@ -354,9 +356,9 @@ class SitePair(object):
                         mpl.arrow(xstart[i], ystart[i], self.airicehorizons_sigma[i],
                                   -self.airicehorizons_sigma[i], color=pccfg.color_opt)
                 x_low, x_up, y_low, y_up = mpl.axis()
-                x_low = self.site1.age_top
-                y_low = self.site2.age_top
-                mpl.axis((x_low, x_up, y_low, y_up))
+#                x_low = self.site1.age_top
+#                y_low = self.site2.age_top
+#                mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement')
                 mpl.legend(loc="best")
