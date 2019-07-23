@@ -1,8 +1,8 @@
 list_sites = ['EDC','VK','TALDICE','EDML','NGRIP', 'MSD']
 
-opt_method = 'none'  #trf, lm or none
+opt_method = 'trf'  #trf, lm or none
 is_parallel = True
-nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
+nb_nodes = 4         #Number of nodes for the leastsq-parallel mode
 
 #Defines the colors for the graphs
 color_obs = 'r'       #color for the observations
