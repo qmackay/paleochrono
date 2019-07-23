@@ -208,7 +208,8 @@ class SitePair(object):
                 ystart = self.site2.fct_age(self.iceicehorizons_depth2)+self.iceicehorizons_sigma/2
                 for i in range(np.size(self.iceicehorizons_depth1)):
                     mpl.arrow(xstart[i], ystart[i], self.iceicehorizons_sigma[i],
-                              -self.iceicehorizons_sigma[i], color=pccfg.color_opt)
+                              -self.iceicehorizons_sigma[i], color=pccfg.color_opt,
+                              width=0.0, head_length=0.0, head_width=0.0)
             x_low, x_up, y_low, y_up = mpl.axis()
 #            x_low = self.site1.age_top
 #            y_low = self.site2.age_top
@@ -257,7 +258,8 @@ class SitePair(object):
                                  self.airairhorizons_sigma/2
                     for i in range(np.size(self.airairhorizons_depth1)):
                         mpl.arrow(xstart[i], ystart[i], self.airairhorizons_sigma[i],
-                                  -self.airairhorizons_sigma[i], color=pccfg.color_opt)
+                                  -self.airairhorizons_sigma[i], color=pccfg.color_opt,
+                                  width=0.0, head_length=0.0, head_width=0.0)
                 x_low, x_up, y_low, y_up = mpl.axis()
 #                x_low = self.site1.age_top
 #                y_low = self.site2.age_top
@@ -305,7 +307,8 @@ class SitePair(object):
                                  self.iceairhorizons_sigma/2
                     for i in range(np.size(self.iceairhorizons_depth1)):
                         mpl.arrow(xstart[i], ystart[i], self.iceairhorizons_sigma[i],
-                                  -self.iceairhorizons_sigma[i], color=pccfg.color_opt)                    
+                                  -self.iceairhorizons_sigma[i], color=pccfg.color_opt,
+                                  width=0.0, head_length=0.0, head_width=0.0)                    
                 x_low, x_up, y_low, y_up = mpl.axis()
 #                x_low = self.site1.age_top
 #                y_low = self.site2.age_top
@@ -354,7 +357,8 @@ class SitePair(object):
                                  self.airicehorizons_sigma/2
                     for i in range(np.size(self.airicehorizons_depth1)):
                         mpl.arrow(xstart[i], ystart[i], self.airicehorizons_sigma[i],
-                                  -self.airicehorizons_sigma[i], color=pccfg.color_opt)
+                                  -self.airicehorizons_sigma[i], color=pccfg.color_opt,
+                                  width=0.0, head_length=0.0, head_width=0.0)
                 x_low, x_up, y_low, y_up = mpl.axis()
 #                x_low = self.site1.age_top
 #                y_low = self.site2.age_top
