@@ -118,7 +118,7 @@ elif pccfg.opt_method == 'leastsq-parallel':
 elif pccfg.opt_method == "trf":
     print('Optimization by trf')
     if pccfg.is_parallel:
-        print('Parallel mode with ', pccfg.nb_nodes, 'nodes')
+        print('Parallel mode with', pccfg.nb_nodes, 'nodes')
         OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian, verbose=2)
     else:
         print('Scalar mode')
@@ -129,7 +129,7 @@ elif pccfg.opt_method == "trf":
 elif pccfg.opt_method == "lm":
     print('Optimization by lm')
     if pccfg.is_parallel:
-        print('Parallel mode with ', pccfg.nb_nodes, 'nodes')
+        print('Parallel mode with', pccfg.nb_nodes, 'nodes')
         OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian, verbose=2)
     else:
         print('Scalar mode')
@@ -139,6 +139,7 @@ elif pccfg.opt_method == "lm":
     COV = np.linalg.inv(HESS)
 elif pccfg.opt_method == 'none':
     print('No optimization')
+    VARIABLES = np.zeros(np.size(VARIABLES))
     COV = np.diag(np.ones(np.size(VARIABLES)))
 else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
