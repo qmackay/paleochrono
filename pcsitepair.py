@@ -191,26 +191,30 @@ class SitePair(object):
                 mpl.ylabel(self.site2.label+' age (yr b1950)')
             if np.size(self.iceicehorizons_depth1) > 0:
                 if pccfg.show_initial:
-                    mpl.errorbar(self.site1.fct_age_init(self.iceicehorizons_depth1),
+                    mpl.plot(self.site1.fct_age_init(self.iceicehorizons_depth1),
                                  self.site2.fct_age_init(self.iceicehorizons_depth2),
-                                 color=pccfg.color_init, xerr=self.iceicehorizons_sigma,
-                                 linestyle='', marker='o', markersize=2,
+                                 color=pccfg.color_init, linestyle='', marker='o', markersize=2,
                                  label="Initial")
-                mpl.errorbar(self.site1.fct_age_model(self.iceicehorizons_depth1),
+                mpl.plot(self.site1.fct_age_model(self.iceicehorizons_depth1),
                              self.site2.fct_age_model(self.iceicehorizons_depth2),
-                             color=pccfg.color_mod,
-                             xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
+                             color=pccfg.color_mod, linestyle='', marker='o', markersize=2,
                              label="Prior")
                 mpl.errorbar(self.site1.fct_age(self.iceicehorizons_depth1),
                              self.site2.fct_age(self.iceicehorizons_depth2), color=pccfg.color_opt,
-                             xerr=self.iceicehorizons_sigma, linestyle='', marker='o', markersize=2,
+                             xerr=np.zeros(np.size(self.iceicehorizons_depth1)),
+                             linestyle='', marker='o', markersize=2,
                              label="Posterior")
+                xstart = self.site1.fct_age(self.iceicehorizons_depth1)-self.iceicehorizons_sigma/2
+                ystart = self.site2.fct_age(self.iceicehorizons_depth2)+self.iceicehorizons_sigma/2
+                for i in range(np.size(self.iceicehorizons_depth1)):
+                    mpl.arrow(xstart[i], ystart[i], self.iceicehorizons_sigma[i],
+                              -self.iceicehorizons_sigma[i], color=pccfg.color_opt)
             x_low, x_up, y_low, y_up = mpl.axis()
             x_low = self.site1.age_top
             y_low = self.site2.age_top
             mpl.axis((x_low, x_up, y_low, y_up))
             rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
-            mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement')
+            mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement', zorder=0)
             mpl.legend(loc="best")
             if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
                 printed_page = PdfPages(pccfg.datadir+self.label+'/ice_ice_synchro.pdf')
@@ -230,27 +234,36 @@ class SitePair(object):
                 mpl.ylabel(self.site2.label+' air age (yr b1950)')
                 if np.size(self.airairhorizons_depth1) > 0:
                     if pccfg.show_initial:
-                        mpl.errorbar(self.site1.fct_airage_init(self.airairhorizons_depth1),
+                        mpl.plot(self.site1.fct_airage_init(self.airairhorizons_depth1),
                                      self.site2.fct_airage_init(self.airairhorizons_depth2),
-                                     color=pccfg.color_init, xerr=self.airairhorizons_sigma,
+                                     color=pccfg.color_init,
                                      linestyle='',
                                      marker='o', markersize=2, label="Initial")
-                    mpl.errorbar(self.site1.fct_airage_model(self.airairhorizons_depth1),
+                    mpl.plot(self.site1.fct_airage_model(self.airairhorizons_depth1),
                                  self.site2.fct_airage_model(self.airairhorizons_depth2),
-                                 color=pccfg.color_mod, xerr=self.airairhorizons_sigma,
+                                 color=pccfg.color_mod,
                                  linestyle='', marker='o', markersize=2,
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_airage(self.airairhorizons_depth1),
                                  self.site2.fct_airage(self.airairhorizons_depth2),
-                                 color=pccfg.color_opt, xerr=self.airairhorizons_sigma,
+                                 color=pccfg.color_opt,
+                                 xerr=np.zeros_like(self.airairhorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
                                  label="Posterior")
+                    xstart = self.site1.fct_airage(self.airairhorizons_depth1)-\
+                                 self.airairhorizons_sigma/2
+                    ystart = self.site2.fct_airage(self.airairhorizons_depth2)+\
+                                 self.airairhorizons_sigma/2
+                    for i in range(np.size(self.airairhorizons_depth1)):
+                        mpl.arrow(xstart[i], ystart[i], self.airairhorizons_sigma[i],
+                                  -self.airairhorizons_sigma[i], color=pccfg.color_opt)
                 x_low, x_up, y_low, y_up = mpl.axis()
                 x_low = self.site1.age_top
                 y_low = self.site2.age_top
                 mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
-                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement')
+                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement',
+                         zorder=0)
                 mpl.legend(loc="best")
                 printed_page = PdfPages(pccfg.datadir+self.label+'/air_air_synchro.pdf')
                 printed_page.savefig(mpl.figure(self.label+' air-air'))
@@ -268,27 +281,36 @@ class SitePair(object):
                 mpl.ylabel(self.site2.label+' air age (yr b1950)')
                 if np.size(self.iceairhorizons_depth1) > 0:
                     if pccfg.show_initial:
-                        mpl.errorbar(self.site1.fct_age_init(self.iceairhorizons_depth1),
+                        mpl.plot(self.site1.fct_age_init(self.iceairhorizons_depth1),
                                      self.site2.fct_airage_init(self.iceairhorizons_depth2),
-                                     color=pccfg.color_init, xerr=self.iceairhorizons_sigma,
+                                     color=pccfg.color_init,
                                      linestyle='',
                                      marker='o', markersize=2, label="Initial")
-                    mpl.errorbar(self.site1.fct_age_model(self.iceairhorizons_depth1),
+                    mpl.plot(self.site1.fct_age_model(self.iceairhorizons_depth1),
                                  self.site2.fct_airage_model(self.iceairhorizons_depth2),
-                                 color=pccfg.color_mod, xerr=self.iceairhorizons_sigma,
+                                 color=pccfg.color_mod,
                                  linestyle='', marker='o', markersize=2,
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_age(self.iceairhorizons_depth1),
                                  self.site2.fct_airage(self.iceairhorizons_depth2),
-                                 color=pccfg.color_opt, xerr=self.iceairhorizons_sigma,
+                                 color=pccfg.color_opt,
+                                 xerr=np.zeros_like(self.iceairhorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
                                  label="Posterior")
+                    xstart = self.site1.fct_age(self.iceairhorizons_depth1)-\
+                                 self.iceairhorizons_sigma/2
+                    ystart = self.site2.fct_airage(self.iceairhorizons_depth2)+\
+                                 self.iceairhorizons_sigma/2
+                    for i in range(np.size(self.iceairhorizons_depth1)):
+                        mpl.arrow(xstart[i], ystart[i], self.iceairhorizons_sigma[i],
+                                  -self.iceairhorizons_sigma[i], color=pccfg.color_opt)                    
                 x_low, x_up, y_low, y_up = mpl.axis()
                 x_low = self.site1.age_top
                 y_low = self.site2.age_top
                 mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([max(x_low, y_low), min(x_up, y_up)])
-                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement')
+                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement',
+                         zorder=0)
                 mpl.legend(loc="best")
                 if self.site1.archive == 'icecore':
                     printed_page = PdfPages(pccfg.datadir+self.label+'/ice_air_synchro.pdf')
@@ -309,20 +331,28 @@ class SitePair(object):
                     mpl.ylabel(self.site2.label+' age (yr b1950)')
                 if np.size(self.airicehorizons_depth1) > 0:
                     if pccfg.show_initial:
-                        mpl.errorbar(self.site1.fct_airage_init(self.airicehorizons_depth1),
+                        mpl.plot(self.site1.fct_airage_init(self.airicehorizons_depth1),
                                      self.site2.fct_age_init(self.airicehorizons_depth2),
-                                     color=pccfg.color_init, xerr=self.airicehorizons_sigma,
+                                     color=pccfg.color_init,
                                      linestyle='', marker='o', markersize=2, label="Initial")
-                    mpl.errorbar(self.site1.fct_airage_model(self.airicehorizons_depth1),
+                    mpl.plot(self.site1.fct_airage_model(self.airicehorizons_depth1),
                                  self.site2.fct_age_model(self.airicehorizons_depth2),
-                                 color=pccfg.color_mod, xerr=self.airicehorizons_sigma,
+                                 color=pccfg.color_mod,
                                  linestyle='', marker='o', markersize=2,
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_airage(self.airicehorizons_depth1),
                                  self.site2.fct_age(self.airicehorizons_depth2),
-                                 color=pccfg.color_opt, xerr=self.airicehorizons_sigma,
+                                 color=pccfg.color_opt,
+                                 xerr=np.zeros_like(self.airicehorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
                                  label="Posterior")
+                    xstart = self.site1.fct_airage(self.airicehorizons_depth1)-\
+                                 self.airicehorizons_sigma/2
+                    ystart = self.site2.fct_age(self.airicehorizons_depth2)+\
+                                 self.airicehorizons_sigma/2
+                    for i in range(np.size(self.airicehorizons_depth1)):
+                        mpl.arrow(xstart[i], ystart[i], self.airicehorizons_sigma[i],
+                                  -self.airicehorizons_sigma[i], color=pccfg.color_opt)
                 x_low, x_up, y_low, y_up = mpl.axis()
                 x_low = self.site1.age_top
                 y_low = self.site2.age_top
