@@ -745,24 +745,6 @@ class Site(object):
             self.sigma_tau_model = np.interp(self.depth_mid, self.corr_tau_depth,
                                              self.sigmap_corr_tau)
 
-    def sigma_zero(self):
-        """Return zero as the error of various variables."""
-
-        self.sigma_age = np.zeros_like(self.age)
-        self.sigma_accu = np.zeros_like(self.accu)
-        self.sigma_icelayerthick = np.zeros_like(self.icelayerthick)
-        self.sigma_accu_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2,
-                                          self.corr_a_age, self.sigmap_corr_a)
-        if self.archive == 'icecore':
-            self.sigma_airage = np.zeros_like(self.airage)
-            self.sigma_delta_depth = np.zeros_like(self.delta_depth)
-            self.sigma_tau = np.zeros_like(self.tau)
-            self.sigma_lid = np.zeros_like(self.lid)
-            self.sigma_airlayerthick = np.zeros_like(self.airlayerthick)
-            self.sigma_lid_model = np.interp(self.age_model, self.corr_lid_age,
-                                             self.sigmap_corr_lid)
-            self.sigma_tau_model = np.interp(self.depth_mid, self.corr_tau_depth,
-                                             self.sigmap_corr_tau)
 
     def figures(self):
         """Build the figures of a site."""

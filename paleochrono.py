@@ -135,7 +135,7 @@ elif pccfg.opt_method == "lm":
     COV = np.linalg.inv(HESS)
 elif pccfg.opt_method == 'none':
     print('No optimization')
-#    HESS=np.zeros((np.size(VARIABLES),np.size(VARIABLES)))
+    COV = np.diag(np.ones(np.size(VARIABLES)))
 else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
@@ -148,14 +148,11 @@ if pccfg.opt_method == 'leastsq' and np.size(COV) == 1 and COV is None:
 print('Calculation of confidence intervals')
 INDEXSITE = 0
 for dlabel in pccfg.list_sites:
-    if pccfg.opt_method == 'none':
-        D[dlabel].sigma_zero()
-    else:
-        D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
-        D[dlabel].cov = COV[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
-            INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
-        INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
-        D[dlabel].sigma()
+    D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
+    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
+        INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
+    INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
+    D[dlabel].sigma()
 
 ###Final display and output
 print('Display of results')
