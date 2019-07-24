@@ -32,7 +32,6 @@ class Site(object):
         #Default parameters
         self.archive = 'icecore'
         self.accu_prior_rep = 'staircase'
-        self.udepth_top = None
         self.age_top = None
         self.depth = np.empty(0)
         self.corr_a_age = None
@@ -530,7 +529,7 @@ class Site(object):
                 self.tau_model = (1-self.mu_melt)*omega+self.mu_melt
 
             #udepth
-            self.udepth_model = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
+            self.udepth_model = self.depth[0]+np.cumsum(np.concatenate((np.array([0]),\
                                 self.dens/self.tau_model*self.depth_inter)))
 
             self.ulidie_model = self.lid_model*self.dens_firn
@@ -590,7 +589,7 @@ class Site(object):
         if self.archive == 'icecore':
             self.tau = self.tau_model*np.exp(np.interp(self.depth_mid, self.corr_tau_depth,\
                        np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
-            self.udepth = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
+            self.udepth = self.depth[0]+np.cumsum(np.concatenate((np.array([0]),\
                           self.dens/self.tau*self.depth_inter)))
             corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
             self.lid = self.lid_model*np.exp(np.interp(self.age_model, self.corr_lid_age, corr))
