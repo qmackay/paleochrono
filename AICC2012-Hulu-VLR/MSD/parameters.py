@@ -1,6 +1,5 @@
 #Parameters specific to the MSD speleothem
 self.archive='speleothem'
-self.udepth_top = 0. #unthinned depth at the top of the record
 self.age_top = 18520. #age at the top of the record
 self.depth = np.arange(0., 0.418+0.0001, 0.001) #Define the depth grid for the age calculation
 #Age grid for the accu correction function

@@ -55,6 +55,7 @@ def residuals(var):
         resi = np.concatenate((resi, D[dlab].residuals(D[dlab].variables)))
         for j, dlab2 in enumerate(pccfg.list_sites):
             if j < i:
+#                print(dlab2, dlab)
                 resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
     return resi
 

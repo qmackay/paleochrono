@@ -534,8 +534,7 @@ class Site(object):
             self.udepth_model = self.udepth_top+np.cumsum(np.concatenate((np.array([0]),\
                                 self.dens/self.tau_model*self.depth_inter)))
 
-            self.lidie_model = self.lid_model*self.dens_firn
-            self.ulidie_model = np.interp(self.lidie_model, self.iedepth, self.udepth_model)
+            self.ulidie_model = self.lid_model*self.dens_firn
 
         else:
             if self.calc_a:
@@ -551,6 +550,7 @@ class Site(object):
 
         #air age
         if self.archive == 'icecore':
+ #FIXME: We should add left=np.nan but the code bugs.
             self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ulidie_model,
                                                    self.udepth_model, self.depth)
             self.delta_depth_model = self.depth-self.ice_equiv_depth_model
@@ -595,8 +595,7 @@ class Site(object):
                           self.dens/self.tau*self.depth_inter)))
             corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
             self.lid = self.lid_model*np.exp(np.interp(self.age_model, self.corr_lid_age, corr))
-            self.lidie = self.lid*self.dens_firn
-            self.ulidie = np.interp(self.lidie, self.iedepth, self.udepth)
+            self.ulidie = self.lid*self.dens_firn
 
         #Ice age
         if self.archive == 'icecore':
