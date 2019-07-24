@@ -163,7 +163,6 @@ class Site(object):
         self.lid_init = np.empty_like(self.depth)
         self.sigma_age = np.empty_like(self.depth)
         self.sigma_airage = np.empty_like(self.depth)
-        self.lidie = np.empty_like(self.depth)
         self.sigma_lid = np.empty_like(self.depth)
         self.ulidie = np.empty_like(self.depth)
         self.cov = np.array([])
