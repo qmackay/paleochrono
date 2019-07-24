@@ -112,6 +112,15 @@ class Site(object):
             self.corr_tau_depth = self.corr_thinning_depth
         except AttributeError:
             pass
+        try:
+            self.accu_prior_rep = self.deporate_prior_rep
+        except AttributeError:
+            pass
+        try:
+            self.sigmap_corr_a = self.sigmap_corr_deporate
+        except AttributeError:
+            pass
+        
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
