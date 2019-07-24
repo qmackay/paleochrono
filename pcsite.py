@@ -96,6 +96,10 @@ class Site(object):
             self.corr_a_age = self.corr_deporate_age
         except AttributeError:
             pass
+        try:
+            self.lambda_lid = self.lambda_LID
+        except AttributeError:
+            pass
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
@@ -308,7 +312,7 @@ class Site(object):
             self.correlation_corr_lid = np.interp(np.abs(np.ones((np.size(self.corr_lid_age),\
                 np.size(self.corr_lid_age)))*self.corr_lid_age-np.transpose(np.ones((np.size(\
                 self.corr_lid_age),np.size(self.corr_lid_age)))*self.corr_lid_age)),\
-                np.array([0,self.lambda_LID]),np.array([1, 0]))
+                np.array([0,self.lambda_lid]),np.array([1, 0]))
             
             #Thinning correlation matrix
             self.correlation_corr_tau = np.interp(np.abs(np.ones((np.size(self.corr_tau_depth),\
