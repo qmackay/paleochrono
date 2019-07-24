@@ -104,6 +104,14 @@ class Site(object):
             self.lambda_a = self.lambda_deporate
         except AttributeError:
             pass
+        try:
+            self.calc_tau = self.calc_thinning
+        except AttributeError:
+            pass
+        try:
+            self.corr_tau_depth = self.corr_thinning_depth
+        except AttributeError:
+            pass
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
