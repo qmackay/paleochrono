@@ -84,7 +84,19 @@ class Site(object):
             self.accu0 = self.A0
         except AttributeError:
             pass
-
+        try:
+            self.accu0 = self.deporate0
+        except AttributeError:
+            pass
+        try:
+            self.calc_a = self.calc_deporate
+        except AttributeError:
+            pass
+        try:
+            self.corr_a_age = self.corr_deporate_age
+        except AttributeError:
+            pass
+        
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
         self.depth_inter = (self.depth[1:]-self.depth[:-1])

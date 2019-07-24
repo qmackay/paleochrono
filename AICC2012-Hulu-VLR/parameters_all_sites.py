@@ -1,4 +1,4 @@
-self.calc_a = False           #Use False for now.
+self.calc_deporate = False           #Use False for now.
 self.calc_tau = False         #Use False for now.
 self.calc_LID = False         #Use False for now.
 self.corr_tau_nodes = 26  #Define the number of nodes of the thinning function.

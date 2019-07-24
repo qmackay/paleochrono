@@ -3,7 +3,7 @@ self.udepth_top = 0. #unthinned depth at the top of the core
 self.age_top = -55. #age at the top of the core
 self.depth = np.arange(0., 3259.3+0.01, 0.55) #Define the depth grid for the age calculation
 #Age grid for the accu correction function
-self.corr_a_age = np.arange(self.age_top, 1000000+self.age_top+0.01, self.age_step)
+self.corr_deporate_age = np.arange(self.age_top, 1000000+self.age_top+0.01, self.age_step)
 #Age grid for the LID correction function
 self.corr_LID_age = np.arange(self.age_top, 1000000+self.age_top+0.01, self.age_step)
 #Depth grid for the thinning correction function
