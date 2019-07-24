@@ -117,7 +117,15 @@ class Site(object):
         except AttributeError:
             pass
         try:
-            self.sigmap_corr_a = self.sigmap_corr_deporate
+            self.sigmap_corr_a = self.deporate_prior_sigma
+        except AttributeError:
+            pass
+        try:
+            self.sigmap_corr_tau = self.thinning_prior_sigma
+        except AttributeError:
+            pass
+        try:
+            self.sigmap_corr_lid = self.lid_prior_sigma
         except AttributeError:
             pass
         

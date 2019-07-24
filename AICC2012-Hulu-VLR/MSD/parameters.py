@@ -10,7 +10,7 @@ self.corr_deporate_age = np.arange(self.age_top, 60000+self.age_top+0.01, 1000.)
 self.deporate_prior_rep = 'linear'
 self.calc_deporate = True
 self.deporate0 = 1.17e-5
-self.sigmap_corr_deporate = 0.2
+self.deporate_prior_sigma = 0.2
 
 #The following parameters defines the covariance matrices as in AICC2012 (Bazin et al., 2013 and Veres et al., 2013).
 #self.thickness=3273.                    #Real thickness
