@@ -105,6 +105,10 @@ class Site(object):
         except AttributeError:
             pass
         try:
+            self.lambda_tau = self.lambda_thinning
+        except AttributeError:
+            pass
+        try:
             self.calc_tau = self.calc_thinning
         except AttributeError:
             pass
@@ -126,6 +130,10 @@ class Site(object):
             pass
         try:
             self.sigmap_corr_lid = self.lid_prior_sigma
+        except AttributeError:
+            pass
+        try:
+            self.corr_tau_nodes = self.corr_thinning_nodes
         except AttributeError:
             pass
         
