@@ -100,6 +100,10 @@ class Site(object):
             self.lambda_lid = self.lambda_LID
         except AttributeError:
             pass
+        try:
+            self.lambda_a = self.lambda_deporate
+        except AttributeError:
+            pass
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
