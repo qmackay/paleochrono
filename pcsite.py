@@ -320,10 +320,10 @@ class Site(object):
         if self.archive == 'icecore':
             try:
                  #FIXME: we should average here since it would be more representative
+                lid_age = self.fct_airage_model(self.lid_depth)
                 self.sigmap_corr_lid = np.interp(self.corr_lid_age,
-                                                 self.fct_airage_model(self.lid_depth),
-                                                 self.lid_sigma)
-#                self.sigmap_corr_lid = np.where(self.sigmap_corr_lid==np.nan, 0.2, self.sigmap_corr_lid)
+                                                 lid_age[~np.isnan(lid_age)],
+                                                 self.lid_sigma[~np.isnan(lid_age)])
             except AttributeError:
                 print('Sigma on prior LID scenario not defined in the LID-prior.txt file')
                 self.sigmap_corr_lid=self.sigmap_corr_lid*np.ones(np.size(self.corr_lid_age))
@@ -549,9 +549,8 @@ class Site(object):
 
         #air age
         if self.archive == 'icecore':
- #FIXME: We should add left=np.nan but the code bugs.
             self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ulidie_model,
-                                                   self.udepth_model, self.depth)
+                                                   self.udepth_model, self.depth, left=np.nan)
             self.delta_depth_model = self.depth-self.ice_equiv_depth_model
             self.airage_model = np.interp(self.ice_equiv_depth_model, self.depth, self.age_model,
                                           left=np.nan, right=np.nan)
