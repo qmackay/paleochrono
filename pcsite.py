@@ -568,25 +568,6 @@ class Site(object):
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
 
-        self.correlation_corr_a_before = self.correlation_corr_a+0
-        if self.archive == 'icecore':
-            self.correlation_corr_lid_before = self.correlation_corr_lid+0
-            self.correlation_corr_tau_before = self.correlation_corr_tau+0
-
-        filename = pccfg.datadir+'/parameters-CovariancePrior-AllSites.py'
-        if os.path.isfile(filename):
-            exec(open(filename).read())
-        filename = pccfg.datadir+self.label+'/parameters-CovariancePrior.py'
-        if os.path.isfile(filename):
-            exec(open(filename).read())
-
-        if (self.correlation_corr_a_before != self.correlation_corr_a).any():
-            self.chol_a = cholesky(self.correlation_corr_a)
-        if self.archive == 'icecore':
-            if (self.correlation_corr_lid_before != self.correlation_corr_lid).any():
-                self.chol_lid = cholesky(self.correlation_corr_lid)
-            if (self.correlation_corr_a_before != self.correlation_corr_a).any():
-                self.chol_tau = cholesky(self.correlation_corr_tau)
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
