@@ -371,9 +371,10 @@ class Site(object):
 
 
         if self.archive == 'icecore':
-            self.variables = np.concatenate((self.corr_a, self.corr_tau, self.corr_lid))
+            self.variables = np.concatenate((np.array([self.age_top]),
+                                             self.corr_a, self.corr_tau, self.corr_lid))
         else:
-            self.variables = self.corr_a
+            self.variables = np.concatenate((np.array([self.age_top]), self.corr_a))
 
 #Reading of observations
 
@@ -621,7 +622,7 @@ class Site(object):
 
     def model(self, var):
         """Calculate the model from the vector var containing its variables."""
-        index = 0
+
 #        if self.calc_a==True:
 #            self.accu0=var[index]
 #            self.beta=var[index+1]
@@ -634,6 +635,9 @@ class Site(object):
 #            self.pprime=var[index]
 #            self.muprime=var[index+1]
 #            index=index+2
+        index = 0
+        self.age_top = var[0]
+        index = 1
         self.corr_a = var[index:index+np.size(self.corr_a)]
         if self.archive == 'icecore':
             self.corr_tau = var[index+np.size(self.corr_a):\
