@@ -155,6 +155,7 @@ class SitePair(object):
                           self.site2.fct_airage(self.airairhorizons_depth2))/\
                           self.airairhorizons_sigma
             if np.size(self.airairhorizons_depth1) > 0:
+
                 resi_airair = lu_solve(self.airairhorizons_lu_piv, resi_airair)
             resi = np.concatenate((resi, resi_airair))
 

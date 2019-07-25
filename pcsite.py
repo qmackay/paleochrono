@@ -323,6 +323,7 @@ class Site(object):
                 self.sigmap_corr_lid = np.interp(self.corr_lid_age,
                                                  self.fct_airage_model(self.lid_depth),
                                                  self.lid_sigma)
+#                self.sigmap_corr_lid = np.where(self.sigmap_corr_lid==np.nan, 0.2, self.sigmap_corr_lid)
             except AttributeError:
                 print('Sigma on prior LID scenario not defined in the LID-prior.txt file')
                 self.sigmap_corr_lid=self.sigmap_corr_lid*np.ones(np.size(self.corr_lid_age))
@@ -592,9 +593,8 @@ class Site(object):
             self.udepth = self.depth[0]+np.cumsum(np.concatenate((np.array([0]),\
                           self.dens/self.tau*self.depth_inter)))
             corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
-            self.lid = self.lid_model*np.exp(np.interp(self.age_model, self.corr_lid_age, corr))
+            self.lid = self.lid_model*np.exp(np.interp(self.airage_model, self.corr_lid_age, corr))
             self.ulidie = self.lid*self.dens_firn
-
         #Ice age
         if self.archive == 'icecore':
             self.icelayerthick = self.tau*self.accu/self.dens
