@@ -605,7 +605,8 @@ class Site(object):
 
         #Air age
         if self.archive == 'icecore':
-            self.ice_equiv_depth = np.interp(self.udepth-self.ulidie, self.udepth, self.depth)
+            self.ice_equiv_depth = np.interp(self.udepth-self.ulidie, self.udepth, self.depth,
+                                             left=np.nan)
             self.delta_depth = self.depth-self.ice_equiv_depth
             self.airage = np.interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
                                     right=np.nan)
