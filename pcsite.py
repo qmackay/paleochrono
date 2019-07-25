@@ -310,18 +310,23 @@ class Site(object):
 ## Definition of the covariance matrix of the background
 
         try:
-            #FIXME: we should average here since it would be more representative
-            self.sigmap_corr_a = np.interp(self.corr_a_age, self.fct_age_model(self.a_depth),
-                                           self.a_sigma)
+          x_out = (self.corr_a_age[:-1]+self.corr_a_age[1:])/2
+          x_out = np.concatenate((np.array([self.corr_a_age[0]]), x_out,
+                                 np.array([self.corr_a_age[-1]])))
+          self.sigmap_corr_a = interp_stair_aver(x_out, self.fct_age_model(self.a_depth),
+                                                        self.a_sigma)
         except AttributeError:
             print('Sigma on prior accu scenario not defined in the accu-prior.txt file')
             self.sigmap_corr_a=self.sigmap_corr_a*np.ones(np.size(self.corr_a_age))
 
         if self.archive == 'icecore':
             try:
-                 #FIXME: we should average here since it would be more representative
+                x_out = (self.corr_lid_age[:-1]+self.corr_lid_age[1:])/2
+                x_out = np.concatenate((np.array([self.corr_lid_age[0]]), x_out,
+                                        np.array([self.corr_lid_age[-1]])))
+
                 lid_age = self.fct_airage_model(self.lid_depth)
-                self.sigmap_corr_lid = np.interp(self.corr_lid_age,
+                self.sigmap_corr_lid = interp_lin_aver(x_out,
                                                  lid_age[~np.isnan(lid_age)],
                                                  self.lid_sigma[~np.isnan(lid_age)])
             except AttributeError:
@@ -329,8 +334,10 @@ class Site(object):
                 self.sigmap_corr_lid=self.sigmap_corr_lid*np.ones(np.size(self.corr_lid_age))
 
             try:
-                #FIXME: we should average here since it would be more representative
-                self.sigmap_corr_tau = np.interp(self.corr_tau_depth, self.tau_depth,
+                x_out = (self.corr_tau_depth[:-1]+self.corr_tau_depth[1:])/2
+                x_out = np.concatenate((np.array([self.corr_tau_depth[0]]), x_out,
+                                 np.array([self.corr_tau_depth[-1]])))
+                self.sigmap_corr_tau = interp_lin_aver(x_out, self.tau_depth,
                                                  self.tau_sigma)
             except AttributeError:
                 print('Sigma on prior thinning scenario not defined in the thinning-prior.txt file')
