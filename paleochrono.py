@@ -65,7 +65,7 @@ def cost_function(var):
     return cost
 
 
-def jacobian(var):
+def jacobian_parallel(var):
     """Calculate derivatives for each parameter using pool."""
     zeropred = residuals(var)
     derivparams = []
@@ -114,13 +114,13 @@ if pccfg.opt_method == 'leastsq':
     VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
 elif pccfg.opt_method == 'leastsq-parallel':
     print('Optimization by leastsq-parallel')
-    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=deriv_res,
+    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=jacobian_parallel,
                                                    col_deriv=1, full_output=1)
 elif pccfg.opt_method == "trf":
     print('Optimization by trf')
     if pccfg.is_parallel:
         print('Parallel mode with', pccfg.nb_nodes, 'nodes')
-        OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian, verbose=2)
+        OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian_parallel, verbose=2)
     else:
         print('Scalar mode')
         OptimizeResult = least_squares(residuals, VARIABLES, verbose=2)
@@ -131,7 +131,8 @@ elif pccfg.opt_method == "lm":
     print('Optimization by lm')
     if pccfg.is_parallel:
         print('Parallel mode with', pccfg.nb_nodes, 'nodes')
-        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian, verbose=2)
+        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian_parallel,
+                                       verbose=2)
     else:
         print('Scalar mode')
         OptimizeResult = least_squares(residuals, VARIABLES, method='lm', verbose=2)
