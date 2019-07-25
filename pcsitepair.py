@@ -144,34 +144,34 @@ class SitePair(object):
     def residuals(self):
         """Calculate the residual terms of a pair of sites."""
 
-        resi_iceice = (self.site1.fct_age(self.iceicehorizons_depth1)-\
-                       self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
         if np.size(self.iceicehorizons_depth1) > 0:
+            resi_iceice = (self.site1.fct_age(self.iceicehorizons_depth1)-\
+                           self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
             resi_iceice = lu_solve(self.iceicehorizons_lu_piv, resi_iceice)
-        resi = resi_iceice
+            resi = resi_iceice
+        else:
+            resi = np.array([])
 
-        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
+        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore' and \
+            np.size(self.airairhorizons_depth1) > 0:
             resi_airair = (self.site1.fct_airage(self.airairhorizons_depth1)-\
                           self.site2.fct_airage(self.airairhorizons_depth2))/\
                           self.airairhorizons_sigma
-            if np.size(self.airairhorizons_depth1) > 0:
-                resi_airair = lu_solve(self.airairhorizons_lu_piv, resi_airair)
+            resi_airair = lu_solve(self.airairhorizons_lu_piv, resi_airair)
             resi = np.concatenate((resi, resi_airair))
 
-        if self.site2.archive == 'icecore':
+        if self.site2.archive == 'icecore' and np.size(self.iceairhorizons_depth1) > 0:
             resi_iceair = (self.site1.fct_age(self.iceairhorizons_depth1)-\
                           self.site2.fct_airage(self.iceairhorizons_depth2))/\
                           self.iceairhorizons_sigma
-            if np.size(self.iceairhorizons_depth1) > 0:
-                resi_iceair = lu_solve(self.iceairhorizons_lu_piv, resi_iceair)
+            resi_iceair = lu_solve(self.iceairhorizons_lu_piv, resi_iceair)
             resi = np.concatenate((resi, resi_iceair))
 
-        if self.site1.archive == 'icecore':
+        if self.site1.archive == 'icecore' and np.size(self.airicehorizons_depth1) > 0:
             resi_airice = (self.site1.fct_airage(self.airicehorizons_depth1)-\
                            self.site2.fct_age(self.airicehorizons_depth2))/self.airicehorizons_sigma
-            if np.size(self.airicehorizons_depth1) > 0:
-                resi_airice = lu_solve(self.airicehorizons_lu_piv, resi_airice)
-                resi = np.concatenate((resi, resi_airice))
+            resi_airice = lu_solve(self.airicehorizons_lu_piv, resi_airice)
+            resi = np.concatenate((resi, resi_airice))
 
         return resi
 
