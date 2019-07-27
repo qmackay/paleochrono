@@ -46,20 +46,25 @@ DC = {}
 
 
 def residuals(var):
-    """Calculate the residuals."""
-    resi = np.array([])
+    """Calculate the residuals as a function of the variables vector."""
     index = 0
     for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].variables = var[index:index+np.size(D[dlab].variables)]
         index = index+np.size(D[dlab].variables)
         D[dlab].model(D[dlab].variables)
+    return resid()
+
+def resid():
+    """Calculate the residuals without recalculating the model."""
+    resi = np.array([])
+    for i, dlab in enumerate(pccfg.list_sites):
         resi = np.concatenate((resi, D[dlab].residuals()))
         for j, dlab2 in enumerate(pccfg.list_sites):
 #Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
-            if j < i: #Because j should have been updated.
-#                print(dlab2, dlab)
+            if j < i:
                 resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
     return resi
+    
 
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
@@ -74,15 +79,9 @@ def jacobian(var):
     for k, dlabj in enumerate(pccfg.list_sites):
         for l in range(len(D[dlabj].variables)):
             D[dlabj].variables[l] += delta
-            D[dlabj].model(D[dlabj].variables)            
-            resi = np.array([])
-            for i, dlab in enumerate(pccfg.list_sites):
-                resi = np.concatenate((resi, D[dlab].residuals()))
-                for j, dlab2 in enumerate(pccfg.list_sites):
-                    if j < i:
-                        resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
+            D[dlabj].model(D[dlabj].variables)
+            jacob = np.vstack((jacob, (resid() - resizero)/delta))
             D[dlabj].variables[l] -= delta
-            jacob = np.vstack((jacob, (resi - resizero)/delta))          
     return np.transpose(jacob)
 
 def jacobian_parallel(var):
