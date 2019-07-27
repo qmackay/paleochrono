@@ -54,9 +54,9 @@ def residuals(var):
         index = index+np.size(D[dlab].variables)
         D[dlab].model(D[dlab].variables)
         resi = np.concatenate((resi, D[dlab].residuals()))
-    for i, dlab in enumerate(pccfg.list_sites):
         for j, dlab2 in enumerate(pccfg.list_sites):
-            if j < i:
+#Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
+            if j < i: #Because j should have been updated.
 #                print(dlab2, dlab)
                 resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
     return resi
@@ -65,6 +65,25 @@ def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
     cost = np.dot(residuals(var), np.transpose(residuals(var)))
     return cost    
+
+def jacobian(var):
+    """Calculate the residuals."""
+    resizero = residuals(var)
+    jacob = np.empty((0,np.size(resizero)), int)
+    delta = m.sqrt(np.finfo(float).eps) #Stolen from the leastsq code
+    for k, dlabj in enumerate(pccfg.list_sites):
+        for l in range(len(D[dlabj].variables)):
+            D[dlabj].variables[l] += delta
+            D[dlabj].model(D[dlabj].variables)            
+            resi = np.array([])
+            for i, dlab in enumerate(pccfg.list_sites):
+                resi = np.concatenate((resi, D[dlab].residuals()))
+                for j, dlab2 in enumerate(pccfg.list_sites):
+                    if j < i:
+                        resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
+            D[dlabj].variables[l] -= delta
+            jacob = np.vstack((jacob, (resi - resizero)/delta))          
+    return np.transpose(jacob)
 
 def jacobian_parallel(var):
     """Calculate derivatives for each parameter using pool."""
@@ -124,7 +143,7 @@ elif pccfg.opt_method == "trf":
         OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian_parallel, verbose=2)
     else:
         print('Scalar mode')
-        OptimizeResult = least_squares(residuals, VARIABLES, verbose=2)
+        OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)
@@ -136,7 +155,7 @@ elif pccfg.opt_method == "lm":
                                        verbose=2)
     else:
         print('Scalar mode')
-        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', verbose=2)
+        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)
