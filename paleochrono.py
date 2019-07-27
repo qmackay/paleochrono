@@ -52,7 +52,9 @@ def residuals(var):
     for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].variables = var[index:index+np.size(D[dlab].variables)]
         index = index+np.size(D[dlab].variables)
-        resi = np.concatenate((resi, D[dlab].residuals(D[dlab].variables)))
+        D[dlab].model(D[dlab].variables)
+        resi = np.concatenate((resi, D[dlab].residuals()))
+    for i, dlab in enumerate(pccfg.list_sites):
         for j, dlab2 in enumerate(pccfg.list_sites):
             if j < i:
 #                print(dlab2, dlab)
@@ -62,8 +64,7 @@ def residuals(var):
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
     cost = np.dot(residuals(var), np.transpose(residuals(var)))
-    return cost
-
+    return cost    
 
 def jacobian_parallel(var):
     """Calculate derivatives for each parameter using pool."""

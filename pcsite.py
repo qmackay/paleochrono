@@ -679,9 +679,8 @@ class Site(object):
         """Return the delta_depth at given detphs."""
         return np.interp(depth, self.depth, self.delta_depth)
 
-    def residuals(self, var):
+    def residuals(self):
         """Calculate the residuals from the vector of the variables"""
-        self.model(var)
         resi_corr_a = self.corr_a
         resi_age = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
                    /self.icehorizons_sigma
