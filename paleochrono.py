@@ -68,7 +68,8 @@ def resid():
 
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
-    cost = np.dot(residuals(var), np.transpose(residuals(var)))
+    res = residuals(var)
+    cost = np.dot(res, np.transpose(res))
     return cost    
 
 def jacobian(var):
@@ -80,7 +81,27 @@ def jacobian(var):
         for l in range(len(D[dlabj].variables)):
             D[dlabj].variables[l] += delta
             D[dlabj].model(D[dlabj].variables)
-            jacob = np.vstack((jacob, (resid() - resizero)/delta))
+            
+            deriv = np.array([])
+            index = 0
+            for i, dlab in enumerate(pccfg.list_sites):
+                if k == i:
+                    der = (D[dlab].residuals() - resizero[index:index+RESI_SIZE[i, i]]) / delta
+                    deriv = np.concatenate((deriv, der))
+                else:
+                    deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[i, i])))
+                index = index+RESI_SIZE[i, i]
+                for j, dlab2 in enumerate(pccfg.list_sites):
+                    if j < i:
+                        if k == i or k == j:
+                            der = (DC[dlab2+'-'+dlab].residuals()-\
+                                   resizero[index:index+RESI_SIZE[j, i]])/delta
+                            deriv = np.concatenate((deriv, der))
+                        else:
+                            deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[j, i])))
+                        index = index+RESI_SIZE[j, i]
+                            
+            jacob = np.vstack((jacob, deriv))
             D[dlabj].variables[l] -= delta
     return np.transpose(jacob)
 
@@ -105,6 +126,8 @@ def jacobian_parallel(var):
 ##MAIN
 
 ##Initialisation
+RESI_SIZE = np.empty((np.size(pccfg.list_sites), np.size(pccfg.list_sites)), dtype=np.int)
+
 for di, dlabel in enumerate(pccfg.list_sites):
 
     print('Initialization of site '+dlabel)
@@ -116,6 +139,7 @@ for di, dlabel in enumerate(pccfg.list_sites):
     D[dlabel].write_init()
 #    D[dlabel].display_init()
     VARIABLES = np.concatenate((VARIABLES, D[dlabel].variables))
+    RESI_SIZE[di, di] = np.size(D[dlabel].residuals())
 
 for di, dlabel in enumerate(pccfg.list_sites):
     for dj, dlabel2 in enumerate(pccfg.list_sites):
@@ -123,6 +147,8 @@ for di, dlabel in enumerate(pccfg.list_sites):
             print('Initialization of site pair '+dlabel2+'-'+dlabel)
             DC[dlabel2+'-'+dlabel] = SitePair(D[dlabel2], D[dlabel])
 #            DC[dlabel2+'-'+dlabel].display_init()
+            RESI_SIZE[dj, di] = np.size(DC[dlabel2+'-'+dlabel].residuals())
+
 
 
 ##Optimization
