@@ -27,6 +27,7 @@ from scipy.optimize import leastsq, least_squares
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
+from functools import partial
 
 #Reload pccfg
 importlib.reload(pccfg)
@@ -100,20 +101,21 @@ def jacob_column(resizero, dlabj, l):
 def jacobian_analytical(var):
     """Calculate the residuals."""
     resizero = residuals(var)
-    jacob = np.empty((0,np.size(resizero)))
+    jac_list = []
     for k, dlabj in enumerate(pccfg.list_sites):
         if pccfg.is_parallel:
-            list_args = []
-            for i in range(len(D[dlabj].variables)):
-                list_args.append((resizero, dlabj, i))
+            list_args = list(range(len(D[dlabj].variables)))
             if __name__ == "__main__":
                 with multiprocessing.Pool(pccfg.nb_nodes) as pool:
-                    results = pool.starmap(jacob_column, list_args)
-                jacob = np.vstack((jacob, results))
+                    results = pool.map(partial(jacob_column, resizero, dlabj),
+                                               list_args)
+                jac_list.append(results)
         else:
             for l in range(len(D[dlabj].variables)):
-                jacob = np.vstack((jacob, jacob_column(resizero, dlabj, l)))
+#                jacob = np.vstack((jacob, jacob_column(resizero, dlabj, l)))
+                jac_list.append(np.array([jacob_column(resizero, dlabj, l)]))
         D[dlabj].model(D[dlabj].variables)
+    jacob = np.concatenate(jac_list)
     return np.transpose(jacob)
 
 def jacobian_numerical(var):
@@ -134,11 +136,12 @@ def jacobian_numerical(var):
         results = pool.map(residuals, derivparams)
         derivs = [(r - zeropred)/delta for r in results]
     else:
-        derivs = np.empty((0,np.size(zeropred)))
+        list_derivs = []
         for i in range(len(var)):
             copy = np.array(var)
             copy[i] += delta
-            derivs = np.vstack((derivs, (residuals(copy)-zeropred)/delta))
+            list_derivs.append(np.array([(residuals(copy)-zeropred)/delta]))
+        derivs = np.concatenate(list_derivs)
     return np.transpose(derivs)
 
 ##MAIN
@@ -187,9 +190,11 @@ elif pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     if pccfg.is_parallel:
         print('nb of nodes:', pccfg.nb_nodes)
     if pccfg.is_analytical_jacobian:
+        print('Analytical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
                                        jac=jacobian_analytical, verbose=2)
     else:
+        print('Numerical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
                                            jac=jacobian_numerical, verbose=2)
     VARIABLES = OptimizeResult.x

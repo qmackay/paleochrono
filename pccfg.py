@@ -26,6 +26,7 @@ scale_ageci = 10.     #scaling of the confidence interval in the ice and air age
 show_figures = False  #whether to show or not the figures at the end of the run
 show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
 
+
 ###Reading parameters directory
 datadir = sys.argv[1]
 if datadir[-1] != '/':
