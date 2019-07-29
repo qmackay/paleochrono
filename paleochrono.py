@@ -72,55 +72,73 @@ def cost_function(var):
     cost = np.dot(res, np.transpose(res))
     return cost    
 
-def jacobian(var):
-    """Calculate the residuals."""
-    resizero = residuals(var)
-    jacob = np.empty((0,np.size(resizero)), int)
+def jacob_column(resizero, dlabj, l):
     delta = m.sqrt(np.finfo(float).eps) #Stolen from the leastsq code
-    for k, dlabj in enumerate(pccfg.list_sites):
-        for l in range(len(D[dlabj].variables)):
-            D[dlabj].variables[l] += delta
-            D[dlabj].model(D[dlabj].variables)
-            
-            deriv = np.array([])
-            index = 0
-            for i, dlab in enumerate(pccfg.list_sites):
-                if k == i:
-                    der = (D[dlab].residuals() - resizero[index:index+RESI_SIZE[i, i]]) / delta
+    D[dlabj].variables[l] += delta
+    D[dlabj].model(D[dlabj].variables)
+    deriv = np.array([])
+    index = 0
+    for i, dlab in enumerate(pccfg.list_sites):
+        if dlabj == dlab:
+            der = (D[dlab].residuals() - resizero[index:index+RESI_SIZE[i, i]]) / delta
+            deriv = np.concatenate((deriv, der))
+        else:
+            deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[i, i])))
+        index = index+RESI_SIZE[i, i]
+        for j, dlab2 in enumerate(pccfg.list_sites):
+            if j < i:
+                if dlabj == dlab or dlabj == dlab2:
+                    der = (DC[dlab2+'-'+dlab].residuals()-\
+                           resizero[index:index+RESI_SIZE[j, i]])/delta
                     deriv = np.concatenate((deriv, der))
                 else:
-                    deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[i, i])))
-                index = index+RESI_SIZE[i, i]
-                for j, dlab2 in enumerate(pccfg.list_sites):
-                    if j < i:
-                        if k == i or k == j:
-                            der = (DC[dlab2+'-'+dlab].residuals()-\
-                                   resizero[index:index+RESI_SIZE[j, i]])/delta
-                            deriv = np.concatenate((deriv, der))
-                        else:
-                            deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[j, i])))
-                        index = index+RESI_SIZE[j, i]
-                            
-            jacob = np.vstack((jacob, deriv))
-            D[dlabj].variables[l] -= delta
+                    deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[j, i])))
+                index = index+RESI_SIZE[j, i]
+    D[dlabj].variables[l] -= delta
+    return deriv
+
+def jacobian_analytical(var):
+    """Calculate the residuals."""
+    resizero = residuals(var)
+    jacob = np.empty((0,np.size(resizero)))
+    for k, dlabj in enumerate(pccfg.list_sites):
+        if pccfg.is_parallel:
+            list_args = []
+            for i in range(len(D[dlabj].variables)):
+                list_args.append((resizero, dlabj, i))
+            if __name__ == "__main__":
+                with multiprocessing.Pool(pccfg.nb_nodes) as pool:
+                    results = pool.starmap(jacob_column, list_args)
+                jacob = np.vstack((jacob, results))
+        else:
+            for l in range(len(D[dlabj].variables)):
+                jacob = np.vstack((jacob, jacob_column(resizero, dlabj, l)))
+        D[dlabj].model(D[dlabj].variables)
     return np.transpose(jacob)
 
-def jacobian_parallel(var):
+def jacobian_numerical(var):
     """Calculate derivatives for each parameter using pool."""
     zeropred = residuals(var)
     derivparams = []
     results = []
     delta = m.sqrt(np.finfo(float).eps) #Stolen from the leastsq code
     #fixme: This loop is probably sub-optimal. Have a look at what does leastsq to improve this.
-    for i in range(len(var)):
-        copy = np.array(var)
-        copy[i] += delta
-        derivparams.append(copy)
 #        results.append(residuals(derivparams))
-    if __name__ == "__main__":
-        pool = multiprocessing.Pool(pccfg.nb_nodes)
-    results = pool.map(residuals, derivparams)
-    derivs = [(r - zeropred)/delta for r in results]
+    if pccfg.is_parallel:
+        for i in range(len(var)):
+            copy = np.array(var)
+            copy[i] += delta
+            derivparams.append(copy)
+        if __name__ == "__main__":
+            pool = multiprocessing.Pool(pccfg.nb_nodes)
+        results = pool.map(residuals, derivparams)
+        derivs = [(r - zeropred)/delta for r in results]
+    else:
+        derivs = np.empty((0,np.size(zeropred)))
+        for i in range(len(var)):
+            copy = np.array(var)
+            copy[i] += delta
+            derivs = np.vstack((derivs, (residuals(copy)-zeropred)/delta))
     return np.transpose(derivs)
 
 ##MAIN
@@ -154,33 +172,26 @@ for di, dlabel in enumerate(pccfg.list_sites):
 ##Optimization
 START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
+#print(jacobian_parallel(VARIABLES))
 if pccfg.opt_method == 'leastsq':
     print('Optimization by leastsq')
     VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
 elif pccfg.opt_method == 'leastsq-parallel':
     print('Optimization by leastsq-parallel')
-    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=jacobian_parallel,
+    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=jacobian_numerical,
                                                    col_deriv=1, full_output=1)
-elif pccfg.opt_method == "trf":
-    print('Optimization by trf')
+elif pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
+    print('Optimization by:', pccfg.opt_method)
+    print('Analytical Jabobian:', pccfg.is_analytical_jacobian)
+    print('Parallel:', pccfg.is_parallel)
     if pccfg.is_parallel:
-        print('Parallel mode with', pccfg.nb_nodes, 'nodes')
-        OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian_parallel, verbose=2)
+        print('nb of nodes:', pccfg.nb_nodes)
+    if pccfg.is_analytical_jacobian:
+        OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
+                                       jac=jacobian_analytical, verbose=2)
     else:
-        print('Scalar mode')
-        OptimizeResult = least_squares(residuals, VARIABLES, jac=jacobian, verbose=2)
-    VARIABLES = OptimizeResult.x
-    HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
-    COV = np.linalg.inv(HESS)
-elif pccfg.opt_method == "lm":
-    print('Optimization by lm')
-    if pccfg.is_parallel:
-        print('Parallel mode with', pccfg.nb_nodes, 'nodes')
-        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian_parallel,
-                                       verbose=2)
-    else:
-        print('Scalar mode')
-        OptimizeResult = least_squares(residuals, VARIABLES, method='lm', jac=jacobian, verbose=2)
+        OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
+                                           jac=jacobian_numerical, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)

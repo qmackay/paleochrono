@@ -2,6 +2,7 @@ list_sites = ['EDC','VK','TALDICE','EDML','NGRIP', 'MSD']
 
 opt_method = 'trf'  #trf, lm or none
 is_parallel = False
+is_analytical_jacobian = True
 nb_nodes = 4         #Number of nodes for the leastsq-parallel mode
 
 #Defines the colors for the graphs
