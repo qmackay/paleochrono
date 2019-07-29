@@ -708,10 +708,10 @@ class Site(object):
                                 self.delta_depth_delta_depth)/self.delta_depth_sigma
             if np.size(self.delta_depth_depth) > 0:
                 resi_delta_depth = lu_solve(self.delta_depth_lu_piv, resi_delta_depth)
-            return np.concatenate((resi_corr_a, resi_corr_lid, resi_corr_tau, resi_age, resi_airage,
+            return np.concatenate((resi_age, resi_airage,
                                    resi_iceint, resi_airint, resi_delta_depth))
         else:
-            return np.concatenate((resi_corr_a, resi_age, resi_iceint))
+            return np.concatenate((resi_age, resi_iceint))
 
     def cost_function(self):
         """Calculate the cost function."""
