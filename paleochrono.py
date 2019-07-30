@@ -184,13 +184,12 @@ START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
 #JAC0=jacobian_analytical(VARIABLES)
 if pccfg.opt_method == 'leastsq':
-    print('Optimization by leastsq')
-    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
+    pccfg.opt_method = 'trf'
+    pccfg.is_parallel = False
 elif pccfg.opt_method == 'leastsq-parallel':
-    print('Optimization by leastsq-parallel')
-    VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, Dfun=jacobian_numerical,
-                                                   col_deriv=1, full_output=1)
-elif pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
+    pccfg.opt_method = 'trf'
+    pccfg.is_parallel = True
+if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     print('Optimization by:', pccfg.opt_method)
     print('Analytical Jabobian:', pccfg.is_analytical_jacobian)
     print('Parallel:', pccfg.is_parallel)
