@@ -199,11 +199,13 @@ elif pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     if pccfg.is_analytical_jacobian:
         print('Analytical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                       jac=jacobian_analytical, verbose=2)
+                                       jac=jacobian_analytical, verbose=2,
+                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol)
     else:
         print('Numerical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                       jac=jacobian_numerical, verbose=2)
+                                       jac=jacobian_numerical, verbose=2,
+                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)
