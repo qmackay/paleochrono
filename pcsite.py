@@ -33,7 +33,6 @@ class Site(object):
         self.archive = 'icecore'
         self.accu_prior_rep = 'staircase'
         self.age_top = None
-#        self.age_top_sigma = 1.
         self.depth = np.empty(0)
         self.corr_a_age = None
         self.calc_a = False
@@ -136,11 +135,16 @@ class Site(object):
             self.corr_tau_nodes = self.corr_thinning_nodes
         except AttributeError:
             pass
-#        try:
-#            self.age_top_prior = self.age_top
-#        except AttributeError:
-#            pass
-        
+        try:
+            self.age_top_prior = self.age_top
+        except AttributeError:
+            pass
+        try:
+            self.age_top_sigma
+        except AttributeError:
+            print('Now, age_top is a variable to be optimized.\n'
+                  'Therefore you need to define age_top_prior and age_top_sigma for its prior.')
+            sys.exit()
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
@@ -298,13 +302,13 @@ class Site(object):
         if self.start == 'restart':
             self.variables = np.loadtxt(pccfg.datadir+self.label+'/restart.txt')
         elif self.start == 'default':
-#            self.resi_age_top = np.array([0.])
+            self.resi_age_top = np.array([0.])
             self.corr_a = np.zeros(np.size(self.corr_a_age))
             if self.archive == 'icecore':
                 self.corr_lid = np.zeros(np.size(self.corr_lid_age))
                 self.corr_tau = np.zeros(np.size(self.corr_tau_depth))
         elif self.start == 'random':
-#            self.resi_age_top = np.random.normal(loc=0., scale=1., size=1.)
+            self.resi_age_top = np.random.normal(loc=0., scale=1., size=1.)
             self.corr_a = np.random.normal(loc=0., scale=1., size=np.size(self.corr_a_age))
             if self.archive == 'icecore':
                 self.corr_lid = np.random.normal(loc=0., scale=1., size=np.size(self.corr_lid_age))
@@ -380,10 +384,10 @@ class Site(object):
 #Definition of the variable vector
             
         if self.archive == 'icecore':
-            self.variables = np.concatenate((np.array([self.age_top]),
+            self.variables = np.concatenate((self.resi_age_top,
                                              self.corr_a, self.corr_tau, self.corr_lid))
         else:
-            self.variables = np.concatenate((np.array([self.age_top]), self.corr_a))
+            self.variables = np.concatenate((self.resi_age_top, self.corr_a))
 
 #Reading of observations
 
@@ -528,7 +532,7 @@ class Site(object):
     def raw_model(self):
         """Calculate the raw model, that is before applying correction functions."""
 
-#        self.age_top = self.age_top_prior
+        self.age_top = self.age_top_prior
         
         if self.archive == 'icecore':
             #Accumulation
@@ -580,7 +584,7 @@ class Site(object):
         """Calculate the age model, taking into account the correction functions."""
 
         #Age top
-#        self.age_top = self.age_top_prior + self.resi_age_top * self.age_top_sigma
+        self.age_top = self.age_top_prior + self.resi_age_top[0] * self.age_top_sigma
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
@@ -631,7 +635,7 @@ class Site(object):
 #            index=index+2
         index = 0
 #        self.resi_age_top = var[0:1]
-        self.age_top = var[0]
+        self.resi_age_top = var[0:1]
         index = 1
         self.corr_a = var[index:index+np.size(self.corr_a)]
         if self.archive == 'icecore':

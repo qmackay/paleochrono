@@ -1,5 +1,6 @@
 #Parameters specific to the NGRIP ice core
 self.age_top = -30.
+self.age_top_sigma = 10.
 self.depth = np.arange(8., 3084.+0.01, 1.)
 self.corr_deporate_age = np.arange(self.age_top, 150000+self.age_top+0.01, self.age_step)
 self.corr_lid_age = np.arange(self.age_top, 150000+self.age_top+0.01, self.age_step)

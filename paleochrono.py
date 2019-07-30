@@ -23,7 +23,7 @@ import multiprocessing
 import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
-from scipy.optimize import leastsq, least_squares
+from scipy.optimize import least_squares
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
@@ -59,7 +59,7 @@ def resid():
     """Calculate the residuals without recalculating the model."""
     resi = np.array([])
     for i, dlab in enumerate(pccfg.list_sites):
-        resi = np.concatenate((resi, D[dlab].variables[1:]))
+        resi = np.concatenate((resi, D[dlab].variables))
         resi = np.concatenate((resi, D[dlab].residuals()))
         for j, dlab2 in enumerate(pccfg.list_sites):
 #Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
@@ -81,16 +81,15 @@ def jacob_column(resizero, dlabj, l):
     deriv = np.array([])
     index = 0
     for i, dlab in enumerate(pccfg.list_sites):
-        index = index+len(D[dlab].variables)-1
+        index = index+len(D[dlab].variables)
         if dlabj == dlab:
-            der = np.zeros(len(D[dlab].variables)-1)
-            if l > 0 and l < len(D[dlab].variables):
-                der[l-1] = 1
+            der = np.zeros(len(D[dlab].variables))
+            der[l] = 1.
             deriv = np.concatenate((deriv, der))
             der = (D[dlab].residuals() - resizero[index:index+RESI_SIZE[i, i]]) / delta
             deriv = np.concatenate((deriv, der))
         else:
-            deriv = np.concatenate((deriv, np.zeros(len(D[dlab].variables)-1)))
+            deriv = np.concatenate((deriv, np.zeros(len(D[dlab].variables))))
             deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[i, i])))
         index = index+RESI_SIZE[i, i]
         for j, dlab2 in enumerate(pccfg.list_sites):
@@ -182,7 +181,6 @@ for di, dlabel in enumerate(pccfg.list_sites):
 ##Optimization
 START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
-#JAC0=jacobian_analytical(VARIABLES)
 if pccfg.opt_method == 'leastsq':
     pccfg.opt_method = 'trf'
     pccfg.is_parallel = False
