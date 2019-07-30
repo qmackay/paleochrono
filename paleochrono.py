@@ -16,6 +16,7 @@ TODO: is there really a computation gain with the change of variable for the
     when we have computed A^-1.
 """
 
+
 import importlib
 import sys
 import time
