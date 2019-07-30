@@ -182,7 +182,7 @@ for di, dlabel in enumerate(pccfg.list_sites):
 ##Optimization
 START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
-#print(jacobian_parallel(VARIABLES))
+#JAC0=jacobian_analytical(VARIABLES)
 if pccfg.opt_method == 'leastsq':
     print('Optimization by leastsq')
     VARIABLES, COV, INFODICT, MESG, LER = leastsq(residuals, VARIABLES, full_output=1)
@@ -203,7 +203,7 @@ elif pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     else:
         print('Numerical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                           jac=jacobian_numerical, verbose=2)
+                                       jac=jacobian_numerical, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)

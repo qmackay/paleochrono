@@ -33,6 +33,7 @@ class Site(object):
         self.archive = 'icecore'
         self.accu_prior_rep = 'staircase'
         self.age_top = None
+#        self.age_top_sigma = 1.
         self.depth = np.empty(0)
         self.corr_a_age = None
         self.calc_a = False
@@ -135,6 +136,10 @@ class Site(object):
             self.corr_tau_nodes = self.corr_thinning_nodes
         except AttributeError:
             pass
+#        try:
+#            self.age_top_prior = self.age_top
+#        except AttributeError:
+#            pass
         
         
         ##Initialisation of variables
@@ -287,16 +292,19 @@ class Site(object):
 
         self.raw_model()
 
+
 ## Now we set up the correction functions
 
         if self.start == 'restart':
             self.variables = np.loadtxt(pccfg.datadir+self.label+'/restart.txt')
         elif self.start == 'default':
+#            self.resi_age_top = np.array([0.])
             self.corr_a = np.zeros(np.size(self.corr_a_age))
             if self.archive == 'icecore':
                 self.corr_lid = np.zeros(np.size(self.corr_lid_age))
                 self.corr_tau = np.zeros(np.size(self.corr_tau_depth))
         elif self.start == 'random':
+#            self.resi_age_top = np.random.normal(loc=0., scale=1., size=1.)
             self.corr_a = np.random.normal(loc=0., scale=1., size=np.size(self.corr_a_age))
             if self.archive == 'icecore':
                 self.corr_lid = np.random.normal(loc=0., scale=1., size=np.size(self.corr_lid_age))
@@ -369,7 +377,8 @@ class Site(object):
             self.chol_lid = cholesky(self.correlation_corr_lid)
             self.chol_tau = cholesky(self.correlation_corr_tau)
 
-
+#Definition of the variable vector
+            
         if self.archive == 'icecore':
             self.variables = np.concatenate((np.array([self.age_top]),
                                              self.corr_a, self.corr_tau, self.corr_lid))
@@ -519,6 +528,8 @@ class Site(object):
     def raw_model(self):
         """Calculate the raw model, that is before applying correction functions."""
 
+#        self.age_top = self.age_top_prior
+        
         if self.archive == 'icecore':
             #Accumulation
             if self.calc_a:
@@ -568,6 +579,8 @@ class Site(object):
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
 
+        #Age top
+#        self.age_top = self.age_top_prior + self.resi_age_top * self.age_top_sigma
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
@@ -617,6 +630,7 @@ class Site(object):
 #            self.muprime=var[index+1]
 #            index=index+2
         index = 0
+#        self.resi_age_top = var[0:1]
         self.age_top = var[0]
         index = 1
         self.corr_a = var[index:index+np.size(self.corr_a)]
@@ -627,7 +641,7 @@ class Site(object):
                         index+np.size(self.corr_tau)+np.size(self.corr_a)+np.size(self.corr_lid)]
 
         ##Raw model
-        self.raw_model()
+#        self.raw_model()
 
         ##Corrected model
         self.corrected_model()
@@ -681,7 +695,6 @@ class Site(object):
 
     def residuals(self):
         """Calculate the residuals from the vector of the variables"""
-        resi_corr_a = self.corr_a
         resi_age = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
                    /self.icehorizons_sigma
         if np.size(self.icehorizons_depth) > 0:
@@ -693,8 +706,6 @@ class Site(object):
             resi_iceint = lu_solve(self.iceintervals_lu_piv, resi_iceint)
 
         if self.archive == 'icecore':
-            resi_corr_lid = self.corr_lid
-            resi_corr_tau = self.corr_tau
             resi_airage = (self.fct_airage(self.airhorizons_depth)-self.airhorizons_age)/\
                           self.airhorizons_sigma
             if np.size(self.airhorizons_depth) > 0:
