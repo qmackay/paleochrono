@@ -43,7 +43,7 @@ class Site(object):
         self.thickness = None
         self.calc_lid = False
         self.lid_value = None
-        self.start = 'default'
+        self.start = 'prior'
         self.corr_lid_age = None
         self.corr_tau_depth = None
         self.accu0 = None
@@ -303,7 +303,7 @@ class Site(object):
 
         if self.start == 'restart':
             self.variables = np.loadtxt(pccfg.datadir+self.label+'/restart.txt')
-        elif self.start == 'default':
+        elif self.start == 'default' or self.start == 'prior':
             self.resi_age_top = np.array([0.])
             self.corr_a = np.zeros(np.size(self.corr_a_age))
             if self.archive == 'icecore':
