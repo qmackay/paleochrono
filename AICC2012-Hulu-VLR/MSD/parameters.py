@@ -1,10 +1,10 @@
 #Parameters specific to the MSD speleothem
 self.archive='speleothem'
-self.age_top = 18520. #age at the top of the record
+self.age_top_prior = 18520. #age at the top of the record
 self.age_top_sigma = 100. #Error on age_top
 self.depth = np.arange(0., 0.418+0.0001, 0.001) #Define the depth grid for the age calculation
 #Age grid for the accu correction function
-self.corr_deporate_age = np.arange(self.age_top, 60000+self.age_top+0.01, self.age_step)
+self.corr_deporate_age = np.arange(18500., 60000., self.age_step)
 #linear or staircase. Define whether the prior accu representation is linear or staircase
 #in-between the data points.
 self.deporate_prior_rep = 'linear'

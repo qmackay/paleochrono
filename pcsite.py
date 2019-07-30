@@ -136,9 +136,11 @@ class Site(object):
         except AttributeError:
             pass
         try:
-            self.age_top_prior = self.age_top
+            self.age_top_prior
         except AttributeError:
-            pass
+            print('Now, age_top is a variable to be optimized.\n'
+                  'Therefore you need to define age_top_prior and age_top_sigma for its prior.')
+            sys.exit()
         try:
             self.age_top_sigma
         except AttributeError:
