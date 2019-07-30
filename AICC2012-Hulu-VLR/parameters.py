@@ -1,6 +1,6 @@
 list_sites = ['EDC','VK','TALDICE','EDML','NGRIP', 'MSD']
 
-opt_method = 'trf'  #trf, lm or none
+opt_method = 'trf'  #trf, lm or none. lm is slightly faster. trf has an interactive output.
 is_parallel = False
 is_analytical_jacobian = True
 nb_nodes = 4         #Number of nodes for the leastsq-parallel mode
@@ -17,3 +17,4 @@ color_init = 'c'      #always put to 'c' for now
 scale_ageci = 10.     #scaling of the confidence interval in the ice and air age figures
 show_figures = False  #whether to show or not the figures at the end of the run
 show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
+tol = 1e-6          #Tolerance level for the termination of the optimization.
