@@ -17,7 +17,7 @@ for root, dirs, files in os.walk(dir, topdown=False):
             os.rmdir(path)
 
             
-pattern='restart.txt'
+pattern='restart.'
 regexObj = re.compile(pattern)
 for root, dirs, files in os.walk(dir, topdown=False):
     for name in files:

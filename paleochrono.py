@@ -230,7 +230,7 @@ for dlabel in pccfg.list_sites:
     D[dlabel].sigma()
 
 ###Final display and output
-print('Display of results')
+print('Display and saving of results')
 for di, dlabel in enumerate(pccfg.list_sites):
 #    print dlabel+'\n'
     D[dlabel].save()

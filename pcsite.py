@@ -17,6 +17,7 @@ from scipy.linalg import lu_factor, lu_solve
 from scipy.linalg import cholesky
 from scipy.interpolate import interp1d
 from scipy.optimize import leastsq
+import pickle
 from pcmath import interp_lin_aver, interp_stair_aver
 import pccfg
 
@@ -302,7 +303,18 @@ class Site(object):
 ## Now we set up the correction functions
 
         if self.start == 'restart':
-            self.variables = np.loadtxt(pccfg.datadir+self.label+'/restart.txt')
+            with open(pccfg.datadir+self.label+'/restart.bin', 'rb') as f:
+                if self.archive == 'icecore':
+                    resi_age_top, corr_a_age, corr_a, corr_lid_age, corr_lid, corr_tau_depth,\
+                        corr_tau = pickle.load(f)
+                    self.corr_lid = np.interp(self.corr_lid_age, corr_lid_age, corr_lid)
+                    self.corr_tau = np.interp(self.corr_tau_depth, corr_tau_depth, corr_tau)
+                    
+                else:
+                    resi_age_top, corr_a_age, corr_a = pickle.load(f)
+            self.resi_age_top = resi_age_top
+            self.corr_a = np.interp(self.corr_a_age, corr_a_age, corr_a)
+
         elif self.start == 'default' or self.start == 'prior':
             self.resi_age_top = np.array([0.])
             self.corr_a = np.zeros(np.size(self.corr_a_age))
@@ -360,8 +372,10 @@ class Site(object):
 
         #Accu correlation matrix
         self.correlation_corr_a = np.interp(np.abs(np.ones((np.size(self.corr_a_age),\
-            np.size(self.corr_a_age)))*self.corr_a_age-np.transpose(np.ones((np.size(self.corr_a_age),\
-            np.size(self.corr_a_age)))*self.corr_a_age)), np.array([0,self.lambda_a]),np.array([1, 0]))
+            np.size(self.corr_a_age)))*self.corr_a_age-\
+            np.transpose(np.ones((np.size(self.corr_a_age),\
+            np.size(self.corr_a_age)))*self.corr_a_age)),\
+            np.array([0,self.lambda_a]),np.array([1, 0]))
         
         
         if self.archive == 'icecore':
@@ -936,7 +950,8 @@ class Site(object):
                 if pccfg.show_initial:
                     mpl.plot(self.airlayerthick_init, self.depth_mid, color=pccfg.color_init,
                              label='Initial')
-                mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+                mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.color_mod,
+                         label='Prior')
                 mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.color_opt,
                          label='Posterior +/-$\sigma$')
                 mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
@@ -1000,7 +1015,8 @@ class Site(object):
             mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage,
                               self.airage+self.sigma_airage,
                               color=pccfg.color_ci)
-            mpl.plot(self.airage, self.depth, color=pccfg.color_opt, label='Posterior +/- 1$\sigma$')
+            mpl.plot(self.airage, self.depth, color=pccfg.color_opt,
+                     label='Posterior +/- 1$\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
             ax2 = ax1.twiny()
@@ -1090,7 +1106,18 @@ class Site(object):
                                 '\tsigma_deporate_model\n')
             np.savetxt(file_save, np.transpose(output), delimiter='\t')
             file_save.close()
-        np.savetxt(pccfg.datadir+self.label+'/restart.txt', np.transpose(self.variables))
-
-#    def udepth_save(self):
-#        np.savetxt(pccfg.datadir+self.label+'/udepth.txt',self.udepth)
+        resi_age_top = self.resi_age_top
+        corr_a_age = self.corr_a_age
+        corr_a = self.corr_a
+        if self.archive == 'icecore':
+            corr_lid_age = self.corr_lid_age
+            corr_lid = self.corr_lid
+            corr_tau_depth = self.corr_tau_depth
+            corr_tau = self.corr_tau
+        with open(pccfg.datadir+self.label+'/restart.bin', 'wb') as f:
+            if self.archive == 'icecore':
+                pickle.dump([resi_age_top, corr_a_age, corr_a, corr_lid_age,
+                             corr_lid, corr_tau_depth, corr_tau], f)
+            else:
+                pickle.dump([resi_age_top, corr_a_age, corr_a], f)
+             
