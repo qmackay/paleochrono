@@ -18,7 +18,8 @@ from scipy.linalg import cholesky
 from scipy.interpolate import interp1d
 from scipy.optimize import leastsq
 import pickle
-from pcmath import interp_lin_aver, interp_stair_aver
+import yaml
+from pcmath import interp_lin_aver, interp_stair_aver, grid
 import pccfg
 
 ##dummy use of the interp1d function
@@ -55,14 +56,37 @@ class Site(object):
         self.dens_firn = None
 
         #Setting the parameters from the parameter files
-        filename = pccfg.datadir+'/parameters_all_sites.py'
+        
+        filename = pccfg.datadir+'/parameters_all_sites.yml'
         if os.path.isfile(filename):
-            exec(open(filename).read())
+            yamls = open(filename).read()
         else:
-            filename = pccfg.datadir+'/parameters-AllDrillings.py'
+            filename = pccfg.datadir+'/parameters_all_sites.py'
             if os.path.isfile(filename):
                 exec(open(filename).read())
-        exec(open(pccfg.datadir+self.label+'/parameters.py').read())
+                print('Python format for parameters_all_sites file is deprecated.'
+                      'Use YAML format instead.')
+            else:
+                filename = pccfg.datadir+'/parameters-AllDrillings.py'
+                if os.path.isfile(filename):
+                    exec(open(filename).read())
+                    print('parameters-AllDrillings.py file is deprecated.'
+                          'Use YAML parameters_all_sites.yml file instead.')
+
+        filename = pccfg.datadir+self.label+'/parameters.yml'
+        if os.path.isfile(filename):
+            yamls += '\n'+open(filename).read()
+            para = yaml.load(yamls)
+            self.__dict__.update(para)
+            self.depth = grid(self.depth_grid)
+            self.corr_deporate_age = grid(self.corr_deporate_grid)
+            if self.archive == 'icecore':
+                self.corr_lid_age =grid(self.corr_lid_grid)
+                self.corr_thinning_depth = grid(self.corr_thinning_grid)
+        else:
+            print('WARNING: python parameters file for sites are deprecated.'
+                  'Use YAML format instead.')
+            exec(open(pccfg.datadir+self.label+'/parameters.py').read())
 
         try:
             self.calc_lid = self.calc_LID
@@ -152,22 +176,18 @@ class Site(object):
             except AttributeError:
                 pass
         try:
-            self.corr_tau_nodes = self.corr_thinning_nodes
-        except AttributeError:
-            print('WARNING: corr_tau_nodes is deprecated. Use corr_thinning_nodes instead.')
-        try:
             self.age_top_prior
         except AttributeError:
             self.age_top_prior = self.age_top
-            print('WARNING: Now, age_top is a variable to be optimized.\n'
-                  'Therefore you need to define age_top_prior.\n'
+            print('WARNING: Now, age_top is a variable to be optimized.'
+                  'Therefore you need to define age_top_prior.'
                   'Using age_top for now.')
         try:
             self.age_top_sigma
         except AttributeError:
             self.age_top_sigma = 10.
-            print('WARNING: Now, age_top is a variable to be optimized.\n'
-                  'Therefore you need to define age_top_sigma.\n'
+            print('WARNING: Now, age_top is a variable to be optimized.'
+                  'Therefore you need to define age_top_sigma.'
                   'Setting age_top_sigma to', self.age_top_sigma, 'for now.')
         
         ##Initialisation of variables

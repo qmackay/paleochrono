@@ -1,0 +1,21 @@
+#Parameters specific to the MSD speleothem
+archive: 'speleothem'
+age_top_prior: 18520. #age at the top of the sequence
+age_top_sigma: 100. #Error on top age
+depth_grid: #depth grid for the age calculation
+    type: 'regular'
+    start: 0.
+    end: 0.418
+    nb_steps: 418
+corr_deporate_grid: #Age grid for the deporate correction function
+    type: 'regular'
+    start: *age_start
+    end: *age_end
+    nb_steps: *age_nb_steps
+    truncated: True
+    inf: 18500.
+    sup: 58500.
+deporate_prior_rep: 'linear'
+calc_deporate: True
+deporate0: 1.17e-5
+deporate_prior_sigma: 0.2

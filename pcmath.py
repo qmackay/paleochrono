@@ -48,3 +48,22 @@ def gaussian(x_in):
     """Return the value of the gaussian function (no multiplicative constant)
     at a given x_in abscissa."""
     return np.exp(-x_in**2/2)
+
+def grid(para):
+    if para['type'] == 'regular':
+        start = para['start']
+        end = para['end']
+        nb_steps = para['nb_steps']
+        grid = np.arange(start, end+(end-start)/nb_steps/2, (end-start)/nb_steps)
+    else:
+        print('Type of grid not recognized.')
+    trunc = False
+    try:
+        trunc = para['truncated']
+        if trunc:
+            inf = para['inf']
+            sup = para['sup']
+            grid = grid[np.logical_and(grid>=inf, grid<=sup)]
+    except KeyError:
+        pass
+    return grid
