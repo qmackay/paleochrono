@@ -6,6 +6,8 @@ Global variables used across all modules.
 @author: parrenif
 """
 import sys
+import os
+import yaml
 
 ##Default Parameters
 list_sites = []
@@ -26,6 +28,7 @@ scale_ageci = 10.     #scaling of the confidence interval in the ice and air age
 show_figures = False  #whether to show or not the figures at the end of the run
 show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
 tol = 1e-6      #Tolerance for the termination.
+#nb_runs = 0
 
 ###Reading parameters directory
 datadir = sys.argv[1]
@@ -34,7 +37,14 @@ if datadir[-1] != '/':
 print('Parameters directory is: ', datadir)
 #os.chdir(datadir)
 
-exec(open(datadir+'/parameters.py').read())
+filename = datadir+'parameters.yml'
+if os.path.isfile(filename):
+    data = yaml.load(open(filename).read())
+    if data != None:
+        globals().update(data)
+else:
+    print('Python format for the global parameters file is deprecated. Use YAML format instead.')
+    exec(open(datadir+'/parameters.py').read())
 
 try:
     list_sites = list_drillings

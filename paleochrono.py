@@ -54,6 +54,7 @@ def residuals(var):
         D[dlab].variables = var[index:index+np.size(D[dlab].variables)]
         index = index+np.size(D[dlab].variables)
         D[dlab].model(D[dlab].variables)
+#    pccfg.nb_runs = pccfg.nb_runs + 1
     return resid()
 
 def resid():
@@ -177,6 +178,9 @@ for di, dlabel in enumerate(pccfg.list_sites):
 #            DC[dlabel2+'-'+dlabel].display_init()
             RESI_SIZE[dj, di] = np.size(DC[dlabel2+'-'+dlabel].residuals())
 
+print('Size of VARIABLES vector', len(VARIABLES))
+
+
 
 
 ##Optimization
@@ -220,6 +224,8 @@ print('cost function: ', cost_function(VARIABLES))
 if pccfg.opt_method == 'leastsq' and np.size(COV) == 1 and COV is None:
     print('singular matrix encountered (flat curvature in some direction)')
     sys.exit()
+#print('nb of model runs', pccfg.nb_runs)
+
 print('Calculation of confidence intervals')
 INDEXSITE = 0
 for dlabel in pccfg.list_sites:
