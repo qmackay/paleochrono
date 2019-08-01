@@ -30,23 +30,31 @@ show_airlayerthick = False #whether to show the air layer thickness figure (bugg
 tol = 1e-6      #Tolerance for the termination.
 #nb_runs = 0
 
-###Reading parameters directory
-datadir = sys.argv[1]
-if datadir[-1] != '/':
-    datadir = datadir+'/'
-print('Parameters directory is: ', datadir)
-#os.chdir(datadir)
 
-filename = datadir+'parameters.yml'
-if os.path.isfile(filename):
-    data = yaml.load(open(filename).read())
-    if data != None:
-        globals().update(data)
-else:
-    print('Python format for the global parameters file is deprecated. Use YAML format instead.')
-    exec(open(datadir+'/parameters.py').read())
+def read_parameters():
+    global list_sites
+    global list_drillings
+    global datadir
 
-try:
-    list_sites = list_drillings
-except NameError:
-    pass
+    ###Reading parameters directory
+    datadir = sys.argv[1]
+    if datadir[-1] != '/':
+        datadir = datadir+'/'
+    print('Parameters directory is: ', datadir)
+    #os.chdir(datadir)
+    
+    filename = datadir+'parameters.yml'
+    if os.path.isfile(filename):
+        data = yaml.load(open(filename).read())
+        if data != None:
+            globals().update(data)
+    else:
+        print('Python format for the global parameters file is deprecated.'
+              'Use YAML format instead.')
+        exec(open(datadir+'/parameters.py').read())
+        globals().update(locals())
+        
+    try:
+        list_sites = list_drillings
+    except NameError:
+        pass

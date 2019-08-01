@@ -139,15 +139,17 @@ class Site(object):
         try:
             self.age_top_prior
         except AttributeError:
-            print('Now, age_top is a variable to be optimized.\n'
-                  'Therefore you need to define age_top_prior and age_top_sigma for its prior.')
-            sys.exit()
+            self.age_top_prior = self.age_top
+            print('WARNING: Now, age_top is a variable to be optimized.\n'
+                  'Therefore you need to define age_top_prior.\n'
+                  'Using age_top for now.')
         try:
             self.age_top_sigma
         except AttributeError:
-            print('Now, age_top is a variable to be optimized.\n'
-                  'Therefore you need to define age_top_prior and age_top_sigma for its prior.')
-            sys.exit()
+            self.age_top_sigma = 10.
+            print('WARNING: Now, age_top is a variable to be optimized.\n'
+                  'Therefore you need to define age_top_sigma.\n'
+                  'Setting age_top_sigma to', self.age_top_sigma, 'for now.')
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2

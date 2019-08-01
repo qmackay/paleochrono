@@ -17,7 +17,6 @@ TODO: is there really a computation gain with the change of variable for the
 """
 
 
-import importlib
 import sys
 import time
 import multiprocessing
@@ -30,11 +29,12 @@ from pcsite import Site
 from pcsitepair import SitePair
 from functools import partial
 
-#Reload pccfg
-importlib.reload(pccfg)
 
 ###Registration of start time
 START_TIME = time.perf_counter()
+
+#Read parameter file
+pccfg.read_parameters()
 
 
 ###Opening of output.txt file
