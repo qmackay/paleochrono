@@ -5,6 +5,7 @@ self.corr_thinning_nodes = 51  #Define the number of nodes of the thinning funct
 self.age_step = 10000.	#Define the age step for the LID and accu correction functions.
 self.dens_firn = 0.7            #Average density of the firn
 self.start = 'prior'  #prior, restart or random
+self.deporate_prior_rep = 'staircase' #linear or staircase. Define the prior deporate representation.
 
 #Parameters needed to define the covariance matrices as in AICC2012.
 self.lambda_thinning = 70

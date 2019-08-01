@@ -66,22 +66,27 @@ class Site(object):
 
         try:
             self.calc_lid = self.calc_LID
+            print('WARNING: calc_LID is deprecated. Use calc_lid instead.')
         except AttributeError:
             pass
         try:
             self.corr_lid_age = self.corr_LID_age
+            print('WARNING: corr_LID_age is deprecated. Use corr_lid_age instead.')
         except AttributeError:
             pass
         try:
             self.dens_firn = self.Dfirn
+            print('WARNING: Dfirn is deprecated. Use dens_firn instead.')
         except AttributeError:
             pass
         try:
             self.sliding = self.s
+            print('WARNING: s is deprecated. Use sliding instead.')
         except AttributeError:
             pass
         try:
             self.accu0 = self.A0
+            print('WARNING: A0 is deprecated. Use deporate0 instead.')
         except AttributeError:
             pass
         try:
@@ -91,51 +96,65 @@ class Site(object):
         try:
             self.calc_a = self.calc_deporate
         except AttributeError:
-            pass
+            print('WARNING: calc_a is deprecated. Use calc_deporate instead.')
         try:
             self.corr_a_age = self.corr_deporate_age
         except AttributeError:
-            pass
+            print('WARNING: corr_a_age is deprecated. Use corr_deporate_age instead.')
         try:
             self.lambda_lid = self.lambda_LID
+            print('WARNING: lambda_LID is deprecated. Use lambda_lid instead.')
         except AttributeError:
             pass
         try:
             self.lambda_a = self.lambda_deporate
         except AttributeError:
-            pass
+            print('WARNING: lambda_a is deprecated. Use lambda_deporate instead.')
         try:
             self.lambda_tau = self.lambda_thinning
         except AttributeError:
-            pass
+            print('WARNING: lambda_tau is deprecated. Use lambda_thinning instead.')
         try:
             self.calc_tau = self.calc_thinning
         except AttributeError:
-            pass
-        try:
-            self.corr_tau_depth = self.corr_thinning_depth
-        except AttributeError:
-            pass
+            print('WARNING: calc_tau is deprecated. Use calc_thinning instead.')
+        if self.archive == 'icecore':
+            try:
+                self.corr_tau_depth = self.corr_thinning_depth
+            except AttributeError:
+                print('WARNING: corr_tau_depth is deprecated. Use corr_thinning_depth instead.')
         try:
             self.accu_prior_rep = self.deporate_prior_rep
         except AttributeError:
-            pass
+            print('WARNING: accu_prior_rep is deprecated. Use deporate_prior_rep instead.')
         try:
-            self.sigmap_corr_a = self.deporate_prior_sigma
+            self.sigmap_corr_a
+            print('WARNING: sigmap_corr_a is deprecated. Use deporate_prior_sigma instead.')
         except AttributeError:
-            pass
+            try:
+                self.sigmap_corr_a = self.deporate_prior_sigma
+            except AttributeError:
+                pass
         try:
-            self.sigmap_corr_tau = self.thinning_prior_sigma
+            self.sigmap_corr_tau
+            print('WARNING: sigmap_corr_tau is deprecated. Use thinning_prior_sigma instead.')
         except AttributeError:
-            pass
+            try:
+                self.sigmap_corr_tau = self.thinning_prior_sigma
+            except AttributeError:
+                pass
         try:
-            self.sigmap_corr_lid = self.lid_prior_sigma
+            self.sigmap_corr_lid
+            print('WARNING: sigmap_corr_lid is deprecated. Use lid_prior_sigma instead.')
         except AttributeError:
-            pass
+            try:
+                self.sigmap_corr_lid = self.lid_prior_sigma
+            except AttributeError:
+                pass
         try:
             self.corr_tau_nodes = self.corr_thinning_nodes
         except AttributeError:
-            pass
+            print('WARNING: corr_tau_nodes is deprecated. Use corr_thinning_nodes instead.')
         try:
             self.age_top_prior
         except AttributeError:

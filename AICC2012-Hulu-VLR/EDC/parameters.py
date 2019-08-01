@@ -9,4 +9,3 @@ self.corr_lid_age = np.arange(0., 1000000, self.age_step)
 #Depth grid for the thinning correction function
 self.corr_thinning_depth = np.arange(self.depth[0], self.depth[-1]+0.01,\
                                 (self.depth[-1]-self.depth[0])/(self.corr_thinning_nodes-1))
-self.deporate_prior_rep = 'staircase' #linear or staircase. Define the prior deporate representation.
