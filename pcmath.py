@@ -61,14 +61,22 @@ def grid(para):
         end = para['end']
         nb_steps = para['nb_steps']
         ratio = para['ratio']
-#        grid = np.arange((end-start)/nb_steps*ratio, (end-start)/nb_steps*(2.-ratio)+eps,
-#                         (end-start)/nb_steps/(2.-2*ratio)/nb_steps)
+        if ratio == None:
+            ratio = 2/(nb_steps+1)
         eps = (1.-ratio)/nb_steps
         grid = np.arange(ratio, 2.-ratio+eps, (2.-2*ratio)/(nb_steps-1))
         grid = grid * (end-start)/nb_steps
         grid = np.cumsum(np.concatenate((np.array([start]), grid)))
     else:
         print('Type of grid not recognized.')
+    try:
+        inverted = para['inverted']
+    except KeyError:
+        inverted = False
+    if inverted:
+        grid = grid[::-1]
+        grid = grid[:-1]-grid[1:]
+        grid = np.cumsum(np.concatenate((np.array([start]), grid)))
     return grid
 
 def truncation(grid, inf, sup):
