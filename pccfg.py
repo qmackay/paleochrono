@@ -22,6 +22,7 @@ color_mod = 'b'       #color for the prior scenario
 color_ci = '0.8'      #color for the confidence intervals
 color_sigma = 'm'     #color for the uncertainty
 color_di = 'g'        #color for the dated intervals
+color_resolution = 'y' #Color for the resolution
 show_initial = False  #always put to False for now
 color_init = 'c'      #always put to 'c' for now
 scale_ageci = 10.     #scaling of the confidence interval in the ice and air age figures

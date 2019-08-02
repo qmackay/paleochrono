@@ -879,7 +879,7 @@ class Site(object):
     def figures(self):
         """Build the figures of a site."""
 
-        fig, ax = mpl.subplots()
+        fig, ax1 = mpl.subplots()
         mpl.title(self.label+' Deposition rate')
         mpl.xlabel('Optimized age (yr)')
         mpl.ylabel('Deposition rate (m/yr)')
@@ -895,7 +895,18 @@ class Site(object):
                          color=pccfg.color_ci)
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, y_low, y_up))
-        mpl.legend(loc="best")
+        ax2 = ax1.twinx()
+        ax2.plot((self.corr_a_age[1:]+self.corr_a_age[:-1])/2, 
+                 self.corr_a_age[1:]-self.corr_a_age[:-1], label='resolution',
+                 color=pccfg.color_resolution)
+        ax2.set_ylabel('resolution (yr)')
+        ax2.spines['right'].set_color(pccfg.color_resolution)
+        ax2.yaxis.label.set_color(pccfg.color_resolution)
+        ax2.tick_params(axis='y', colors=pccfg.color_resolution)
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+        fig.tight_layout()
         printed_page = PdfPages(pccfg.datadir+self.label+'/deposition.pdf')
         printed_page.savefig(fig)
         printed_page.close()
@@ -981,7 +992,7 @@ class Site(object):
             if not pccfg.show_figures:
                 mpl.close()
 
-            fig, ax = mpl.subplots()
+            fig, ax1 = mpl.subplots()
             mpl.title(self.label+' thinning')
             mpl.xlabel('Thinning')
             mpl.ylabel('Depth')
@@ -993,7 +1004,18 @@ class Site(object):
                               color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
-            mpl.legend(loc="best")
+            ax2 = ax1.twiny()
+            ax2.plot(self.corr_tau_depth[1:]-self.corr_tau_depth[:-1], 
+                     (self.corr_tau_depth[1:]+self.corr_tau_depth[:-1])/2, label='resolution',
+                     color=pccfg.color_resolution)
+            ax2.set_xlabel('resolution (m)')
+            ax2.spines['top'].set_color(pccfg.color_resolution)
+            ax2.xaxis.label.set_color(pccfg.color_resolution)
+            ax2.tick_params(axis='x', colors=pccfg.color_resolution)
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+            fig.tight_layout()
             printed_page = PdfPages(pccfg.datadir+self.label+'/thinning.pdf')
             printed_page.savefig(fig)
             printed_page.close()
@@ -1023,7 +1045,7 @@ class Site(object):
                 if not pccfg.show_figures:
                     mpl.close()
 
-            fig, ax = mpl.subplots()
+            fig, ax1 = mpl.subplots()
             mpl.title(self.label+' Lock-In Depth')
             mpl.xlabel('Optimized age (yr)')
             mpl.ylabel('LID')
@@ -1035,7 +1057,18 @@ class Site(object):
                              color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, y_low, y_up))
-            mpl.legend(loc="best")
+            ax2 = ax1.twinx()
+            ax2.plot((self.corr_lid_age[1:]+self.corr_lid_age[:-1])/2, 
+                     self.corr_lid_age[1:]-self.corr_lid_age[:-1], label='resolution',
+                     color=pccfg.color_resolution)
+            ax2.set_ylabel('resolution (yr)')
+            ax2.spines['right'].set_color(pccfg.color_resolution)
+            ax2.yaxis.label.set_color(pccfg.color_resolution)
+            ax2.tick_params(axis='y', colors=pccfg.color_resolution)
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+            fig.tight_layout()
             printed_page = PdfPages(pccfg.datadir+self.label+'/lock_in_depth.pdf')
             printed_page.savefig(fig)
             printed_page.close()
