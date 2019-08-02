@@ -72,6 +72,10 @@ def grid(para):
     return grid
 
 def truncation(grid, inf, sup):
+    if inf == None:
+        inf = grid[0]
+    if sup == None:
+        sup = grid[-1]
     grid = grid[np.logical_and(grid>=inf, grid<=sup)]
     return grid
 
