@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import leastsq
 import pickle
 import yaml
-from pcmath import interp_lin_aver, interp_stair_aver, grid
+from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation, stretch
 import pccfg
 
 ##dummy use of the interp1d function
@@ -55,11 +55,37 @@ class Site(object):
         self.sliding = None
         self.dens_firn = None
 
-        #Setting the parameters from the parameter files
+##Setting of the parameters from the parameter files
         
+        yamls = ''
         filename = pccfg.datadir+'/parameters_all_sites.yml'
         if os.path.isfile(filename):
             yamls = open(filename).read()
+        filename = pccfg.datadir+self.label+'/parameters.yml'
+        if os.path.isfile(filename):
+            yamls += '\n'+open(filename).read()
+        if yamls != '':
+            para = yaml.load(yamls)
+            self.__dict__.update(para)
+            self.depth = grid(self.depth_grid)
+            self.corr_deporate_age = grid(self.corr_deporate_grid)
+            try:
+                inf = self.age_truncation['inf']
+                sup = self.age_truncation['sup']
+                self.corr_deporate_age = truncation(self.corr_deporate_age, inf, sup)
+            except AttributeError:
+                pass
+            if self.archive == 'icecore':
+                self.corr_lid_age =grid(self.corr_lid_grid)
+                try:
+                    inf = self.age_truncation['inf']
+                    sup = self.age_truncation['sup']
+                    self.corr_lid_age = truncation(self.corr_lid_age, inf, sup)
+                except AttributeError:
+                    pass
+                self.corr_thinning_depth = grid(self.corr_thinning_grid)
+                self.corr_thinning_depth = stretch(self.corr_thinning_depth, self.depth[0], 
+                                                   self.depth[-1])
         else:
             filename = pccfg.datadir+'/parameters_all_sites.py'
             if os.path.isfile(filename):
@@ -73,20 +99,11 @@ class Site(object):
                     print('parameters-AllDrillings.py file is deprecated.'
                           'Use YAML parameters_all_sites.yml file instead.')
 
-        filename = pccfg.datadir+self.label+'/parameters.yml'
-        if os.path.isfile(filename):
-            yamls += '\n'+open(filename).read()
-            para = yaml.load(yamls)
-            self.__dict__.update(para)
-            self.depth = grid(self.depth_grid)
-            self.corr_deporate_age = grid(self.corr_deporate_grid)
-            if self.archive == 'icecore':
-                self.corr_lid_age =grid(self.corr_lid_grid)
-                self.corr_thinning_depth = grid(self.corr_thinning_grid)
-        else:
             print('WARNING: python parameters file for sites are deprecated.'
                   'Use YAML format instead.')
             exec(open(pccfg.datadir+self.label+'/parameters.py').read())
+
+##Translation of deprecated names
 
         try:
             self.calc_lid = self.calc_LID

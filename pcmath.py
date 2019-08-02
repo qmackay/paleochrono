@@ -54,16 +54,27 @@ def grid(para):
         start = para['start']
         end = para['end']
         nb_steps = para['nb_steps']
-        grid = np.arange(start, end+(end-start)/nb_steps/2, (end-start)/nb_steps)
+        eps = (end-start)/nb_steps/2
+        grid = np.arange(start, end+eps, (end-start)/nb_steps)
+    elif para['type'] == 'linear':
+        start = para['start']
+        end = para['end']
+        nb_steps = para['nb_steps']
+        ratio = para['ratio']
+#        grid = np.arange((end-start)/nb_steps*ratio, (end-start)/nb_steps*(2.-ratio)+eps,
+#                         (end-start)/nb_steps/(2.-2*ratio)/nb_steps)
+        eps = (1.-ratio)/nb_steps
+        grid = np.arange(ratio, 2.-ratio+eps, (2.-2*ratio)/(nb_steps-1))
+        grid = grid * (end-start)/nb_steps
+        grid = np.cumsum(np.concatenate((np.array([start]), grid)))
     else:
         print('Type of grid not recognized.')
-    trunc = False
-    try:
-        trunc = para['truncated']
-        if trunc:
-            inf = para['inf']
-            sup = para['sup']
-            grid = grid[np.logical_and(grid>=inf, grid<=sup)]
-    except KeyError:
-        pass
+    return grid
+
+def truncation(grid, inf, sup):
+    grid = grid[np.logical_and(grid>=inf, grid<=sup)]
+    return grid
+
+def stretch(grid, start, end):
+    grid = start + (grid-grid[0])/(grid[-1]-grid[0])*(end-start)
     return grid

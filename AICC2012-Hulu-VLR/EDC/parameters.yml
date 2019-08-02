@@ -3,21 +3,6 @@ age_top_prior: -55. #age at the top of the sequence
 age_top_sigma: 10. #Error on top age
 depth_grid: #depth grid for the age calculation
     type: 'regular'
-    start: &depth_start 0.
-    end: &depth_end 3259.3
+    start: 0.
+    end: 3259.3
     nb_steps: 5926
-corr_deporate_grid: #Age grid for the deporate correction function
-    type: 'regular'
-    start: *age_start
-    end: *age_end
-    nb_steps: *age_nb_steps
-corr_lid_grid: #Age grid for the LID correction function
-    type: 'regular'
-    start: *age_start
-    end: *age_end
-    nb_steps: *age_nb_steps
-corr_thinning_grid: #Depth grid for the thinning correction function
-    type: 'regular'
-    start: *depth_start
-    end: *depth_end
-    nb_steps: *depth_nb_steps

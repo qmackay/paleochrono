@@ -7,14 +7,9 @@ depth_grid: #depth grid for the age calculation
     start: 0.
     end: 0.418
     nb_steps: 418
-corr_deporate_grid: #Age grid for the deporate correction function
-    type: 'regular'
-    start: *age_start
-    end: *age_end
-    nb_steps: *age_nb_steps
-    truncated: True
+age_truncation:
     inf: 18500.
-    sup: 58500.
+    sup: 60000.
 deporate_prior_rep: 'linear'
 calc_deporate: True
 deporate0: 1.17e-5
