@@ -36,7 +36,6 @@ START_TIME = time.perf_counter()
 #Read parameter file
 pccfg.read_parameters()
 
-
 ###Opening of output.txt file
 OUTPUT_FILE = open(pccfg.datadir+'output.txt', 'a')
 
@@ -201,13 +200,13 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     if pccfg.is_analytical_jacobian:
         print('Analytical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                       jac=jacobian_analytical, verbose=2,
-                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol)
+                                       jac=jacobian_analytical, tr_solver=pccfg.tr_solver,
+                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     else:
         print('Numerical Jacobian')
         OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                       jac=jacobian_numerical, verbose=2,
-                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol)
+                                       jac=jacobian_numerical, tr_solver=pccfg.tr_solver,
+                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)
