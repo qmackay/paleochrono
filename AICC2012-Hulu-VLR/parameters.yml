@@ -1,8 +1,8 @@
 list_sites: ['EDC','VK','TALDICE','EDML','NGRIP', 'MSD']
 
 opt_method: 'trf'  #trf, lm or none. lm is slightly faster. trf has an interactive output.
-is_analytical_jacobian: True
-tr_solver: 'lsmr'  #'exact' (recommended for small system) or 'lsmr' (recommended for large systems)
+jacobian: 'semi_analytical' #semi_analytical or numerical
+tr_solver: 'exact'  #'exact' (recommended for small system) or 'lsmr' (recommended for large systems)
 
 #Defines the colors for the graphs
 color_obs: 'r'       #color for the observations

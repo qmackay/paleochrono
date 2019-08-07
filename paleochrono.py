@@ -105,7 +105,7 @@ def jacob_column(resizero, dlabj, l):
     D[dlabj].variables[l] -= delta
     return deriv
 
-def jacobian_analytical(var):
+def jacobian_semi_analytical(var):
     """Calculate the residuals."""
     resizero = residuals(var)
     jac_list = []
@@ -193,20 +193,11 @@ elif pccfg.opt_method == 'leastsq-parallel':
     pccfg.is_parallel = True
 if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     print('Optimization by:', pccfg.opt_method)
-    print('Analytical Jabobian:', pccfg.is_analytical_jacobian)
-    print('Parallel:', pccfg.is_parallel)
-    if pccfg.is_parallel:
-        print('nb of nodes:', pccfg.nb_nodes)
-    if pccfg.is_analytical_jacobian:
-        print('Analytical Jacobian')
-        OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                       jac=jacobian_analytical, tr_solver=pccfg.tr_solver,
-                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
-    else:
-        print('Numerical Jacobian')
-        OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                       jac=jacobian_numerical, tr_solver=pccfg.tr_solver,
-                                       xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
+    print('Jabobian:', pccfg.jacobian)
+    OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
+                                   jac=eval('jacobian_'+pccfg.jacobian),
+                                   tr_solver=pccfg.tr_solver,
+                                   xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)

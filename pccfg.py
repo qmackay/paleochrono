@@ -14,6 +14,7 @@ list_sites = []
 opt_method = 'none'  #leastsq, leastsq-parallel, none
 is_parallel = False
 is_analytical_jacobian = True
+jacobian = 'semi_analytical'
 nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
 datadir = './'
 color_obs = 'r'       #color for the observations

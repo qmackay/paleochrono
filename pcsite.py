@@ -674,6 +674,7 @@ class Site(object):
             corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
             self.lid = self.lid_model*np.exp(np.interp(self.airage_model, self.corr_lid_age, corr))
             self.ulidie = self.lid*self.dens_firn
+   
         #Ice age
         if self.archive == 'icecore':
             self.icelayerthick = self.tau*self.accu/self.dens
