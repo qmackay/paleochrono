@@ -193,6 +193,8 @@ elif pccfg.opt_method == 'leastsq-parallel':
     pccfg.is_parallel = True
 if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     print('Optimization by:', pccfg.opt_method)
+    if pccfg.opt_method == 'trf':
+        print('tr_solver:', pccfg.tr_solver)
     print('Jabobian:', pccfg.jacobian)
     OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
                                    jac=eval('jacobian_'+pccfg.jacobian),
