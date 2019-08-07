@@ -178,7 +178,7 @@ for di, dlabel in enumerate(pccfg.list_sites):
             RESI_SIZE[dj, di] = np.size(DC[dlabel2+'-'+dlabel].residuals())
 
 print('Size of VARIABLES vector', len(VARIABLES))
-
+print('Size of RESIDUALS vector', len(resid()))
 
 
 
