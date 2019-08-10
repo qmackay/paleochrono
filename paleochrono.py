@@ -28,7 +28,7 @@ import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
 from functools import partial
-
+import gc
 
 ###Registration of start time
 START_TIME = time.perf_counter()
@@ -54,6 +54,7 @@ def residuals(var):
         index = index+np.size(D[dlab].variables)
         D[dlab].model(D[dlab].variables)
 #    pccfg.nb_runs = pccfg.nb_runs + 1
+    gc.collect()
     return resid()
 
 def resid():
