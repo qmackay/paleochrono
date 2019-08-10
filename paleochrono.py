@@ -54,7 +54,7 @@ def residuals(var):
         index = index+np.size(D[dlab].variables)
         D[dlab].model(D[dlab].variables)
 #    pccfg.nb_runs = pccfg.nb_runs + 1
-    gc.collect()
+    gc.collect() 
     return resid()
 
 def resid():
