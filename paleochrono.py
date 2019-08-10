@@ -180,8 +180,6 @@ for di, dlabel in enumerate(pccfg.list_sites):
 print('Size of VARIABLES vector', len(VARIABLES))
 print('Size of RESIDUALS vector', len(resid()))
 
-
-
 ##Optimization
 START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
@@ -200,6 +198,7 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    jac=eval('jacobian_'+pccfg.jacobian),
                                    tr_solver=pccfg.tr_solver,
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
+    print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
     COV = np.linalg.inv(HESS)
@@ -210,7 +209,6 @@ elif pccfg.opt_method == 'none':
 else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
-print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
 if pccfg.opt_method == 'leastsq' and np.size(COV) == 1 and COV is None:
