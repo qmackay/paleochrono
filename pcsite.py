@@ -584,24 +584,50 @@ class Site(object):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
             exec(open(filename2).read())
-        if np.size(self.icehorizons_depth) > 0:
+            
+        if np.any(self.icehorizons_correlation != \
+                  np.diag(np.ones(np.size(self.icehorizons_depth)))):
+            self.icehorizons_correlation_bool = True
             self.icehorizons_chol = cholesky(self.icehorizons_correlation)
             #FIXME: we LU factor a triangular matrix. This is suboptimal.
             #We should set lu_piv directly instead.
             self.icehorizons_lu_piv = lu_factor(np.transpose(self.icehorizons_chol))
-        if np.size(self.iceintervals_depthtop) > 0:
+        else:
+            self.icehorizons_correlation_bool = False
+            
+        if np.any(self.iceintervals_correlation != \
+                  np.diag(np.ones(np.size(self.iceintervals_depthtop)))):
+            self.iceintervals_correlation_bool = True
             self.iceintervals_chol = cholesky(self.iceintervals_correlation)
             self.iceintervals_lu_piv = lu_factor(np.transpose(self.iceintervals_chol))
+        else:
+            self.iceintervals_correlation_bool = False
+            
         if self.archive == 'icecore':
-            if np.size(self.airhorizons_depth) > 0:
+
+            if np.any(self.airhorizons_correlation != \
+                      np.diag(np.ones(np.size(self.airhorizons_depth)))):
+                self.airhorizons_correlation_bool = True
                 self.airhorizons_chol = cholesky(self.airhorizons_correlation)
                 self.airhorizons_lu_piv = lu_factor(np.transpose(self.airhorizons_chol))
-            if np.size(self.airintervals_depthtop) > 0:
+            else:
+                self.airhorizons_correlation_bool = False
+
+            if np.any(self.airintervals_correlation != \
+                      np.diag(np.ones(np.size(self.airintervals_depthtop)))):
+                self.airintervals_correlation_bool = True
                 self.airintervals_chol = cholesky(self.airintervals_correlation)
                 self.airintervals_lu_piv = lu_factor(np.transpose(self.airintervals_chol))
-            if np.size(self.delta_depth_depth) > 0:
+            else:
+                self.airintervals_correlation_bool = False
+                
+            if np.any(self.delta_depth_correlation != \
+                      np.diag(np.ones(np.size(self.delta_depth_depth)))):
+                self.delta_depth_correlation_bool = True
                 self.delta_depth_chol = cholesky(self.delta_depth_correlation)
                 self.delta_depth_lu_piv = lu_factor(np.transpose(self.delta_depth_chol))
+            else:
+                self.delta_depth_correlation_bool = False
 
     def raw_model(self):
         """Calculate the raw model, that is before applying correction functions."""
@@ -815,27 +841,27 @@ class Site(object):
         """Calculate the residuals from the vector of the variables"""
         resi_age = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
                    /self.icehorizons_sigma
-        if np.size(self.icehorizons_depth) > 0:
+        if self.icehorizons_correlation_bool:
             resi_age = lu_solve(self.icehorizons_lu_piv, resi_age)
         resi_iceint = (self.fct_age(self.iceintervals_depthbot)-\
                       self.fct_age(self.iceintervals_depthtop)-\
                       self.iceintervals_duration)/self.iceintervals_sigma
-        if np.size(self.iceintervals_depthtop) > 0:
+        if self.iceintervals_correlation_bool:
             resi_iceint = lu_solve(self.iceintervals_lu_piv, resi_iceint)
 
         if self.archive == 'icecore':
             resi_airage = (self.fct_airage(self.airhorizons_depth)-self.airhorizons_age)/\
                           self.airhorizons_sigma
-            if np.size(self.airhorizons_depth) > 0:
+            if self.airhorizons_correlation_bool:
                 resi_airage = lu_solve(self.airhorizons_lu_piv, resi_airage)
             resi_airint = (self.fct_airage(self.airintervals_depthbot)-\
                            self.fct_airage(self.airintervals_depthtop)-\
                            self.airintervals_duration)/self.airintervals_sigma
-            if np.size(self.airintervals_depthtop) > 0:
+            if self.airintervals_correlation_bool:
                 resi_airint = lu_solve(self.airintervals_lu_piv, resi_airint)
             resi_delta_depth = (self.fct_delta_depth(self.delta_depth_depth)-\
                                 self.delta_depth_delta_depth)/self.delta_depth_sigma
-            if np.size(self.delta_depth_depth) > 0:
+            if self.delta_depth_correlation_bool:
                 resi_delta_depth = lu_solve(self.delta_depth_lu_piv, resi_delta_depth)
             return np.concatenate((resi_age, resi_airage,
                                    resi_iceint, resi_airint, resi_delta_depth))

@@ -124,21 +124,41 @@ class SitePair(object):
             exec(open(filename).read())
         elif os.path.isfile(filename2):
             exec(open(filename2).read())
-        if np.size(self.iceicehorizons_depth1) > 0:
+            
+        if np.any(self.iceicehorizons_correlation != \
+                  np.diag(np.ones(np.size(self.iceicehorizons_depth1)))):
+            self.iceicehorizons_correlation_bool = True
             self.iceicehorizons_chol = cholesky(self.iceicehorizons_correlation)
             self.iceicehorizons_lu_piv = lu_factor(self.iceicehorizons_chol)
+        else:
+            self.iceicehorizons_correlation_bool = False
+            
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            if np.size(self.airairhorizons_depth1) > 0:
+            if np.any(self.airairhorizons_correlation != \
+                  np.diag(np.ones(np.size(self.airairhorizons_depth1)))):
+                self.airairhorizons_correlation_bool = True
                 self.airairhorizons_chol = cholesky(self.airairhorizons_correlation)
                 self.airairhorizons_lu_piv = lu_factor(self.airairhorizons_chol)
+            else:
+                self.airairhorizons_correlation_bool = False
+                
         if self.site2.archive == 'icecore':
-            if np.size(self.iceairhorizons_depth1) > 0:
+            if np.any(self.iceairhorizons_correlation != \
+                  np.diag(np.ones(np.size(self.iceairhorizons_depth1)))):
+                self.iceairhorizons_correlation_bool = True
                 self.iceairhorizons_chol = cholesky(self.iceairhorizons_correlation)
                 self.iceairhorizons_lu_piv = lu_factor(self.iceairhorizons_chol)
+            else:
+                self.iceairhorizons_correlation_bool = False
+                
         if self.site1.archive == 'icecore':
-            if np.size(self.airicehorizons_depth1) > 0:
+            if np.any(self.airicehorizons_correlation != \
+                  np.diag(np.ones(np.size(self.airicehorizons_depth1)))):
+                self.airicehorizons_correlation_bool = True
                 self.airicehorizons_chol = cholesky(self.airicehorizons_correlation)
                 self.airicehorizons_lu_piv = lu_factor(self.airicehorizons_chol)
+            else:
+                self.airicehorizons_correlation_bool = False
 
     def residuals(self):
         """Calculate the residual terms of a pair of sites."""
@@ -146,7 +166,8 @@ class SitePair(object):
         if np.size(self.iceicehorizons_depth1) > 0:
             resi_iceice = (self.site1.fct_age(self.iceicehorizons_depth1)-\
                            self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
-            resi_iceice = lu_solve(self.iceicehorizons_lu_piv, resi_iceice)
+            if self.iceicehorizons_correlation_bool:
+                resi_iceice = lu_solve(self.iceicehorizons_lu_piv, resi_iceice)
             resi = [resi_iceice]
         else:
             resi = [np.array([])]
@@ -156,20 +177,23 @@ class SitePair(object):
             resi_airair = (self.site1.fct_airage(self.airairhorizons_depth1)-\
                           self.site2.fct_airage(self.airairhorizons_depth2))/\
                           self.airairhorizons_sigma
-            resi_airair = lu_solve(self.airairhorizons_lu_piv, resi_airair)
+            if self.airairhorizons_correlation_bool:
+                resi_airair = lu_solve(self.airairhorizons_lu_piv, resi_airair)
             resi.append(resi_airair)
 
         if self.site2.archive == 'icecore' and np.size(self.iceairhorizons_depth1) > 0:
             resi_iceair = (self.site1.fct_age(self.iceairhorizons_depth1)-\
                           self.site2.fct_airage(self.iceairhorizons_depth2))/\
                           self.iceairhorizons_sigma
-            resi_iceair = lu_solve(self.iceairhorizons_lu_piv, resi_iceair)
+            if self.iceairhorizons_correlation_bool:
+                resi_iceair = lu_solve(self.iceairhorizons_lu_piv, resi_iceair)
             resi.append(resi_iceair)
 
         if self.site1.archive == 'icecore' and np.size(self.airicehorizons_depth1) > 0:
             resi_airice = (self.site1.fct_airage(self.airicehorizons_depth1)-\
                            self.site2.fct_age(self.airicehorizons_depth2))/self.airicehorizons_sigma
-            resi_airice = lu_solve(self.airicehorizons_lu_piv, resi_airice)
+            if self.airicehorizons_correlation_bool:
+                resi_airice = lu_solve(self.airicehorizons_lu_piv, resi_airice)
             resi.append(resi_airice)
 
         return np.concatenate(resi)
