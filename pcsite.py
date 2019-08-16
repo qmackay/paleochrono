@@ -654,7 +654,7 @@ class Site(object):
             with np.errstate(divide='ignore'):
                 self.airlayerthick_model = 1/np.diff(self.airage_model)
 
-    def jacobian_prepare(self):
+    def jacobian_init(self):
         
         self.corr_jac = np.dot(self.chol_a, np.diag(self.sigmap_corr_a))
 
@@ -675,7 +675,23 @@ class Site(object):
         self.age_jac = np.tril(np.ones((len(self.depth), len(self.depth))))
         
         #To be finished...
+    def corrected_jacobian(self):
+        """Calculate the Jacobian"""
 
+        self.age_jac = [self.age_top_sigma * np.ones(len(self.age))]        
+        for i in range(len(self.corr_a)):
+            self.corr_a_vec = np.zeros(len(self.corr_a))
+            self.corr_a_vec[i] = 1.
+        #Accu
+            corr_vec = np.dot(self.chol_a, self.corr_a_vec)*self.sigmap_corr_a
+            self.accu_vec = self.accu * np.interp(self.age_model[:-1], self.corr_a_age, corr_vec)
+
+        #Ice age
+            self.age_vec = self.age_top + np.cumsum(np.concatenate((np.array([0]),\
+                           self.depth_inter/self.accu_vec)))
+            self.age_jac.append(self.age_vec)
+        self.age_jac = np.concatenate((self.age_jac))
+            
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
 
@@ -793,6 +809,7 @@ class Site(object):
     def fct_delta_depth(self, depth):
         """Return the delta_depth at given detphs."""
         return np.interp(depth, self.depth, self.delta_depth)
+
 
     def residuals(self):
         """Calculate the residuals from the vector of the variables"""
