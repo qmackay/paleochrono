@@ -80,34 +80,34 @@ def jacob_column(resizero, dlabj, l):
     delta = m.sqrt(np.finfo(float).eps) #Stolen from the leastsq code
     D[dlabj].variables[l] += delta
     D[dlabj].model(D[dlabj].variables)
-    deriv = np.array([])
+    deriv = [np.array([])]
     index = 0
     for i, dlab in enumerate(pccfg.list_sites):
         index = index+len(D[dlab].variables)
         if dlabj == dlab:
             der = np.zeros(len(D[dlab].variables))
             der[l] = 1.
-            deriv = np.concatenate((deriv, der))
+            deriv.append(der)
             der = (D[dlab].residuals() - resizero[index:index+RESI_SIZE[i, i]]) / delta
-            deriv = np.concatenate((deriv, der))
+            deriv.append(der)
         else:
-            deriv = np.concatenate((deriv, np.zeros(len(D[dlab].variables))))
-            deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[i, i])))
+            deriv.append(np.zeros(len(D[dlab].variables)))
+            deriv.append(np.zeros(RESI_SIZE[i, i]))
         index = index+RESI_SIZE[i, i]
         for j, dlab2 in enumerate(pccfg.list_sites):
             if j < i:
                 if dlabj == dlab or dlabj == dlab2:
                     der = (DC[dlab2+'-'+dlab].residuals()-\
                            resizero[index:index+RESI_SIZE[j, i]])/delta
-                    deriv = np.concatenate((deriv, der))
+                    deriv.append(der)
                 else:
-                    deriv = np.concatenate((deriv, np.zeros(RESI_SIZE[j, i])))
+                    deriv.append(np.zeros(RESI_SIZE[j, i]))
                 index = index+RESI_SIZE[j, i]
     D[dlabj].variables[l] -= delta
-    return deriv
+    return np.concatenate(deriv)
 
 def jacobian_semi_analytical(var):
-    """Calculate the residuals."""
+    """Calculate the Jacobian of each residual term with a finite difference scheme."""
     resizero = residuals(var)
     jac_list = []
     for k, dlabj in enumerate(pccfg.list_sites):
@@ -127,7 +127,7 @@ def jacobian_semi_analytical(var):
     return np.transpose(jacob)
 
 def jacobian_numerical(var):
-    """Calculate derivatives for each parameter using pool."""
+    """Calculate the Jacobian with a finite difference scheme."""
     zeropred = residuals(var)
     derivparams = []
     results = []
