@@ -704,19 +704,21 @@ class Site(object):
     def corrected_jacobian(self):
         """Calculate the Jacobian"""
 
-        self.age_jac = [self.age_top_sigma * np.ones(len(self.age))]        
+        self.age_jac = [np.array([self.age_top_sigma * np.ones(len(self.age))])]        
         for i in range(len(self.corr_a)):
-            self.corr_a_vec = np.zeros(len(self.corr_a))
-            self.corr_a_vec[i] = 1.
+            corr_a_vec = np.zeros(len(self.corr_a))
+            corr_a_vec[i] = 1.
         #Accu
-            corr_vec = np.dot(self.chol_a, self.corr_a_vec)*self.sigmap_corr_a
-            self.accu_vec = self.accu * np.interp(self.age_model[:-1], self.corr_a_age, corr_vec)
+            corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
+            layer_vec = - np.interp(self.age_model[:-1], self.corr_a_age, corr_vec) / self.accu
 
         #Ice age
-            self.age_vec = self.age_top + np.cumsum(np.concatenate((np.array([0]),\
-                           self.depth_inter/self.accu_vec)))
-            self.age_jac.append(self.age_vec)
+            age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*layer_vec)))
+            self.age_jac.append(np.array([age_vec]))
+#            if i == 1:
+#                print(corr_vec, layer_vec, age_vec)
         self.age_jac = np.concatenate((self.age_jac))
+#        print(self.age_jac)
             
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
@@ -812,6 +814,12 @@ class Site(object):
         """Return the age at given depths."""
         return np.interp(depth, self.depth, self.age)
 
+    def fct_age_jac(self, depth):
+        jac = []
+        for i in range(len(self.variables)):
+            jac.append(np.array([np.interp(depth, self.depth, self.age_jac[i,])]))
+        return np.concatenate(jac)
+
     def fct_age_init(self, depth):
         """Return the initial age at given depths."""
         return np.interp(depth, self.depth, self.age_init)
@@ -867,6 +875,14 @@ class Site(object):
                                    resi_iceint, resi_airint, resi_delta_depth))
         else:
             return np.concatenate((resi_age, resi_iceint))
+
+    def residuals_jacobian(self):
+        resi_age_jac = (self.fct_age_jac(self.icehorizons_depth)-self.icehorizons_age)\
+                   /self.icehorizons_sigma
+        resi_iceint_jac = (self.fct_age_jac(self.iceintervals_depthbot)-\
+                      self.fct_age_jac(self.iceintervals_depthtop)-\
+                      self.iceintervals_duration)/self.iceintervals_sigma
+        return np.concatenate((resi_age_jac, resi_iceint_jac), axis = 1)
 
     def cost_function(self):
         """Calculate the cost function."""

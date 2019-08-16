@@ -106,6 +106,33 @@ def jacob_column(resizero, dlabj, l):
     D[dlabj].variables[l] -= delta
     return np.concatenate(deriv)
 
+def jacobian_analytical(var):
+    """Calculate the Jacobian of each residual term with analytical formulas."""
+    jac_list = []
+    for k, dlabj in enumerate(pccfg.list_sites):
+        D[dlabj].corrected_jacobian()
+        deriv = []
+        for i, dlab in enumerate(pccfg.list_sites):
+            if dlabj == dlab:
+                deriv.append(np.diag(np.ones(len(D[dlab].variables))))
+                deriv.append(D[dlab].residuals_jacobian())
+            else:
+                deriv.append(np.zeros((len(D[dlabj].variables), len(D[dlab].variables))))
+                deriv.append(np.zeros((len(D[dlabj].variables), RESI_SIZE[i, i])))
+            for j, dlab2 in enumerate(pccfg.list_sites):
+                if j < i:
+                    if dlabj == dlab:
+                        deriv.append(DC[dlab2+'-'+dlab].residuals_jacobian2())
+                    elif dlabj == dlab2:
+                        deriv.append(DC[dlab2+'-'+dlab].residuals_jacobian1())
+                    else:
+                        deriv.append(np.zeros((len(D[dlabj].variables), RESI_SIZE[j, i])))
+#        print(deriv[0], deriv[1])
+        jac_list.append(np.concatenate(deriv, axis=1))
+    jacob = np.concatenate(jac_list)
+#    print(np.shape(jacob), np.shape(resid()), len(VARIABLES))
+    return np.transpose(jacob)
+
 def jacobian_semi_analytical(var):
     """Calculate the Jacobian of each residual term with a finite difference scheme."""
     resizero = residuals(var)
