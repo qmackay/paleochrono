@@ -127,7 +127,6 @@ def jacobian_analytical(var):
                         deriv.append(DC[dlab2+'-'+dlab].residuals_jacobian1())
                     else:
                         deriv.append(np.zeros((len(D[dlabj].variables), RESI_SIZE[j, i])))
-#        print(deriv[0], deriv[1])
         jac_list.append(np.concatenate(deriv, axis=1))
     jacob = np.concatenate(jac_list)
 #    print(np.shape(jacob), np.shape(resid()), len(VARIABLES))
@@ -211,6 +210,8 @@ print('Size of RESIDUALS vector', len(resid()))
 ##Optimization
 START_TIME_OPT = time.perf_counter()
 print('cost function: ', cost_function(VARIABLES))
+#print(jacobian_semi_analytical(VARIABLES))
+#print(jacobian_analytical(VARIABLES))
 if pccfg.opt_method == 'leastsq':
     pccfg.opt_method = 'trf'
     pccfg.is_parallel = False

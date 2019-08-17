@@ -200,24 +200,22 @@ class SitePair(object):
 
 
     def residuals_jacobian1(self):
-        if np.size(self.iceicehorizons_depth1) > 0:
+#        if np.size(self.iceicehorizons_depth1) > 0:
 #            print(np.shape(self.site1.fct_age_jac(self.iceicehorizons_depth1)),
 #                  np.shape(self.site2.fct_age(self.iceicehorizons_depth2)),
 #                  np.shape(self.iceicehorizons_sigma)
-            resi_iceice = (self.site1.fct_age_jac(self.iceicehorizons_depth1)-\
-                           self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
-            resi = [resi_iceice]
-        else:
-            resi = [np.array([])]
+        resi_iceice = self.site1.fct_age_jac(self.iceicehorizons_depth1)/self.iceicehorizons_sigma
+        resi = [resi_iceice]
+#       else:
+#            resi = [np.array([])]
         return np.concatenate(resi)
 
     def residuals_jacobian2(self):
-        if np.size(self.iceicehorizons_depth1) > 0:
-            resi_iceice = (self.site1.fct_age(self.iceicehorizons_depth1)-\
-                           self.site2.fct_age_jac(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
-            resi = [resi_iceice]
-        else:
-            resi = [np.array([])]
+#        if np.size(self.iceicehorizons_depth1) > 0:
+        resi_iceice = -self.site2.fct_age_jac(self.iceicehorizons_depth2)/self.iceicehorizons_sigma
+        resi = [resi_iceice]
+#        else:
+#            resi = [np.array([])]
         return np.concatenate(resi)
 
     def figures(self):

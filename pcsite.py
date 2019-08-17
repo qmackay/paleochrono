@@ -706,6 +706,7 @@ class Site(object):
 
         self.age_jac = [np.array([self.age_top_sigma * np.ones(len(self.age))])]        
         for i in range(len(self.corr_a)):
+
             corr_a_vec = np.zeros(len(self.corr_a))
             corr_a_vec[i] = 1.
         #Accu
@@ -715,10 +716,14 @@ class Site(object):
         #Ice age
             age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*layer_vec)))
             self.age_jac.append(np.array([age_vec]))
-#            if i == 1:
-#                print(corr_vec, layer_vec, age_vec)
+
+        if self.archive == 'icecore':
+            print('Analytical Jacobian is not yet implemented for ice core archives.'
+                  'Please use semi_analytical instead.')
+            sys.exit()
+
+
         self.age_jac = np.concatenate((self.age_jac))
-#        print(self.age_jac)
             
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
@@ -877,11 +882,9 @@ class Site(object):
             return np.concatenate((resi_age, resi_iceint))
 
     def residuals_jacobian(self):
-        resi_age_jac = (self.fct_age_jac(self.icehorizons_depth)-self.icehorizons_age)\
-                   /self.icehorizons_sigma
+        resi_age_jac = self.fct_age_jac(self.icehorizons_depth)/self.icehorizons_sigma
         resi_iceint_jac = (self.fct_age_jac(self.iceintervals_depthbot)-\
-                      self.fct_age_jac(self.iceintervals_depthtop)-\
-                      self.iceintervals_duration)/self.iceintervals_sigma
+                      self.fct_age_jac(self.iceintervals_depthtop))/self.iceintervals_sigma
         return np.concatenate((resi_age_jac, resi_iceint_jac), axis = 1)
 
     def cost_function(self):
