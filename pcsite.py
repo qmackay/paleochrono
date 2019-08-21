@@ -711,10 +711,10 @@ class Site(object):
             corr_a_vec[i] = 1.
         #Accu
             corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
-            layer_vec = - np.interp(self.age_model[:-1], self.corr_a_age, corr_vec) / self.accu
+            agedens_vec = - np.interp(self.age_model[:-1], self.corr_a_age, corr_vec) / self.accu
 
         #Ice age
-            age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*layer_vec)))
+            age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
             self.age_jac.append(np.array([age_vec]))
 
         if self.archive == 'icecore':
