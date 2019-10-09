@@ -33,7 +33,7 @@ class Site(object):
 
         #Default parameters
         self.archive = 'icecore'
-        self.accu_prior_rep = 'staircase'
+        self.deporate_prior_rep = 'staircase'
         self.age_top = None
         self.depth = np.empty(0)
         self.corr_a_age = None
@@ -185,6 +185,11 @@ class Site(object):
             except AttributeError:
                 pass
         try:
+            self.lid_prior_sigma = self.sigmap_corr_LID
+            print('WARNING: sigmap_corr_LID is deprecated. Use lid_prior_sigma instead.')
+        except AttributeError:
+            pass
+        try:
             self.sigmap_corr_lid
             print('WARNING: sigmap_corr_lid is deprecated. Use lid_prior_sigma instead.')
         except AttributeError:
@@ -206,6 +211,11 @@ class Site(object):
             print('WARNING: Now, age_top is a variable to be optimized.'
                   'Therefore you need to define age_top_sigma.'
                   'Setting age_top_sigma to', self.age_top_sigma, 'for now.')
+        try:
+            self.lid_value = self.LID_value
+            print('WARNING: Now use lid_value instead of LID_value')
+        except AttributeError:
+            pass
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
