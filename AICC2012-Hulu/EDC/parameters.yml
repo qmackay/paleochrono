@@ -5,4 +5,4 @@ depth_grid: #depth grid for the age calculation
     type: 'regular'
     start: 0.
     end: 3259.3
-    nb_steps: 5926
+    resolution: 0.55

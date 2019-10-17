@@ -6,6 +6,7 @@ Some mathematical functions for paleochrono.
 @author: parrenif
 """
 import numpy as np
+import math as m
 
 def interp_lin_aver(x_out, x_in, y_in):
     """Return a linear interpolation of a (x_in,y_in) series at x_out abscissas with averaging."""
@@ -50,16 +51,18 @@ def gaussian(x_in):
     return np.exp(-x_in**2/2)
 
 def grid(para):
-    if para['type'] == 'regular':
-        start = para['start']
-        end = para['end']
+    start = para['start']
+    end = para['end']
+    try:
         nb_steps = para['nb_steps']
+    except KeyError:
+        resolution = para['resolution']
+        nb_steps = m.floor((end-start)/resolution)
+        end = start + resolution * nb_steps
+    if para['type'] == 'regular':
         eps = (end-start)/nb_steps/2
         grid = np.arange(start, end+eps, (end-start)/nb_steps)
     elif para['type'] == 'linear':
-        start = para['start']
-        end = para['end']
-        nb_steps = para['nb_steps']
         ratio = para['ratio']
         if ratio == None:
             ratio = 2/(nb_steps+1)
