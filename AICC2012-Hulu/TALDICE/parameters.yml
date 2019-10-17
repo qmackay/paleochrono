@@ -5,7 +5,7 @@ depth_grid: #depth grid for the age calculation
     type: 'regular'
     start: &depth_start 0.
     end: &depth_end 1486.
-    nb_steps: 1486
+    resolution: 1.
 age_truncation:
     inf: ~
     sup: 250000.
