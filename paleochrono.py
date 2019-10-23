@@ -24,6 +24,7 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from scipy.optimize import least_squares
+from scipy.linalg import lu_factor, lu_solve
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
@@ -230,23 +231,31 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
     VARIABLES = OptimizeResult.x
     HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
-    COV = np.linalg.inv(HESS)
 elif pccfg.opt_method == 'none':
     print('No optimization')
     VARIABLES = np.zeros(np.size(VARIABLES))
-    COV = np.diag(np.ones(np.size(VARIABLES)))
+    HESS = np.diag(np.ones(np.size(VARIABLES)))
 else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
 
+
 print('Calculation of confidence intervals')
+#COV = np.linalg.inv(HESS)
+HESS_lu_piv = lu_factor(HESS)
 INDEXSITE = 0
 for dlabel in pccfg.list_sites:
     D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
-    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
-        INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
+#    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
+#        INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
+    SIZESITE = np.size(D[dlabel].variables)
+    block1 = np.zeros((INDEXSITE, SIZESITE))
+    block2 = np.diag(np.ones(SIZESITE))
+    block3 = np.zeros((np.size(VARIABLES)-INDEXSITE-SIZESITE, SIZESITE))
+    block = np.vstack((block1, block2, block3))
+    D[dlabel].cov = np.dot(np.transpose(block), lu_solve(HESS_lu_piv, block))
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
     D[dlabel].sigma()
 
