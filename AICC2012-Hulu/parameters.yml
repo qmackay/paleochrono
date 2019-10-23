@@ -1,4 +1,4 @@
-list_sites: ['EDC']
+list_sites: ['EDC','VK','TALDICE','EDML','NGRIP', 'MSD']
 
 opt_method: 'trf'  #trf, lm or none. lm is slightly faster. trf has an interactive output.
 jacobian: 'semi_analytical' #semi_analytical or numerical
