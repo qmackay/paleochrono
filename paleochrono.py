@@ -240,10 +240,6 @@ else:
     sys.exit()
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
-if pccfg.opt_method == 'leastsq' and np.size(COV) == 1 and COV is None:
-    print('singular matrix encountered (flat curvature in some direction)')
-    sys.exit()
-#print('nb of model runs', pccfg.nb_runs)
 
 print('Calculation of confidence intervals')
 INDEXSITE = 0
