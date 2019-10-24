@@ -241,10 +241,11 @@ else:
 #print 'solution: ',VARIABLES
 print('cost function: ', cost_function(VARIABLES))
 
+print('Factorisation of the Hessian matrix')
+HESS_lu_piv = lu_factor(HESS)
 
 print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
-HESS_lu_piv = lu_factor(HESS)
 INDEXSITE = 0
 for dlabel in pccfg.list_sites:
     D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
