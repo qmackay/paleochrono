@@ -25,6 +25,7 @@ import numpy as np
 import matplotlib.pyplot as mpl
 from scipy.optimize import least_squares
 from scipy.linalg import lu_factor, lu_solve
+from scipy.sparse.linalg import LinearOperator
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
@@ -133,6 +134,34 @@ def jacobian_analytical(var):
 #    print(np.shape(jacob), np.shape(resid()), len(VARIABLES))
     return np.transpose(jacob)
 
+def jacobian_analytical_linop(var):
+    jac = jacobian_analytical(var)
+#    def mv(v):
+#        return np.dot(jac, v)
+    def mv(v):
+
+        index = 0        
+        resi = np.array([])
+        for i, dlab in enumerate(pccfg.list_sites):
+            #Why do we need to sometimes flatten here? Strange.
+            D[dlab].var_delta = v[index:index+np.size(D[dlab].variables)].flatten()
+            index = index+np.size(D[dlab].variables)
+            resi = np.concatenate((resi, D[dlab].var_delta))
+            D[dlab].model_delta(D[dlab].var_delta)
+            resi = np.concatenate((resi, D[dlab].residuals_delta()))
+            for j, dlab2 in enumerate(pccfg.list_sites):
+    #Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
+                if j < i:
+                    resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals_delta()))
+        return resi
+
+    def rmv(v):
+        
+        return np.dot(np.transpose(jac), v)
+    
+    return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
+
+
 def jacobian_semi_analytical(var):
     """Calculate the Jacobian of each residual term with a finite difference scheme."""
     resizero = residuals(var)
@@ -205,8 +234,10 @@ for di, dlabel in enumerate(pccfg.list_sites):
 #            DC[dlabel2+'-'+dlabel].display_init()
             RESI_SIZE[dj, di] = np.size(DC[dlabel2+'-'+dlabel].residuals())
 
-print('Size of VARIABLES vector', len(VARIABLES))
-print('Size of RESIDUALS vector', len(resid()))
+VAR_SIZE = len(VARIABLES)
+RESI_SIZE_TOT = len(resid())
+print('Size of VARIABLES vector', VAR_SIZE)
+print('Size of RESIDUALS vector', RESI_SIZE_TOT)
 
 ##Optimization
 START_TIME_OPT = time.perf_counter()
@@ -230,7 +261,11 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
     VARIABLES = OptimizeResult.x
-    HESS = np.dot(np.transpose(OptimizeResult.jac), OptimizeResult.jac)
+    if pccfg.jacobian == 'analytical_linop':
+        JACMAT = jacobian_analytical(VARIABLES)
+    else:
+        JACMAT = OptimizeResult.jac
+    HESS = np.dot(np.transpose(JACMAT), JACMAT)
 elif pccfg.opt_method == 'none':
     print('No optimization')
     VARIABLES = np.zeros(np.size(VARIABLES))

@@ -218,6 +218,11 @@ class SitePair(object):
 #            resi = [np.array([])]
         return np.concatenate(resi)
 
+    def residuals_delta(self):
+        resi_iceice = (self.site1.fct_age_delta(self.iceicehorizons_depth1)-\
+            self.site2.fct_age_delta(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
+        return resi_iceice
+
     def figures(self):
         
         """Build the figures related to a pair of sites."""
