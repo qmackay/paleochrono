@@ -721,7 +721,8 @@ class Site(object):
             corr_a_vec[i] = 1.
         #Accu
             corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
-            agedens_vec = - np.interp(self.age_model[:-1], self.corr_a_age, corr_vec) / self.accu
+            agedens_vec = - np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+                                      self.corr_a_age, corr_vec) / self.accu
 
         #Ice age
             age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
@@ -741,7 +742,8 @@ class Site(object):
         
         age_top_delta = var[0] * self.age_top_sigma
         corr_delta = np.dot(self.chol_a, var[1:])*self.sigmap_corr_a
-        agedens_delta = -np.interp(self.age_model[:-1], self.corr_a_age, corr_delta) / self.accu
+        agedens_delta = -np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+                                   self.corr_a_age, corr_delta) / self.accu
         self.age_delta = age_top_delta+np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
                              agedens_delta)))
 
@@ -759,8 +761,8 @@ class Site(object):
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
-        #FIXME: we should use mid-age and not age
-        self.accu = self.a_model*np.exp(np.interp(self.age_model[:-1], self.corr_a_age, corr))
+        self.accu = self.a_model*np.exp(np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+                                                  self.corr_a_age, corr))
 
         #Thinning and LID
         if self.archive == 'icecore':
