@@ -744,6 +744,11 @@ class Site(object):
         agedens_delta = -np.interp(self.age_model[:-1], self.corr_a_age, corr_delta) / self.accu
         self.age_delta = age_top_delta+np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
                              agedens_delta)))
+
+        if self.archive == 'icecore':
+            print('Analytical Jacobian operator is not yet implemented for ice core archives.'
+                  'Please use semi_analytical instead.')
+            sys.exit()
         
             
     def corrected_model(self):
