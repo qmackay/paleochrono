@@ -135,9 +135,31 @@ def jacobian_analytical(var):
     return np.transpose(jacob)
 
 def jacobian_analytical_linop(var):
-    jac = jacobian_analytical(var)
+#    jac = jacobian_analytical(var)
 #    def mv(v):
 #        return np.dot(jac, v)
+#    jac = [[None for _ in range(len(pccfg.list_sites))] for _ in range(len(pccfg.list_sites))]
+#    for i, dlab in enumerate(pccfg.list_sites):
+#        D[dlab].corrected_jacobian()
+#        for j, dlab2 in enumerate(pccfg.list_sites):
+#            if j == i:
+#                jac[i][i] = D[dlab].residuals_jacobian()
+#            if j < i:
+#                jac[j][i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
+#                jac[i][j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
+
+    jac = np.array([[None for _ in range(len(pccfg.list_sites))] for _ in range(len(pccfg.list_sites)) ])
+    for i, dlab in enumerate(pccfg.list_sites):
+        D[dlab].corrected_jacobian()
+        for j, dlab2 in enumerate(pccfg.list_sites):
+            if j == i:
+                jac[i,i] = D[dlab].residuals_jacobian()
+            if j < i:
+                jac[j,i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
+                jac[i,j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
+
+        
+
     def mv(v):
 
         index = 0        
@@ -156,8 +178,30 @@ def jacobian_analytical_linop(var):
         return resi
 
     def rmv(v):
+
+        vari =[]
+        for k, dlabj in enumerate(pccfg.list_sites):
+            vari = vari + [np.zeros(np.size(D[dlabj].variables))]
+
+        index = 0
+        for i, dlab in enumerate(pccfg.list_sites):
+            vari[i] = v[index:index+np.size(D[dlab].variables)].flatten()
+            index = index+np.size(D[dlab].variables)
+            vari[i] = vari[i] + np.dot(jac[i,i],
+                                 v[index:index+RESI_SIZE[i,i]])
+            index = index+RESI_SIZE[i,i]
+            for j, dlab2 in enumerate(pccfg.list_sites):
+                if j < i:
+                    vari[i] = vari[i]+np.dot(jac[j,i],
+                        v[index:index+RESI_SIZE[j,i]])
+                    vari[j] = vari[j]+np.dot(jac[i,j],
+                        v[index:index+RESI_SIZE[j,i]])
+                    index = index + RESI_SIZE[j,i]
         
-        return np.dot(np.transpose(jac), v)
+        vari = np.concatenate(vari)
+
+        return vari        
+#        return np.dot(np.transpose(jac), v)
     
     return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
 

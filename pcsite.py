@@ -745,7 +745,6 @@ class Site(object):
         self.age_delta = age_top_delta+np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
                              agedens_delta)))
         
-        
             
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
