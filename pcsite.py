@@ -461,6 +461,7 @@ class Site(object):
     
 
         self.chol_a = cholesky(self.correlation_corr_a)
+        self.chol_a_lu_piv = lu_factor(self.chol_a) #FIXME: do we always need to do this?
         if self.archive == 'icecore':
             self.chol_lid = cholesky(self.correlation_corr_lid)
             self.chol_tau = cholesky(self.correlation_corr_tau)
@@ -752,7 +753,23 @@ class Site(object):
                   'Please use semi_analytical instead.')
             sys.exit()
         
-            
+    def model_adj(self, depth):
+        
+        var = np.zeros_like(self.variables)
+        var[0] = self.age_top_sigma
+        for i in range(len(self.corr_a)):
+            corr_vec = np.zeros_like(self.corr_a)
+            corr_vec[i] = 1.
+            corr_vec = np.dot(self.chol_a, var[1:])*self.sigmap_corr_a
+            corr = -np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+                                   self.corr_a_age, corr_vec) / self.accu
+            #FIXME: take into account the corner case of the interval where depth is situated
+            corr = corr * np.heaviside(depth-(self.depth[:-1]+self.depth[1:])/2,
+                                    0.5)
+            var[i+1] = np.sum(corr * self.depth_inter)
+
+        return var
+
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
 
@@ -923,6 +940,16 @@ class Site(object):
         resi_iceint = (self.fct_age_delta(self.iceintervals_depthbot)-\
             self.fct_age_delta(self.iceintervals_depthtop))/self.iceintervals_sigma
         return np.concatenate((resi_age, resi_iceint))
+
+    def residuals_adj(self, resi):
+        var = np.zeros_like(self.variables)
+        for i in range(len(self.icehorizons_depth)):
+            var = var + resi[i] * self.model_adj(self.icehorizons_depth[i])
+        for i in range(len(self.iceintervals_depthbot)):
+            var = var + resi[i+len(self.icehorizons_depth)]*\
+                (self.model_adj(self.iceintervals_depthbot[i]) - \
+                self.model_adj(self.iceintervals_depthtop[i]))
+        return var
 
     def cost_function(self):
         """Calculate the cost function."""

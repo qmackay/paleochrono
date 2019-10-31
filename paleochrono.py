@@ -135,18 +135,6 @@ def jacobian_analytical(var):
     return np.transpose(jacob)
 
 def jacobian_analytical_linop(var):
-#    jac = jacobian_analytical(var)
-#    def mv(v):
-#        return np.dot(jac, v)
-#    jac = [[None for _ in range(len(pccfg.list_sites))] for _ in range(len(pccfg.list_sites))]
-#    for i, dlab in enumerate(pccfg.list_sites):
-#        D[dlab].corrected_jacobian()
-#        for j, dlab2 in enumerate(pccfg.list_sites):
-#            if j == i:
-#                jac[i][i] = D[dlab].residuals_jacobian()
-#            if j < i:
-#                jac[j][i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
-#                jac[i][j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
 
     jac = np.array([[None for _ in range(len(pccfg.list_sites))] for _ in range(len(pccfg.list_sites)) ])
     for i, dlab in enumerate(pccfg.list_sites):
@@ -157,8 +145,6 @@ def jacobian_analytical_linop(var):
             if j < i:
                 jac[j,i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
                 jac[i,j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
-
-        
 
     def mv(v):
 
@@ -187,8 +173,8 @@ def jacobian_analytical_linop(var):
         for i, dlab in enumerate(pccfg.list_sites):
             vari[i] = v[index:index+np.size(D[dlab].variables)].flatten()
             index = index+np.size(D[dlab].variables)
-            vari[i] = vari[i] + np.dot(jac[i,i],
-                                 v[index:index+RESI_SIZE[i,i]])
+            vari[i] = vari[i] + np.dot(jac[i,i], v[index:index+RESI_SIZE[i,i]])
+#            vari[i] = vari[i] + D[dlab].residuals_adj( v[index:index+RESI_SIZE[i,i]])
             index = index+RESI_SIZE[i,i]
             for j, dlab2 in enumerate(pccfg.list_sites):
                 if j < i:
@@ -299,8 +285,12 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     if pccfg.opt_method == 'trf':
         print('tr_solver:', pccfg.tr_solver)
     print('Jabobian:', pccfg.jacobian)
+    if pccfg.jacobian == 'automatic':
+        jac = '2-point'
+    else:
+        jac = eval('jacobian_'+pccfg.jacobian)
     OptimizeResult = least_squares(residuals, VARIABLES, method=pccfg.opt_method,
-                                   jac=eval('jacobian_'+pccfg.jacobian),
+                                   jac=jac,
                                    tr_solver=pccfg.tr_solver,
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
