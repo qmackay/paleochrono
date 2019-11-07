@@ -134,7 +134,7 @@ def jacobian_analytical(var):
 #    print(np.shape(jacob), np.shape(resid()), len(VARIABLES))
     return np.transpose(jacob)
 
-def jacobian_analytical_linop(var):
+def jacobian_adjoint(var):
 
     jac = np.array([[None for _ in range(len(pccfg.list_sites))] for _ in range(len(pccfg.list_sites)) ])
     for i, dlab in enumerate(pccfg.list_sites):
@@ -295,7 +295,7 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
     VARIABLES = OptimizeResult.x
-    if pccfg.jacobian == 'analytical_linop':
+    if pccfg.jacobian == 'adjoint':
         JACMAT = jacobian_analytical(VARIABLES)
     else:
         JACMAT = OptimizeResult.jac
