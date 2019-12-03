@@ -313,6 +313,7 @@ class Site(object):
                 readarray.resize(1, np.size(readarray))
             self.dens_depth = readarray[:, 0]
             self.dens_dens = readarray[:, 1]
+            #FIXME: implement staircase reprensentation for the density, as is done for accu.
             self.dens = np.interp(self.depth_mid, self.dens_depth, self.dens_dens)
             self.iedepth = np.cumsum(np.concatenate((np.array([0]), self.dens*self.depth_inter)))
             self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
