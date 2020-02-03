@@ -713,6 +713,7 @@ class Site(object):
         self.age_jac = np.tril(np.ones((len(self.depth), len(self.depth))))
         
         #To be finished...
+        
     def corrected_jacobian(self):
         """Calculate the Jacobian"""
 
@@ -724,19 +725,34 @@ class Site(object):
         #Accu
             corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
             agedens_vec = - np.interp((self.age_model[:-1]+self.age_model[1:])/2,
-                                      self.corr_a_age, corr_vec) / self.accu
+                                      self.corr_a_age, corr_vec) * self.agedens
 
         #Ice age
             age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
             self.age_jac.append(np.array([age_vec]))
 
         if self.archive == 'icecore':
-            print('Analytical Jacobian is not yet implemented for ice core archives.'
-                  'Please use semi_analytical instead.')
-            sys.exit()
 
 
+#            print('Analytical Jacobian is not yet implemented for ice core archives.'
+#                  'Please use semi_analytical instead.')
+#            sys.exit()
+
+            for i in range(len(self.corr_tau)):                
+                corr_tau_vec = np.zeros(len(self.corr_tau))
+                corr_tau_vec[i] = 1.
+                corr_vec = np.dot(self.chol_tau, corr_tau_vec)*self.sigmap_corr_tau
+                agedens_vec = -np.interp(self.depth_mid, self.corr_tau_depth, corr_vec)*self.agedens                
+                age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
+                self.age_jac.append(np.array([age_vec]))
+                
+            for i in range(len(self.corr_lid)):
+                age_vec = np.zeros_like(self.depth)
+                self.age_jac.append(np.array([age_vec]))
+                
         self.age_jac = np.concatenate((self.age_jac))
+
+
         
     def model_delta(self, var):
         """Calculate the Jacobian applied to a vector var."""
@@ -753,6 +769,13 @@ class Site(object):
             print('Analytical Jacobian operator is not yet implemented for ice core archives.'
                   'Please use semi_analytical instead.')
             sys.exit()
+            
+    def model_adj(self, var):
+        """Calculate the adjoint operator applied to a vector var."""
+        adj0 = self.age_top_sigma * np.sum(var)
+        """to be continued..."""
+        
+        
 
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
@@ -780,8 +803,9 @@ class Site(object):
             self.icelayerthick = self.tau*self.accu/self.dens
         else:
             self.icelayerthick = self.accu
+        self.agedens = 1/self.icelayerthick
         self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
-                   self.depth_inter/self.icelayerthick)))
+                   self.depth_inter*self.agedens)))
 
         #Air age
         if self.archive == 'icecore':
