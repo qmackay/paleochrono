@@ -134,9 +134,76 @@ def jacobian_analytical(var):
 #    print(np.shape(jacob), np.shape(resid()), len(VARIABLES))
     return np.transpose(jacob)
 
-def jacobian_adjoint(var):
+def jacobian_semi_adjoint(var):
 
-    jac = np.array([[None for _ in range(len(pccfg.list_sites))] for _ in range(len(pccfg.list_sites)) ])
+    jac = np.array([[None for _ in range(len(pccfg.list_sites))] \
+                     for _ in range(len(pccfg.list_sites)) ])
+    for i, dlab in enumerate(pccfg.list_sites):
+        D[dlab].corrected_jacobian()
+        for j, dlab2 in enumerate(pccfg.list_sites):
+            if j == i:
+                jac[i,i] = D[dlab].residuals_jacobian()
+            if j < i:
+                jac[j,i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
+                jac[i,j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
+
+    def mv(v):
+
+        index = 0        
+        resi = np.array([])
+        for i, dlab in enumerate(pccfg.list_sites):
+            #Why do we need to sometimes flatten here? Strange.
+            D[dlab].var_delta = v[index:index+np.size(D[dlab].variables)].flatten()
+            index = index+np.size(D[dlab].variables)
+        for i, dlab in enumerate(pccfg.list_sites):
+            #Why do we need to sometimes flatten here? Strange.
+            resi = np.concatenate((resi, D[dlab].var_delta))
+            resi = np.concatenate((resi, np.dot(np.transpose(jac[i,i]), D[dlab].var_delta)))
+            for j, dlab2 in enumerate(pccfg.list_sites):
+    #Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
+                if j < i:
+                    resi = np.concatenate((resi, np.dot(np.transpose(jac[j,i]), D[dlab].var_delta) + 
+                                           np.dot(np.transpose(jac[i,j]), D[dlab2].var_delta)))
+                    
+        return resi
+
+    def rmv(v):
+
+        vari =[]
+        for k, dlabj in enumerate(pccfg.list_sites):
+            vari = vari + [np.zeros(np.size(D[dlabj].variables))]
+
+        index = 0
+        for i, dlab in enumerate(pccfg.list_sites):
+            vari[i] = v[index:index+np.size(D[dlab].variables)].flatten()
+            index = index+np.size(D[dlab].variables)
+            vari[i] = vari[i] + np.dot(jac[i,i], v[index:index+RESI_SIZE[i,i]])
+#            vari[i] = vari[i] + D[dlab].residuals_adj( v[index:index+RESI_SIZE[i,i]])
+            index = index+RESI_SIZE[i,i]
+            for j, dlab2 in enumerate(pccfg.list_sites):
+                if j < i:
+                    vari[i] = vari[i]+np.dot(jac[j,i],
+                        v[index:index+RESI_SIZE[j,i]])
+                    vari[j] = vari[j]+np.dot(jac[i,j],
+                        v[index:index+RESI_SIZE[j,i]])
+                    index = index + RESI_SIZE[j,i]
+        
+        vari = np.concatenate(vari)
+
+        return vari        
+#        return np.dot(np.transpose(jac), v)
+    
+    return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
+
+def jacobian_adjoint(var):
+    """Full adjoint method. Not ready yet."""
+    #FIXME: Adjoint give slightly more iterations than semi_adjoint on the med exp.
+    #Check what is the issue.
+    print('Full adjoint is not ready yet. Exiting.')
+    sys.exit()
+    
+    jac = np.array([[None for _ in range(len(pccfg.list_sites))] \
+                     for _ in range(len(pccfg.list_sites)) ])
     for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].corrected_jacobian()
         for j, dlab2 in enumerate(pccfg.list_sites):
@@ -190,7 +257,6 @@ def jacobian_adjoint(var):
 #        return np.dot(np.transpose(jac), v)
     
     return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
-
 
 def jacobian_semi_analytical(var):
     """Calculate the Jacobian of each residual term with a finite difference scheme."""
@@ -295,7 +361,7 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
     print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
     VARIABLES = OptimizeResult.x
-    if pccfg.jacobian == 'adjoint':
+    if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
         JACMAT = jacobian_analytical(VARIABLES)
     else:
         JACMAT = OptimizeResult.jac
