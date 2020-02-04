@@ -313,7 +313,6 @@ class Site(object):
                 readarray.resize(1, np.size(readarray))
             self.dens_depth = readarray[:, 0]
             self.dens_dens = readarray[:, 1]
-            #FIXME: implement staircase reprensentation for the density, as is done for accu.
             self.dens = np.interp(self.depth_mid, self.dens_depth, self.dens_dens)
             self.iedepth = np.cumsum(np.concatenate((np.array([0]), self.dens*self.depth_inter)))
             self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
@@ -462,7 +461,6 @@ class Site(object):
     
 
         self.chol_a = cholesky(self.correlation_corr_a)
-        self.chol_a_lu_piv = lu_factor(self.chol_a) #FIXME: do we always need to do this?
         if self.archive == 'icecore':
             self.chol_lid = cholesky(self.correlation_corr_lid)
             self.chol_tau = cholesky(self.correlation_corr_tau)
@@ -713,107 +711,30 @@ class Site(object):
         self.age_jac = np.tril(np.ones((len(self.depth), len(self.depth))))
         
         #To be finished...
-        
     def corrected_jacobian(self):
         """Calculate the Jacobian"""
 
         self.age_jac = [np.array([self.age_top_sigma * np.ones(len(self.age))])]        
-        self.airage_jac = [np.array([self.age_top_sigma * np.ones(len(self.airage))])]        
-        self.delta_depth_jac = [np.array([np.zeros(len(self.depth))])]        
         for i in range(len(self.corr_a)):
 
             corr_a_vec = np.zeros(len(self.corr_a))
             corr_a_vec[i] = 1.
         #Accu
             corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
-            agedens_vec = - np.interp((self.age_model[:-1]+self.age_model[1:])/2,
-                                      self.corr_a_age, corr_vec) * self.agedens
+            agedens_vec = - np.interp(self.age_model[:-1], self.corr_a_age, corr_vec) / self.accu
 
         #Ice age
             age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
             self.age_jac.append(np.array([age_vec]))
 
-        #Air age
-            if self.archive == 'icecore':
-                airage_vec = np.interp(self.ice_equiv_depth, self.depth, age_vec)
-                self.airage_jac.append(np.array([airage_vec]))
-                delta_depth_vec = np.zeros_like(self.depth)
-                self.delta_depth_jac.append(np.array([delta_depth_vec]))
-
         if self.archive == 'icecore':
-
-
-#            print('Analytical Jacobian is not yet implemented for ice core archives.'
-#                  'Please use semi_analytical instead.')
-#            sys.exit()
-            
-            for i in range(len(self.corr_tau)):                
-                corr_tau_vec = np.zeros(len(self.corr_tau))
-                corr_tau_vec[i] = 1.
-                corr_vec = np.dot(self.chol_tau, corr_tau_vec)*self.sigmap_corr_tau
-                agedens_vec = -np.interp(self.depth_mid, self.corr_tau_depth, corr_vec)*self.agedens                
-                age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
-                self.age_jac.append(np.array([age_vec]))
-                
-                thin_vec = -np.interp(self.depth_mid, self.corr_tau_depth, 
-                                      corr_vec)*self.dens/self.tau
-                udepth_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*thin_vec)))
-                delta_depth_vec = - np.interp(self.ice_equiv_depth, self.depth_mid,
-                                              self.tau/self.dens) * (udepth_vec - \
-                                            np.interp(self.ice_equiv_depth, self.depth, udepth_vec))
-                airage_vec = np.interp(self.ice_equiv_depth, self.depth, age_vec) \
-                                - np.interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
-                                delta_depth_vec
-                self.airage_jac.append(np.array([airage_vec]))
-                self.delta_depth_jac.append(np.array([delta_depth_vec]))
-
-                #To be continued...                
-
-            for i in range(len(self.corr_lid)):
-                age_vec = np.zeros_like(self.depth)
-                self.age_jac.append(np.array([age_vec]))
-                
-                corr_lid_vec = np.zeros(len(self.corr_lid))
-                corr_lid_vec[i] = 1.
-                corr_vec = np.dot(self.chol_lid, corr_lid_vec)*self.sigmap_corr_lid
-                lid_vec = np.interp(self.age_model, self.corr_lid_age, corr_vec) * self.lid
-                delta_depth_vec = self.dens_firn * lid_vec * \
-                                    np.interp(self.ice_equiv_depth, self.depth_mid, 
-                                              self.tau/self.dens)
-                airage_vec = - np.interp(self.ice_equiv_depth, self.depth_mid, 
-                                         self.agedens) * delta_depth_vec
-                self.airage_jac.append(np.array([airage_vec]))
-                self.delta_depth_jac.append(np.array([delta_depth_vec]))
-
-                
-        self.age_jac = np.concatenate((self.age_jac))
-        self.airage_jac = np.concatenate((self.airage_jac))
-        self.delta_depth_jac = np.concatenate((self.delta_depth_jac))
-
-        
-    def model_delta(self, var):
-        """Calculate the Jacobian applied to a vector var."""
-        
-        
-        age_top_delta = var[0] * self.age_top_sigma
-        corr_delta = np.dot(self.chol_a, var[1:])*self.sigmap_corr_a
-        agedens_delta = -np.interp((self.age_model[:-1]+self.age_model[1:])/2,
-                                   self.corr_a_age, corr_delta) / self.accu
-        self.age_delta = age_top_delta+np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
-                             agedens_delta)))
-
-        if self.archive == 'icecore':
-            print('Analytical Jacobian operator is not yet implemented for ice core archives.'
+            print('Analytical Jacobian is not yet implemented for ice core archives.'
                   'Please use semi_analytical instead.')
             sys.exit()
-            
-    def model_adj(self, var):
-        """Calculate the adjoint operator applied to a vector var."""
-#        adj0 = self.age_top_sigma * np.sum(var)
-        """to be continued..."""
-        
-        
 
+
+        self.age_jac = np.concatenate((self.age_jac))
+            
     def corrected_model(self):
         """Calculate the age model, taking into account the correction functions."""
 
@@ -822,8 +743,8 @@ class Site(object):
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
-        self.accu = self.a_model*np.exp(np.interp((self.age_model[:-1]+self.age_model[1:])/2,
-                                                  self.corr_a_age, corr))
+        #FIXME: we should use mid-age and not age
+        self.accu = self.a_model*np.exp(np.interp(self.age_model[:-1], self.corr_a_age, corr))
 
         #Thinning and LID
         if self.archive == 'icecore':
@@ -840,9 +761,8 @@ class Site(object):
             self.icelayerthick = self.tau*self.accu/self.dens
         else:
             self.icelayerthick = self.accu
-        self.agedens = 1/self.icelayerthick
         self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
-                   self.depth_inter*self.agedens)))
+                   self.depth_inter/self.icelayerthick)))
 
         #Air age
         if self.archive == 'icecore':
@@ -915,21 +835,6 @@ class Site(object):
             jac.append(np.array([np.interp(depth, self.depth, self.age_jac[i,])]))
         return np.concatenate(jac)
 
-    def fct_airage_jac(self, depth):
-        jac = []
-        for i in range(len(self.variables)):
-            jac.append(np.array([np.interp(depth, self.depth, self.airage_jac[i,])]))
-        return np.concatenate(jac)
-    
-    def fct_delta_depth_jac(self, depth):
-        jac = []
-        for i in range(len(self.variables)):
-            jac.append(np.array([np.interp(depth, self.depth, self.delta_depth_jac[i,])]))
-        return np.concatenate(jac)
-    
-    def fct_age_delta(self, depth):
-        return np.interp(depth, self.depth, self.age_delta)
-
     def fct_age_init(self, depth):
         """Return the initial age at given depths."""
         return np.interp(depth, self.depth, self.age_init)
@@ -987,28 +892,10 @@ class Site(object):
             return np.concatenate((resi_age, resi_iceint))
 
     def residuals_jacobian(self):
-        #FIXME: We don't take into account covariance here!
         resi_age_jac = self.fct_age_jac(self.icehorizons_depth)/self.icehorizons_sigma
         resi_iceint_jac = (self.fct_age_jac(self.iceintervals_depthbot)-\
                       self.fct_age_jac(self.iceintervals_depthtop))/self.iceintervals_sigma
-        if self.archive == 'icecore':
-            resi_airage_jac = self.fct_airage_jac(self.airhorizons_depth)/self.airhorizons_sigma
-            resi_airint_jac = (self.fct_airage_jac(self.airintervals_depthbot)-\
-                          self.fct_airage_jac(self.airintervals_depthtop))/self.airintervals_sigma
-            resi_delta_depth_jac = self.fct_delta_depth_jac(self.delta_depth_depth)/ \
-                                    self.delta_depth_sigma
-            return np.concatenate((resi_age_jac, resi_airage_jac, resi_iceint_jac, resi_airint_jac, 
-                               resi_delta_depth_jac),
-                              axis = 1)
-        else:
-            return np.concatenate((resi_age_jac, resi_iceint_jac), axis=1)
-    
-    def residuals_delta(self):
-        resi_age = self.fct_age_delta(self.icehorizons_depth)/self.icehorizons_sigma
-        resi_iceint = (self.fct_age_delta(self.iceintervals_depthbot)-\
-            self.fct_age_delta(self.iceintervals_depthtop))/self.iceintervals_sigma
-        return np.concatenate((resi_age, resi_iceint))
-
+        return np.concatenate((resi_age_jac, resi_iceint_jac), axis = 1)
 
     def cost_function(self):
         """Calculate the cost function."""

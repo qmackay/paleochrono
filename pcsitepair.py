@@ -206,17 +206,41 @@ class SitePair(object):
 #                  np.shape(self.iceicehorizons_sigma)
         resi_iceice = self.site1.fct_age_jac(self.iceicehorizons_depth1)/self.iceicehorizons_sigma
         resi = [resi_iceice]
+        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
+            resi_airair = self.site1.fct_airage_jac(self.airairhorizons_depth1)/\
+                            self.airairhorizons_sigma
+            resi.append(resi_airair)
+        if self.site2.archive == 'icecore':
+            resi_iceair = self.site1.fct_age_jac(self.iceairhorizons_depth1)/\
+                            self.iceairhorizons_sigma
+            resi.append(resi_iceair)
+        if self.site1.archive == 'icecore':
+            resi_airice = self.site1.fct_airage_jac(self.airicehorizons_depth1)/\
+                            self.airicehorizons_sigma
+            resi.append(resi_airice)
 #       else:
 #            resi = [np.array([])]
-        return np.concatenate(resi)
+        return np.concatenate(resi, axis=1)
 
     def residuals_jacobian2(self):
 #        if np.size(self.iceicehorizons_depth1) > 0:
         resi_iceice = -self.site2.fct_age_jac(self.iceicehorizons_depth2)/self.iceicehorizons_sigma
         resi = [resi_iceice]
+        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
+            resi_airair = -self.site2.fct_airage_jac(self.airairhorizons_depth2)/\
+                            self.airairhorizons_sigma
+            resi.append(resi_airair)
+        if self.site2.archive == 'icecore':
+            resi_iceair = -self.site2.fct_airage_jac(self.iceairhorizons_depth2)/\
+                            self.iceairhorizons_sigma
+            resi.append(resi_iceair)
+        if self.site1.archive == 'icecore':
+            resi_airice = -self.site2.fct_age_jac(self.airicehorizons_depth2)/\
+                            self.airicehorizons_sigma
+            resi.append(resi_airice)
 #        else:
 #            resi = [np.array([])]
-        return np.concatenate(resi)
+        return np.concatenate(resi, axis=1)
 
     def residuals_delta(self):
         resi_iceice = (self.site1.fct_age_delta(self.iceicehorizons_depth1)-\
