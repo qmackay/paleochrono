@@ -776,7 +776,7 @@ class Site(object):
                 corr_lid_vec = np.zeros(len(self.corr_lid))
                 corr_lid_vec[i] = 1.
                 corr_vec = np.dot(self.chol_lid, corr_lid_vec)*self.sigmap_corr_lid
-                lid_vec = np.interp(self.age_model, self.corr_lid_age, corr_vec) * self.lid
+                lid_vec = np.interp(self.airage_model, self.corr_lid_age, corr_vec) * self.lid
                 delta_depth_vec = self.dens_firn * lid_vec * \
                                     np.interp(self.ice_equiv_depth, self.depth_mid, 
                                               self.tau/self.dens)
@@ -785,7 +785,6 @@ class Site(object):
                 self.airage_jac.append(np.array([airage_vec]))
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
 
-                
         self.age_jac = np.concatenate((self.age_jac))
         self.airage_jac = np.concatenate((self.airage_jac))
         self.delta_depth_jac = np.concatenate((self.delta_depth_jac))
