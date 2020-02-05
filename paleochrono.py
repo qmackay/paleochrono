@@ -379,7 +379,7 @@ print('cost function: ', cost_function(VARIABLES))
 
 print('Factorisation of the Hessian matrix')
 HESS_chol = cholesky(HESS)
-
+ 
 print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
 INDEXSITE = 0
