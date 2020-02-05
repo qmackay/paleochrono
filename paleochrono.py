@@ -24,8 +24,7 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from scipy.optimize import least_squares
-from scipy.linalg import lu_factor, lu_solve, cholesky, solve_triangular
-from numpy.linalg import inv
+from scipy.linalg import cholesky, solve_triangular
 from scipy.sparse.linalg import LinearOperator
 import pccfg
 from pcsite import Site
