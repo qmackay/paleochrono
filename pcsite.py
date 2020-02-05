@@ -1043,12 +1043,14 @@ class Site(object):
     def sigma(self):
         """Calculate the error of various variables."""
         jacob = self.jacobian()
+#        input('After calculating per site Jacobian. Program paused.')
 
         index = 0
         c_model = np.dot(jacob[index:index+np.size(self.age), :], np.dot(self.cov,\
                                np.transpose(jacob[index:index+np.size(self.age), :])))
         self.sigma_age = np.sqrt(np.diag(c_model))
         index = index+np.size(self.age)
+#        input('After calculating sigma_age. Program paused.')
         c_model = np.dot(jacob[index:index+np.size(self.accu), :], np.dot(self.cov,\
                                np.transpose(jacob[index:index+np.size(self.accu), :])))
         self.sigma_accu = np.sqrt(np.diag(c_model))

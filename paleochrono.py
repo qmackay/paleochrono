@@ -377,7 +377,7 @@ else:
 print('cost function: ', cost_function(VARIABLES))
 
 print('Factorisation of the Hessian matrix')
-HESS_chol = cholesky(HESS)
+HESS_chol = np.transpose(cholesky(HESS))
  
 print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
@@ -389,9 +389,11 @@ for dlabel in pccfg.list_sites:
     block2 = np.diag(np.ones(SIZESITE))
     block3 = np.zeros((np.size(VARIABLES)-INDEXSITE-SIZESITE, SIZESITE))
     block = np.vstack((block1, block2, block3))
-    toto = solve_triangular(np.transpose(HESS_chol), block, lower=True)
+#    input('Before solving the triangular system. Program paused.')
+    toto = solve_triangular(HESS_chol, block, lower=True)
     D[dlabel].cov = np.dot(np.transpose(toto), toto)
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
+#    input('Before calculating sigma. Program paused.')
     D[dlabel].sigma()
 
 ###Final display and output
