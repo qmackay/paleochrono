@@ -13,8 +13,7 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
-from scipy.linalg import lu_factor, lu_solve
-from scipy.linalg import cholesky
+from scipy.linalg import lu_factor, lu_solve, cholesky
 from scipy.interpolate import interp1d
 from scipy.optimize import leastsq
 import pickle
@@ -583,20 +582,26 @@ class Site(object):
             self.delta_depth_correlation = np.diag(np.ones(np.size(self.delta_depth_depth)))
 #        print self.icehorizons_correlation
 
-        filename = pccfg.datadir+'/parameters_covariance_observations_all_sites.py'
+        filename1 = pccfg.datadir+'/parameters_covariance_observations_all_sites.py'
         filename2 = pccfg.datadir+'/parameters-CovarianceObservations-AllDrillings.py'
-        if os.path.isfile(filename):
-            exec(open(filename).read())
+        if os.path.isfile(filename1):
+            exec(open(filename1).read())
         elif os.path.isfile(filename2):
             exec(open(filename2).read())
 
-        filename = pccfg.datadir+self.label+'/parameters_covariance_observations.py'
-        filename2 = pccfg.datadir+self.label+'/parameters-CovarianceObservations.py'
-        if os.path.isfile(filename):
-            exec(open(filename).read())
-        elif os.path.isfile(filename2):
-            exec(open(filename2).read())
-            
+        filename3 = pccfg.datadir+self.label+'/parameters_covariance_observations.py'
+        filename4 = pccfg.datadir+self.label+'/parameters-CovarianceObservations.py'
+        if os.path.isfile(filename3):
+            exec(open(filename3).read())
+        elif os.path.isfile(filename4):
+            exec(open(filename4).read())
+        
+        if ((os.path.isfile(filename1) or os.path.isfile(filename2) or os.path.isfile(filename3)\
+            or os.path.isfile(filename4)) and (pccfg.jacobian=='analytical' or \
+            pccfg.jacobian=='semi_adjoint' or pccfg.jacobian=='adjoint')):
+            print('Covariance on observations not implemented for analytical Jacobian. Exiting.')
+            sys.exit()
+        
         if np.any(self.icehorizons_correlation != \
                   np.diag(np.ones(np.size(self.icehorizons_depth)))):
             self.icehorizons_correlation_bool = True

@@ -24,7 +24,8 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from scipy.optimize import least_squares
-from scipy.linalg import lu_factor, lu_solve
+from scipy.linalg import lu_factor, lu_solve, cholesky, solve_triangular
+from numpy.linalg import inv
 from scipy.sparse.linalg import LinearOperator
 import pccfg
 from pcsite import Site
@@ -377,21 +378,20 @@ else:
 print('cost function: ', cost_function(VARIABLES))
 
 print('Factorisation of the Hessian matrix')
-HESS_lu_piv = lu_factor(HESS)
+HESS_chol = cholesky(HESS)
 
 print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
 INDEXSITE = 0
 for dlabel in pccfg.list_sites:
     D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
-#    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables),\
-#        INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
     SIZESITE = np.size(D[dlabel].variables)
     block1 = np.zeros((INDEXSITE, SIZESITE))
     block2 = np.diag(np.ones(SIZESITE))
     block3 = np.zeros((np.size(VARIABLES)-INDEXSITE-SIZESITE, SIZESITE))
     block = np.vstack((block1, block2, block3))
-    D[dlabel].cov = np.dot(np.transpose(block), lu_solve(HESS_lu_piv, block))
+    toto = solve_triangular(np.transpose(HESS_chol), block, lower=True)
+    D[dlabel].cov = np.dot(np.transpose(toto), toto)
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
     D[dlabel].sigma()
 
