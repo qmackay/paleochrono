@@ -698,6 +698,7 @@ class Site(object):
                 self.airlayerthick_model = 1/np.diff(self.airage_model)
 
     def jacobian_init(self):
+        #FIXME: this is useless, Please delete.
         
         self.corr_jac = np.dot(self.chol_a, np.diag(self.sigmap_corr_a))
 
@@ -722,17 +723,26 @@ class Site(object):
     def corrected_jacobian(self):
         """Calculate the Jacobian"""
 
+        self.accu_jac = [np.array([np.zeros(len(self.accu))])]    
         self.age_jac = [np.array([self.age_top_sigma * np.ones(len(self.age))])]        
-        self.airage_jac = [np.array([self.age_top_sigma * np.ones(len(self.airage))])]        
-        self.delta_depth_jac = [np.array([np.zeros(len(self.depth))])]        
+        if self.archive == 'icecore':
+            self.airage_jac = [np.array([self.age_top_sigma * np.ones(len(self.airage))])]        
+            self.delta_depth_jac = [np.array([np.zeros(len(self.depth))])]
+            self.icelayerthick_jac = [np.array([np.zeros(len(self.icelayerthick))])]
+            self.tau_jac = [np.array([np.zeros(len(self.tau))])]
+            self.lid_jac = [np.array([np.zeros(len(self.lid))])]
+            
         for i in range(len(self.corr_a)):
 
             corr_a_vec = np.zeros(len(self.corr_a))
             corr_a_vec[i] = 1.
         #Accu
             corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
-            agedens_vec = - np.interp((self.age_model[:-1]+self.age_model[1:])/2,
-                                      self.corr_a_age, corr_vec) * self.agedens
+            toto = np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+                                      self.corr_a_age, corr_vec)
+            accu_vec =  toto * self.accu
+            agedens_vec = - toto * self.agedens
+            self.accu_jac.append(np.array([accu_vec]))
 
         #Ice age
             age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
@@ -744,24 +754,29 @@ class Site(object):
                 self.airage_jac.append(np.array([airage_vec]))
                 delta_depth_vec = np.zeros_like(self.depth)
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
+                icelayerthick_vec = toto * self.icelayerthick
+                self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
+                tau_vec = np.zeros_like(self.tau)
+                self.tau_jac.append(np.array([tau_vec]))
+                lid_vec = np.zeros_like(self.lid)
+                self.lid_jac.append(np.array([lid_vec]))
+                
 
         if self.archive == 'icecore':
-
-
-#            print('Analytical Jacobian is not yet implemented for ice core archives.'
-#                  'Please use semi_analytical instead.')
-#            sys.exit()
             
-            for i in range(len(self.corr_tau)):                
+            for i in range(len(self.corr_tau)):
+                accu_vec = np.zeros_like(self.accu)
+                self.accu_jac.append(np.array([accu_vec]))
+                
                 corr_tau_vec = np.zeros(len(self.corr_tau))
                 corr_tau_vec[i] = 1.
                 corr_vec = np.dot(self.chol_tau, corr_tau_vec)*self.sigmap_corr_tau
-                agedens_vec = -np.interp(self.depth_mid, self.corr_tau_depth, corr_vec)*self.agedens                
+                tata = np.interp(self.depth_mid, self.corr_tau_depth, corr_vec)
+                agedens_vec = -tata * self.agedens                
                 age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
                 self.age_jac.append(np.array([age_vec]))
                 
-                thin_vec = -np.interp(self.depth_mid, self.corr_tau_depth, 
-                                      corr_vec)*self.dens/self.tau
+                thin_vec = -tata * self.dens/self.tau
                 udepth_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*thin_vec)))
                 delta_depth_vec = - np.interp(self.ice_equiv_depth, self.depth_mid,
                                               self.tau/self.dens) * (udepth_vec - \
@@ -771,12 +786,24 @@ class Site(object):
                                 delta_depth_vec
                 self.airage_jac.append(np.array([airage_vec]))
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
+                icelayerthick_vec = tata * self.icelayerthick
+                self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
+                tau_vec = tata * self.tau
+                self.tau_jac.append(np.array([tau_vec]))
+                lid_vec = np.zeros_like(self.lid)
+                self.lid_jac.append(np.array([lid_vec]))
 
                 #To be continued...                
 
             for i in range(len(self.corr_lid)):
+                accu_vec = np.zeros_like(self.accu)
+                self.accu_jac.append(np.array([accu_vec]))
+                
                 age_vec = np.zeros_like(self.depth)
                 self.age_jac.append(np.array([age_vec]))
+                
+                icelayerthick_vec = np.zeros_like(self.icelayerthick)
+                self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
                 
                 corr_lid_vec = np.zeros(len(self.corr_lid))
                 corr_lid_vec[i] = 1.
@@ -789,10 +816,18 @@ class Site(object):
                                          self.agedens) * delta_depth_vec
                 self.airage_jac.append(np.array([airage_vec]))
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
+                tau_vec = np.zeros_like(self.tau)
+                self.tau_jac.append(np.array([tau_vec]))
+                self.lid_jac.append(np.array([lid_vec]))
 
+        self.accu_jac = np.concatenate((self.accu_jac))
         self.age_jac = np.concatenate((self.age_jac))
-        self.airage_jac = np.concatenate((self.airage_jac))
-        self.delta_depth_jac = np.concatenate((self.delta_depth_jac))
+        if self.archive == 'icecore':
+            self.airage_jac = np.concatenate((self.airage_jac))
+            self.delta_depth_jac = np.concatenate((self.delta_depth_jac))
+            self.icelayerthick_jac = np.concatenate((self.icelayerthick_jac))
+            self.tau_jac = np.concatenate((self.tau_jac))
+            self.lid_jac = np.concatenate((self.lid_jac))
 
         
     def model_delta(self, var):
@@ -894,7 +929,7 @@ class Site(object):
             return np.concatenate((self.age, self.accu, self.icelayerthick, self.airage,
                                    self.delta_depth, self.tau, self.lid, self.airlayerthick))
         else:
-            return np.concatenate((self.age, self.accu, self.icelayerthick))
+            return np.concatenate((self.age, self.accu))
 
 
     def write_init(self):
@@ -1042,54 +1077,84 @@ class Site(object):
 
     def sigma(self):
         """Calculate the error of various variables."""
-        jacob = self.jacobian()
-#        input('After calculating per site Jacobian. Program paused.')
 
-        index = 0
-        c_model = np.dot(jacob[index:index+np.size(self.age), :], np.dot(self.cov,\
-                               np.transpose(jacob[index:index+np.size(self.age), :])))
-        self.sigma_age = np.sqrt(np.diag(c_model))
-        index = index+np.size(self.age)
-#        input('After calculating sigma_age. Program paused.')
-        c_model = np.dot(jacob[index:index+np.size(self.accu), :], np.dot(self.cov,\
-                               np.transpose(jacob[index:index+np.size(self.accu), :])))
-        self.sigma_accu = np.sqrt(np.diag(c_model))
-        index = index+np.size(self.accu)
-        c_model = np.dot(jacob[index:index+np.size(self.icelayerthick), :], np.dot(self.cov,\
-                               np.transpose(jacob[index:index+np.size(self.icelayerthick), :])))
-        self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
-        index = index+np.size(self.icelayerthick)
+        if pccfg.jacobian == 'automatic' or pccfg.jacobian == 'numerical' or \
+        pccfg.jacobian == 'semi_analytical':
+    
+            jacob = self.jacobian()
+    #        input('After calculating per site Jacobian. Program paused.')
+    
+            index = 0
+            c_model = np.dot(jacob[index:index+np.size(self.age), :], np.dot(self.cov,\
+                                   np.transpose(jacob[index:index+np.size(self.age), :])))
+            self.sigma_age = np.sqrt(np.diag(c_model))
+            index = index+np.size(self.age)
+    #        input('After calculating sigma_age. Program paused.')
+            c_model = np.dot(jacob[index:index+np.size(self.accu), :], np.dot(self.cov,\
+                                   np.transpose(jacob[index:index+np.size(self.accu), :])))
+            self.sigma_accu = np.sqrt(np.diag(c_model))
+            index = index+np.size(self.accu)
+    
+            self.sigma_accu_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2,
+                                              self.corr_a_age, self.sigmap_corr_a)
+    
+            if self.archive == 'icecore':
+                c_model = np.dot(jacob[index:index+np.size(self.icelayerthick), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.icelayerthick), :])))
+                self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.icelayerthick)
+                c_model = np.dot(jacob[index:index+np.size(self.airage), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.airage), :])))
+                self.sigma_airage = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.airage)
+                c_model = np.dot(jacob[index:index+np.size(self.delta_depth), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.delta_depth), :])))
+                self.sigma_delta_depth = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.delta_depth)
+                c_model = np.dot(jacob[index:index+np.size(self.tau), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.tau), :])))
+                self.sigma_tau = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.tau)
+                c_model = np.dot(jacob[index:index+np.size(self.lid), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.lid), :])))
+                self.sigma_lid = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.lid)
+                c_model = np.dot(jacob[index:index+np.size(self.airlayerthick), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.airlayerthick), :])))
+                self.sigma_airlayerthick = np.sqrt(np.diag(c_model))
+
+
+        else:
+            c_model = np.dot(np.transpose(self.accu_jac), np.dot(self.cov, self.accu_jac))
+            self.sigma_accu = np.sqrt(np.diag(c_model))
+            c_model = np.dot(np.transpose(self.age_jac), np.dot(self.cov, self.age_jac))
+            self.sigma_age = np.sqrt(np.diag(c_model))
+            
+    #        input('After calculating sigma_age with the analytical method. Program paused.')
+            if self.archive == 'icecore':
+                c_model = np.dot(np.transpose(self.airage_jac), np.dot(self.cov, self.airage_jac))
+                self.sigma_airage = np.sqrt(np.diag(c_model))
+                c_model = np.dot(np.transpose(self.delta_depth_jac), 
+                                 np.dot(self.cov, self.delta_depth_jac))
+                self.sigma_delta_depth = np.sqrt(np.diag(c_model))
+                c_model = np.dot(np.transpose(self.icelayerthick_jac), 
+                                 np.dot(self.cov, self.icelayerthick_jac))
+                self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
+                c_model = np.dot(np.transpose(self.tau_jac), 
+                                 np.dot(self.cov, self.tau_jac))
+                self.sigma_tau = np.sqrt(np.diag(c_model))
+                c_model = np.dot(np.transpose(self.lid_jac), 
+                                 np.dot(self.cov, self.lid_jac))
+                self.sigma_lid = np.sqrt(np.diag(c_model))
 
         self.sigma_accu_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2,
-                                          self.corr_a_age, self.sigmap_corr_a)
-
+                                              self.corr_a_age, self.sigmap_corr_a)
         if self.archive == 'icecore':
-            c_model = np.dot(jacob[index:index+np.size(self.airage), :], np.dot(self.cov,\
-                                   np.transpose(jacob[index:index+np.size(self.airage), :])))
-            self.sigma_airage = np.sqrt(np.diag(c_model))
-            index = index+np.size(self.airage)
-            c_model = np.dot(jacob[index:index+np.size(self.delta_depth), :], np.dot(self.cov,\
-                                   np.transpose(jacob[index:index+np.size(self.delta_depth), :])))
-            self.sigma_delta_depth = np.sqrt(np.diag(c_model))
-            index = index+np.size(self.delta_depth)
-            c_model = np.dot(jacob[index:index+np.size(self.tau), :], np.dot(self.cov,\
-                                   np.transpose(jacob[index:index+np.size(self.tau), :])))
-            self.sigma_tau = np.sqrt(np.diag(c_model))
-            index = index+np.size(self.tau)
-            c_model = np.dot(jacob[index:index+np.size(self.lid), :], np.dot(self.cov,\
-                                   np.transpose(jacob[index:index+np.size(self.lid), :])))
-            self.sigma_lid = np.sqrt(np.diag(c_model))
-            index = index+np.size(self.lid)
-            c_model = np.dot(jacob[index:index+np.size(self.airlayerthick), :], np.dot(self.cov,\
-                                   np.transpose(jacob[index:index+np.size(self.airlayerthick), :])))
-            self.sigma_airlayerthick = np.sqrt(np.diag(c_model))
-
             self.sigma_lid_model = np.interp(self.age_model, self.corr_lid_age,
-                                             self.sigmap_corr_lid)
+                                                 self.sigmap_corr_lid)
             self.sigma_tau_model = np.interp(self.depth_mid, self.corr_tau_depth,
-                                             self.sigmap_corr_tau)
-
-
+                                                 self.sigmap_corr_tau)
+            
     def figures(self):
         """Build the figures of a site."""
 
