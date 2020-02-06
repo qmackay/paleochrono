@@ -20,6 +20,8 @@ import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation, stretch
 import pccfg
+#from numpy import interp
+from numpy.core.multiarray import interp
 
 ##dummy use of the interp1d function
 Fooooooo = interp1d
@@ -313,7 +315,7 @@ class Site(object):
             self.dens_depth = readarray[:, 0]
             self.dens_dens = readarray[:, 1]
             #FIXME: implement staircase reprensentation for the density, as is done for accu.
-            self.dens = np.interp(self.depth_mid, self.dens_depth, self.dens_dens)
+            self.dens = interp(self.depth_mid, self.dens_depth, self.dens_dens)
             self.iedepth = np.cumsum(np.concatenate((np.array([0]), self.dens*self.depth_inter)))
             self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
 
@@ -339,7 +341,7 @@ class Site(object):
                 self.lid_lid = readarray[:, 1]
                 if readarray.shape[1] >= 3:
                     self.lid_sigma = readarray[:, 2]
-            self.lid_model = np.interp(self.depth, self.lid_depth, self.lid_lid)
+            self.lid_model = interp(self.depth, self.lid_depth, self.lid_lid)
 
             self.delta_depth = np.empty_like(self.depth)
             self.udepth = np.empty_like(self.depth)
@@ -362,7 +364,7 @@ class Site(object):
                 self.tau_tau = readarray[:, 1]
                 if readarray.shape[1] >= 3:
                     self.tau_sigma = readarray[:, 2]
-                self.tau_model = np.interp(self.depth_mid, self.tau_depth, self.tau_tau)
+                self.tau_model = interp(self.depth_mid, self.tau_depth, self.tau_tau)
                 self.tau = self.tau_model
 
         self.raw_model()
@@ -375,13 +377,13 @@ class Site(object):
                 if self.archive == 'icecore':
                     resi_age_top, corr_a_age, corr_a, corr_lid_age, corr_lid, corr_tau_depth,\
                         corr_tau = pickle.load(f)
-                    self.corr_lid = np.interp(self.corr_lid_age, corr_lid_age, corr_lid)
-                    self.corr_tau = np.interp(self.corr_tau_depth, corr_tau_depth, corr_tau)
+                    self.corr_lid = interp(self.corr_lid_age, corr_lid_age, corr_lid)
+                    self.corr_tau = interp(self.corr_tau_depth, corr_tau_depth, corr_tau)
                     
                 else:
                     resi_age_top, corr_a_age, corr_a = pickle.load(f)
             self.resi_age_top = resi_age_top
-            self.corr_a = np.interp(self.corr_a_age, corr_a_age, corr_a)
+            self.corr_a = interp(self.corr_a_age, corr_a_age, corr_a)
 
         elif self.start == 'default' or self.start == 'prior':
             self.resi_age_top = np.array([0.])
@@ -435,11 +437,11 @@ class Site(object):
                                                  self.tau_sigma)
             except AttributeError:
                 print('Sigma on prior thinning scenario not defined in the thinning-prior.txt file')
-                self.sigmap_corr_tau=self.k/self.thickness_ie*np.interp(self.corr_tau_depth,
+                self.sigmap_corr_tau=self.k/self.thickness_ie*interp(self.corr_tau_depth,
                                                                         self.depth, self.iedepth)
 
         #Accu correlation matrix
-        self.correlation_corr_a = np.interp(np.abs(np.ones((np.size(self.corr_a_age),\
+        self.correlation_corr_a = interp(np.abs(np.ones((np.size(self.corr_a_age),\
             np.size(self.corr_a_age)))*self.corr_a_age-\
             np.transpose(np.ones((np.size(self.corr_a_age),\
             np.size(self.corr_a_age)))*self.corr_a_age)),\
@@ -448,13 +450,13 @@ class Site(object):
         
         if self.archive == 'icecore':
             #LID correlation matrix
-            self.correlation_corr_lid = np.interp(np.abs(np.ones((np.size(self.corr_lid_age),\
+            self.correlation_corr_lid = interp(np.abs(np.ones((np.size(self.corr_lid_age),\
                 np.size(self.corr_lid_age)))*self.corr_lid_age-np.transpose(np.ones((np.size(\
                 self.corr_lid_age),np.size(self.corr_lid_age)))*self.corr_lid_age)),\
                 np.array([0,self.lambda_lid]),np.array([1, 0]))
             
             #Thinning correlation matrix
-            self.correlation_corr_tau = np.interp(np.abs(np.ones((np.size(self.corr_tau_depth),\
+            self.correlation_corr_tau = interp(np.abs(np.ones((np.size(self.corr_tau_depth),\
                 np.size(self.corr_tau_depth)))*self.corr_tau_depth-np.transpose(np.ones((np.size(\
                 self.corr_tau_depth),np.size(self.corr_tau_depth)))*self.corr_tau_depth)),\
                 np.array([0,self.lambda_tau]),np.array([1, 0]) )
@@ -689,10 +691,10 @@ class Site(object):
 
         #air age
         if self.archive == 'icecore':
-            self.ice_equiv_depth_model = np.interp(self.udepth_model-self.ulidie_model,
+            self.ice_equiv_depth_model = interp(self.udepth_model-self.ulidie_model,
                                                    self.udepth_model, self.depth, left=np.nan)
             self.delta_depth_model = self.depth-self.ice_equiv_depth_model
-            self.airage_model = np.interp(self.ice_equiv_depth_model, self.depth, self.age_model,
+            self.airage_model = interp(self.ice_equiv_depth_model, self.depth, self.age_model,
                                           left=np.nan, right=np.nan)
             with np.errstate(divide='ignore'):
                 self.airlayerthick_model = 1/np.diff(self.airage_model)
@@ -717,7 +719,7 @@ class Site(object):
             corr_a_vec[i] = 1.
         #Accu
             corr_vec = np.dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
-            toto = np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+            toto = interp((self.age_model[:-1]+self.age_model[1:])/2,
                                       self.corr_a_age, corr_vec)
             agedens_vec = - toto * self.agedens
             if full:
@@ -730,7 +732,7 @@ class Site(object):
 
         #Air age
             if self.archive == 'icecore':
-                airage_vec = np.interp(self.ice_equiv_depth, self.depth, age_vec)
+                airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec)
                 self.airage_jac.append(np.array([airage_vec]))
                 delta_depth_vec = np.zeros_like(self.depth)
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
@@ -750,18 +752,18 @@ class Site(object):
                 corr_tau_vec = np.zeros(len(self.corr_tau))
                 corr_tau_vec[i] = 1.
                 corr_vec = np.dot(self.chol_tau, corr_tau_vec)*self.sigmap_corr_tau
-                tata = np.interp(self.depth_mid, self.corr_tau_depth, corr_vec)
+                tata = interp(self.depth_mid, self.corr_tau_depth, corr_vec)
                 agedens_vec = -tata * self.agedens                
                 age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
                 self.age_jac.append(np.array([age_vec]))
                 
                 thin_vec = -tata * self.dens/self.tau
                 udepth_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*thin_vec)))
-                delta_depth_vec = - np.interp(self.ice_equiv_depth, self.depth_mid,
+                delta_depth_vec = - interp(self.ice_equiv_depth, self.depth_mid,
                                               self.tau/self.dens) * (udepth_vec - \
-                                            np.interp(self.ice_equiv_depth, self.depth, udepth_vec))
-                airage_vec = np.interp(self.ice_equiv_depth, self.depth, age_vec) \
-                                - np.interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
+                                            interp(self.ice_equiv_depth, self.depth, udepth_vec))
+                airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec) \
+                                - interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
                                 delta_depth_vec
                 self.airage_jac.append(np.array([airage_vec]))
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
@@ -785,11 +787,11 @@ class Site(object):
                 corr_lid_vec = np.zeros(len(self.corr_lid))
                 corr_lid_vec[i] = 1.
                 corr_vec = np.dot(self.chol_lid, corr_lid_vec)*self.sigmap_corr_lid
-                lid_vec = np.interp(self.airage_model, self.corr_lid_age, corr_vec) * self.lid
+                lid_vec = interp(self.airage_model, self.corr_lid_age, corr_vec) * self.lid
                 delta_depth_vec = self.dens_firn * lid_vec * \
-                                    np.interp(self.ice_equiv_depth, self.depth_mid, 
+                                    interp(self.ice_equiv_depth, self.depth_mid, 
                                               self.tau/self.dens)
-                airage_vec = - np.interp(self.ice_equiv_depth, self.depth_mid, 
+                airage_vec = - interp(self.ice_equiv_depth, self.depth_mid, 
                                          self.agedens) * delta_depth_vec
                 self.airage_jac.append(np.array([airage_vec]))
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
@@ -820,7 +822,7 @@ class Site(object):
         
         age_top_delta = var[0] * self.age_top_sigma
         corr_delta = np.dot(self.chol_a, var[1:])*self.sigmap_corr_a
-        agedens_delta = -np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+        agedens_delta = -interp((self.age_model[:-1]+self.age_model[1:])/2,
                                    self.corr_a_age, corr_delta) / self.accu
         self.age_delta = age_top_delta+np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
                              agedens_delta)))
@@ -845,17 +847,17 @@ class Site(object):
 
         #Accu
         corr = np.dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
-        self.accu = self.a_model*np.exp(np.interp((self.age_model[:-1]+self.age_model[1:])/2,
+        self.accu = self.a_model*np.exp(interp((self.age_model[:-1]+self.age_model[1:])/2,
                                                   self.corr_a_age, corr))
 
         #Thinning and LID
         if self.archive == 'icecore':
-            self.tau = self.tau_model*np.exp(np.interp(self.depth_mid, self.corr_tau_depth,\
+            self.tau = self.tau_model*np.exp(interp(self.depth_mid, self.corr_tau_depth,\
                        np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
             self.udepth = self.depth[0]+np.cumsum(np.concatenate((np.array([0]),\
                           self.dens/self.tau*self.depth_inter)))
             corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
-            self.lid = self.lid_model*np.exp(np.interp(self.airage_model, self.corr_lid_age, corr))
+            self.lid = self.lid_model*np.exp(interp(self.airage_model, self.corr_lid_age, corr))
             self.ulidie = self.lid*self.dens_firn
    
         #Ice age
@@ -869,10 +871,10 @@ class Site(object):
 
         #Air age
         if self.archive == 'icecore':
-            self.ice_equiv_depth = np.interp(self.udepth-self.ulidie, self.udepth, self.depth,
+            self.ice_equiv_depth = interp(self.udepth-self.ulidie, self.udepth, self.depth,
                                              left=np.nan)
             self.delta_depth = self.depth-self.ice_equiv_depth
-            self.airage = np.interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
+            self.airage = interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
                                     right=np.nan)
             with np.errstate(divide='ignore'):
                 self.airlayerthick = 1/np.diff(self.airage)
@@ -930,52 +932,52 @@ class Site(object):
 
     def fct_age(self, depth):
         """Return the age at given depths."""
-        return np.interp(depth, self.depth, self.age)
+        return interp(depth, self.depth, self.age)
 
     def fct_age_jac(self, depth):
         jac = []
         for i in range(len(self.variables)):
-            jac.append(np.array([np.interp(depth, self.depth, self.age_jac[i,])]))
+            jac.append(np.array([interp(depth, self.depth, self.age_jac[i,])]))
         return np.concatenate(jac)
 
     def fct_airage_jac(self, depth):
         jac = []
         for i in range(len(self.variables)):
-            jac.append(np.array([np.interp(depth, self.depth, self.airage_jac[i,])]))
+            jac.append(np.array([interp(depth, self.depth, self.airage_jac[i,])]))
         return np.concatenate(jac)
     
     def fct_delta_depth_jac(self, depth):
         jac = []
         for i in range(len(self.variables)):
-            jac.append(np.array([np.interp(depth, self.depth, self.delta_depth_jac[i,])]))
+            jac.append(np.array([interp(depth, self.depth, self.delta_depth_jac[i,])]))
         return np.concatenate(jac)
     
     def fct_age_delta(self, depth):
-        return np.interp(depth, self.depth, self.age_delta)
+        return interp(depth, self.depth, self.age_delta)
 
     def fct_age_init(self, depth):
         """Return the initial age at given depths."""
-        return np.interp(depth, self.depth, self.age_init)
+        return interp(depth, self.depth, self.age_init)
 
     def fct_age_model(self, depth):
         """Return the raw modelled age at given depths."""
-        return np.interp(depth, self.depth, self.age_model)
+        return interp(depth, self.depth, self.age_model)
 
     def fct_airage(self, depth):
         """Return the air age at given depths."""
-        return np.interp(depth, self.depth, self.airage)
+        return interp(depth, self.depth, self.airage)
 
     def fct_airage_init(self, depth):
         """Return the initial air age at given depth."""
-        return np.interp(depth, self.depth, self.airage_init)
+        return interp(depth, self.depth, self.airage_init)
 
     def fct_airage_model(self, depth):
         """Return the raw modelled air age at given depths."""
-        return np.interp(depth, self.depth, self.airage_model)
+        return interp(depth, self.depth, self.airage_model)
 
     def fct_delta_depth(self, depth):
         """Return the delta_depth at given detphs."""
-        return np.interp(depth, self.depth, self.delta_depth)
+        return interp(depth, self.depth, self.delta_depth)
 
 
     def residuals(self):
@@ -1079,7 +1081,7 @@ class Site(object):
             self.sigma_accu = np.sqrt(np.diag(c_model))
             index = index+np.size(self.accu)
     
-            self.sigma_accu_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2,
+            self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
                                               self.corr_a_age, self.sigmap_corr_a)
     
             if self.archive == 'icecore':
@@ -1132,12 +1134,12 @@ class Site(object):
                                  np.dot(self.cov, self.lid_jac))
                 self.sigma_lid = np.sqrt(np.diag(c_model))
 
-        self.sigma_accu_model = np.interp((self.age_model[1:]+self.age_model[:-1])/2,
+        self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
                                               self.corr_a_age, self.sigmap_corr_a)
         if self.archive == 'icecore':
-            self.sigma_lid_model = np.interp(self.age_model, self.corr_lid_age,
+            self.sigma_lid_model = interp(self.age_model, self.corr_lid_age,
                                                  self.sigmap_corr_lid)
-            self.sigma_tau_model = np.interp(self.depth_mid, self.corr_tau_depth,
+            self.sigma_tau_model = interp(self.depth_mid, self.corr_tau_depth,
                                                  self.sigmap_corr_tau)
             
     def figures(self):
