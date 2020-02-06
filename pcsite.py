@@ -696,29 +696,6 @@ class Site(object):
                                           left=np.nan, right=np.nan)
             with np.errstate(divide='ignore'):
                 self.airlayerthick_model = 1/np.diff(self.airage_model)
-
-    def jacobian_init(self):
-        #FIXME: this is useless, Please delete.
-        
-        self.corr_jac = np.dot(self.chol_a, np.diag(self.sigmap_corr_a))
-
-        jac_list = []
-        a = self.age_model
-        for i in range(len(self.depth_inter)):
-            ap = self.age_model[i]
-            before = np.where(a==max(a[a<ap]), min(a[a>ap])-ap, 0.)
-            after = np.where(a==min(a[a>ap]), ap-max(a[a<ap]), 0.)
-            vector = before + after
-            vector = vector / sum(vector)
-            jac_list.append(np.array([vector]))
-        self.age_interp_matrix = np.concatenate(jac_list)
-        
-        self.layerthick_jac = -np.dot(self.age_interp_matrix, self.corr_jac)/self.accu
-        self.layerthick_jac = np.concatenate((self.age_top*np.ones(len(self.corr_a)),
-                                              self.layerthick_jac))
-        self.age_jac = np.tril(np.ones((len(self.depth), len(self.depth))))
-        
-        #To be finished...
         
     def corrected_jacobian(self):
         """Calculate the Jacobian"""
