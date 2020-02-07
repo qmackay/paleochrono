@@ -366,6 +366,7 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     else:
         JACMAT = OptimizeResult.jac
     HESS = np.dot(np.transpose(JACMAT), JACMAT)
+    JACMAT = None
 elif pccfg.opt_method == 'none':
     print('No optimization')
     VARIABLES = np.zeros(np.size(VARIABLES))
@@ -378,11 +379,12 @@ print('cost function: ', cost_function(VARIABLES))
 
 print('Factorisation of the Hessian matrix')
 HESS_chol = np.transpose(cholesky(HESS))
- 
+HESS = None
+
 print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
 INDEXSITE = 0
-for dlabel in pccfg.list_sites:
+for dlabel in pccfg.list_sites: 
 #    input('Before solving the triangular system. Program paused.')
     D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
     SIZESITE = np.size(D[dlabel].variables)
@@ -391,10 +393,13 @@ for dlabel in pccfg.list_sites:
     block3 = np.zeros((np.size(VARIABLES)-INDEXSITE-SIZESITE, SIZESITE))
     block = np.vstack((block1, block2, block3))
     toto = solve_triangular(HESS_chol, block, lower=True)
+    block = None
     D[dlabel].cov = np.dot(np.transpose(toto), toto)
+    toto = None
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
 #    input('Before calculating sigma. Program paused.')
     D[dlabel].sigma()
+    D[dlabel].cov = None
 
 ###Final display and output
 print('Display and saving of results')
