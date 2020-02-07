@@ -385,6 +385,7 @@ print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
 INDEXSITE = 0
 for dlabel in pccfg.list_sites: 
+    print('Confidence intervals for ',dlabel)
 #    input('Before solving the triangular system. Program paused.')
     D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
     SIZESITE = np.size(D[dlabel].variables)
@@ -405,6 +406,7 @@ HESS_chol = None
 ###Final display and output
 print('Display and saving of results')
 for di, dlabel in enumerate(pccfg.list_sites):
+    print('Display and saving of ',dlabel)
 #    print dlabel+'\n'
     D[dlabel].save()
     D[dlabel].figures()
