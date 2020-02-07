@@ -24,7 +24,8 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from scipy.optimize import least_squares
-from scipy.linalg import cholesky, solve_triangular
+from scipy.linalg import solve_triangular
+from numpy.linalg import cholesky
 from scipy.sparse.linalg import LinearOperator
 import pccfg
 from pcsite import Site
@@ -364,6 +365,8 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
         print('Calculating Jacobian matrix.')
         JACMAT = jacobian_analytical(VARIABLES)
+        for dlabel in pccfg.list_sites:
+            D[dlabel].corrected_jacobian_free()
     else:
         JACMAT = OptimizeResult.jac
     print('Calculating Hessian matrix.')
@@ -380,8 +383,10 @@ else:
 print('cost function: ', cost_function(VARIABLES))
 
 print('Factorisation of the Hessian matrix')
-HESS_chol = cholesky(HESS, overwrite_a=True, check_finite=False)
-HESS_chol = np.transpose(HESS_chol)
+HESS_chol = cholesky(HESS)
+HESS = None
+#HESS_chol = cholesky(HESS, overwrite_a=True, check_finite=False)
+#HESS_chol = np.transpose(HESS_chol)
 #COV = np.linalg.inv(HESS)
 #HESS = None
 
@@ -389,7 +394,7 @@ print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
 INDEXSITE = 0
 for dlabel in pccfg.list_sites: 
-    print('Confidence intervals for '+dlabel)
+    print('Covariance matrix for '+dlabel)
 #    input('Before solving the triangular system. Program paused.')
     SIZESITE = np.size(D[dlabel].variables)
     D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+SIZESITE]
@@ -404,10 +409,13 @@ for dlabel in pccfg.list_sites:
 #    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+SIZESITE,INDEXSITE:INDEXSITE+SIZESITE]
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
 #    input('Before calculating sigma. Program paused.')
-    D[dlabel].sigma()
 #    COV[INDEXSITE:INDEXSITE+SIZESITE,:] = None
 #    COV[:,INDEXSITE:INDEXSITE+SIZESITE] = None
 HESS_chol = None
+for dlabel in pccfg.list_sites: 
+    print('Confidence intervals for '+dlabel)
+    D[dlabel].sigma()
+    D[dlabel].cov = None
 
 ###Final display and output
 print('Display and saving of results')
