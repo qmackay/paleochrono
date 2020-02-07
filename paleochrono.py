@@ -400,6 +400,7 @@ for dlabel in pccfg.list_sites:
 #    input('Before calculating sigma. Program paused.')
     D[dlabel].sigma()
     D[dlabel].cov = None
+HESS_chol = None
 
 ###Final display and output
 print('Display and saving of results')
