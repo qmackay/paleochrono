@@ -1113,25 +1113,32 @@ class Site(object):
         else:
             self.corrected_jacobian(full=True)
             c_model = np.dot(np.transpose(self.accu_jac), np.dot(self.cov, self.accu_jac))
+#            self.accu_jac = None
             self.sigma_accu = np.sqrt(np.diag(c_model))
             c_model = np.dot(np.transpose(self.age_jac), np.dot(self.cov, self.age_jac))
+#            self.age_jac = None
             self.sigma_age = np.sqrt(np.diag(c_model))
             
     #        input('After calculating sigma_age with the analytical method. Program paused.')
             if self.archive == 'icecore':
                 c_model = np.dot(np.transpose(self.airage_jac), np.dot(self.cov, self.airage_jac))
+#                self.airage_jac = None
                 self.sigma_airage = np.sqrt(np.diag(c_model))
                 c_model = np.dot(np.transpose(self.delta_depth_jac), 
                                  np.dot(self.cov, self.delta_depth_jac))
+#                self.delta_depth_jac = None
                 self.sigma_delta_depth = np.sqrt(np.diag(c_model))
                 c_model = np.dot(np.transpose(self.icelayerthick_jac), 
                                  np.dot(self.cov, self.icelayerthick_jac))
+#                self.icelayerthick_jac = None
                 self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
                 c_model = np.dot(np.transpose(self.tau_jac), 
                                  np.dot(self.cov, self.tau_jac))
+#                self.tau_jac = None
                 self.sigma_tau = np.sqrt(np.diag(c_model))
                 c_model = np.dot(np.transpose(self.lid_jac), 
                                  np.dot(self.cov, self.lid_jac))
+#                self.lid_jac = None
                 self.sigma_lid = np.sqrt(np.diag(c_model))
 
         self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,

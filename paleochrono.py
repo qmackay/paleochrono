@@ -362,9 +362,11 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
     VARIABLES = OptimizeResult.x
     if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
+        print('Calculating Jacobian matrix.')
         JACMAT = jacobian_analytical(VARIABLES)
     else:
         JACMAT = OptimizeResult.jac
+    print('Calculating Hessian matrix.')
     HESS = np.dot(np.transpose(JACMAT), JACMAT)
     JACMAT = None
 elif pccfg.opt_method == 'none':
@@ -378,17 +380,19 @@ else:
 print('cost function: ', cost_function(VARIABLES))
 
 print('Factorisation of the Hessian matrix')
-HESS_chol = np.transpose(cholesky(HESS))
-HESS = None
+HESS_chol = cholesky(HESS, overwrite_a=True, check_finite=False)
+HESS_chol = np.transpose(HESS_chol)
+#COV = np.linalg.inv(HESS)
+#HESS = None
 
 print('Calculation of confidence intervals')
 #COV = np.linalg.inv(HESS)
 INDEXSITE = 0
 for dlabel in pccfg.list_sites: 
-    print('Confidence intervals for ',dlabel)
+    print('Confidence intervals for '+dlabel)
 #    input('Before solving the triangular system. Program paused.')
-    D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+np.size(D[dlabel].variables)]
     SIZESITE = np.size(D[dlabel].variables)
+    D[dlabel].variables = VARIABLES[INDEXSITE:INDEXSITE+SIZESITE]
     block1 = np.zeros((INDEXSITE, SIZESITE))
     block2 = np.diag(np.ones(SIZESITE))
     block3 = np.zeros((np.size(VARIABLES)-INDEXSITE-SIZESITE, SIZESITE))
@@ -397,22 +401,24 @@ for dlabel in pccfg.list_sites:
     block = None
     D[dlabel].cov = np.dot(np.transpose(toto), toto)
     toto = None
+#    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+SIZESITE,INDEXSITE:INDEXSITE+SIZESITE]
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
 #    input('Before calculating sigma. Program paused.')
     D[dlabel].sigma()
-    D[dlabel].cov = None
+#    COV[INDEXSITE:INDEXSITE+SIZESITE,:] = None
+#    COV[:,INDEXSITE:INDEXSITE+SIZESITE] = None
 HESS_chol = None
 
 ###Final display and output
 print('Display and saving of results')
 for di, dlabel in enumerate(pccfg.list_sites):
-    print('Display and saving of ',dlabel)
-#    print dlabel+'\n'
+    print('Display and saving of',dlabel)
     D[dlabel].save()
     D[dlabel].figures()
+for di, dlabel in enumerate(pccfg.list_sites):
     for dj, dlabel2 in enumerate(pccfg.list_sites):
         if dj < di:
-#            print dlabel2+'-'+dlabel+'\n'
+            print('Display of '+dlabel2+'-'+dlabel+' site pair')
             DC[dlabel2+'-'+dlabel].figures()
 
 ###Program execution time
