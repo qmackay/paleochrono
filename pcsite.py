@@ -140,6 +140,10 @@ class Site(object):
         except AttributeError:
             print('WARNING: calc_a is deprecated. Use calc_deporate instead.')
         try:
+            self.calc_a_method = self.calc_deporate_method
+        except AttributeError:
+            print('WARNING: calc_a_method is deprecated. Use calc_deporate_method instead.')
+        try:
             self.corr_a_age = self.corr_deporate_age
         except AttributeError:
             print('WARNING: corr_a_age is deprecated. Use corr_deporate_age instead.')
