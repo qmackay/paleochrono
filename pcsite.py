@@ -316,10 +316,11 @@ class Site(object):
             self.dens_dens = readarray[:, 1]
             #FIXME: implement staircase reprensentation for the density, as is done for accu.
             self.dens = interp(self.depth_mid, self.dens_depth, self.dens_dens)
-            self.iedepth = np.cumsum(np.concatenate((np.array([0]), self.dens*self.depth_inter)))
-            self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
 
             if self.calc_tau:
+                self.iedepth = np.cumsum(np.concatenate((np.array([self.iedepth_top]), 
+                                                         self.dens*self.depth_inter)))
+                self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
                 self.thickness_ie = self.thickness-self.depth[-1]+self.iedepth[-1]
 
             if self.calc_lid:
