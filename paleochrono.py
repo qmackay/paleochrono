@@ -365,6 +365,7 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
         print('Calculating Jacobian matrix.')
         JACMAT = jacobian_analytical(VARIABLES)
+#        print('Size of JACMAT in kbytes',JACMAT.nbytes/1000)
         for dlabel in pccfg.list_sites:
             D[dlabel].corrected_jacobian_free()
     else:

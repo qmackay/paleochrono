@@ -275,7 +275,7 @@ class Site(object):
                     self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
                                                               self.iso_deutice)
                 elif self.calc_a_method == 'd18O':
-                    self.d18o_ice = readarray[:, 1]
+                    self.iso_d18o_ice = readarray[:, 1]
                     self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
                                                                 self.iso_d18o_ice)
                 else:
