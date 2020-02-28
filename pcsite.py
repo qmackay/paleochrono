@@ -926,7 +926,8 @@ class Site(object):
 
         if self.archive == 'icecore':
             return np.concatenate((self.age, self.accu, self.icelayerthick, self.airage,
-                                   self.delta_depth, self.tau, self.lid, self.airlayerthick))
+                                   self.delta_depth, self.tau, self.lid, self.airlayerthick,
+                                   self.age-self.airage))
         else:
             return np.concatenate((self.age, self.accu))
 
@@ -1121,6 +1122,10 @@ class Site(object):
                 c_model = np.dot(jacob[index:index+np.size(self.airlayerthick), :], np.dot(self.cov,\
                                        np.transpose(jacob[index:index+np.size(self.airlayerthick), :])))
                 self.sigma_airlayerthick = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.airlayerthick)
+                c_model = np.dot(jacob[index:index+np.size(self.age), :], np.dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.age), :])))
+                self.sigma_delta_age = np.sqrt(np.diag(c_model))
 
 
         else:
@@ -1146,6 +1151,9 @@ class Site(object):
                 c_model = np.dot(np.transpose(self.lid_jac), 
                                  np.dot(self.cov, self.lid_jac))
                 self.sigma_lid = np.sqrt(np.diag(c_model))
+                c_model = np.dot(np.transpose(self.age_jac-self.airage_jac), 
+                                 np.dot(self.cov, self.age_jac-self.airage_jac))
+                self.sigma_delta_age = np.sqrt(np.diag(c_model))
 
         self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
                                               self.corr_a_age, self.sigmap_corr_a)
@@ -1161,7 +1169,7 @@ class Site(object):
 
         fig, ax1 = mpl.subplots()
         mpl.title(self.label+' Deposition rate')
-        mpl.xlabel('Optimized age (yr)')
+        mpl.xlabel('Optimized age (yr b1950)')
         mpl.ylabel('Deposition rate (m/yr)')
         if pccfg.show_initial:
             mpl.step(self.age, np.concatenate((self.a_init, np.array([self.a_init[-1]]))),
@@ -1327,8 +1335,8 @@ class Site(object):
 
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' Lock-In Depth')
-            mpl.xlabel('Optimized age (yr)')
-            mpl.ylabel('LID')
+            mpl.xlabel('Optimized age (yr b1950)')
+            mpl.ylabel('LID (m)')
             if pccfg.show_initial:
                 mpl.plot(self.age, self.lid_init, color=pccfg.color_init, label='Initial')
             mpl.plot(self.age, self.lid_model, color=pccfg.color_mod, label='Prior')
@@ -1350,6 +1358,29 @@ class Site(object):
             ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
             fig.tight_layout()
             printed_page = PdfPages(pccfg.datadir+self.label+'/lock_in_depth.pdf')
+            printed_page.savefig(fig)
+            printed_page.close()
+            if not pccfg.show_figures:
+                mpl.close()
+
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' $\Delta$age')
+            mpl.xlabel('Optimized age (yr b1950)')
+            mpl.ylabel('$\Delta$age (yr)')
+            if pccfg.show_initial:
+                mpl.plot(self.age, self.age_init-self.airage_init, color=pccfg.color_init,
+                         label='Initial')
+            mpl.plot(self.age, self.age_model-self.airage_model, color=pccfg.color_mod,
+                     label='Prior')
+            mpl.plot(self.age, self.age-self.airage, color=pccfg.color_opt,
+                     label='Posterior +/-$\sigma$')
+            mpl.fill_between(self.age, self.age-self.airage-self.sigma_delta_age,
+                             self.age-self.airage+self.sigma_delta_age,
+                             color=pccfg.color_ci)
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((self.age_top, x_up, y_low, y_up))
+            printed_page = PdfPages(pccfg.datadir+self.label+'/delta_age.pdf')
+            mpl.legend(loc="best")
             printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
@@ -1437,11 +1468,13 @@ class Site(object):
                 mpl.close()
 
 
+
     def save(self):
         """Save various variables for a site."""
         if self.archive == 'icecore':
             output = np.vstack((self.depth, self.age, self.sigma_age, self.airage,
                                 self.sigma_airage,
+                                self.sigma_delta_age,
                                 np.append(self.accu, self.accu[-1]),
                                 np.append(self.sigma_accu, self.sigma_accu[-1]),
                                 np.append(self.tau, self.tau[-1]),
@@ -1465,7 +1498,8 @@ class Site(object):
                                 np.append(self.sigma_accu_model, self.sigma_accu_model[-1])))
         with open(pccfg.datadir+self.label+'/output.txt', 'w') as file_save:
             if self.archive == 'icecore':
-                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age\tdeporate'
+                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age'
+                                '\tsigma_delta_age\tdeporate'
                                 '\tsigma_deporate\tthinning\tsigma_thinning\tLID\tsigma_LID'
                                  '\tdelta_depth\tsigma_delta_depth\tdeporate_model'
                                  '\tsigma_deporate_model'
