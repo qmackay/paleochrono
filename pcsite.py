@@ -13,7 +13,8 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
-from scipy.linalg import lu_factor, lu_solve, cholesky
+from scipy.linalg import lu_factor, lu_solve
+from numpy.linalg import cholesky
 from scipy.interpolate import interp1d
 from scipy.optimize import leastsq
 import pickle
