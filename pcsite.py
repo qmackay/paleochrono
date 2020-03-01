@@ -1460,7 +1460,7 @@ class Site(object):
                               self.delta_depth+self.sigma_delta_depth, color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
-            mpl.legend(loc="best")
+            mpl.legend(loc='lower right')
             printed_page = PdfPages(pccfg.datadir+self.label+'/delta_depth.pdf')
             printed_page.savefig(fig)
             printed_page.close()
