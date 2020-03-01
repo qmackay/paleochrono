@@ -11,10 +11,10 @@ import yaml
 
 ##Default Parameters
 list_sites = []
-opt_method = 'none'  #leastsq, leastsq-parallel, none
+opt_method = 'trf'  #leastsq, leastsq-parallel, none
 is_parallel = False
 is_analytical_jacobian = True
-jacobian = 'semi_analytical'
+jacobian = 'semi_adjoint'
 nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
 datadir = './'
 color_obs = 'r'       #color for the observations
@@ -30,7 +30,7 @@ scale_ageci = 10.     #scaling of the confidence interval in the ice and air age
 show_figures = False  #whether to show or not the figures at the end of the run
 show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
 tol = 1e-6      #Tolerance for the termination.
-tr_solver = 'exact'
+tr_solver = 'lsmr'
 #nb_runs = 0
 
 
