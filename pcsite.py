@@ -20,8 +20,8 @@ import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation, stretch
 import pccfg
-#from numpy import interp
-from numpy.core.multiarray import interp
+from numpy import interp
+#from numpy.core.multiarray import interp
 
 ##dummy use of the interp1d function
 Fooooooo = interp1d
@@ -329,8 +329,8 @@ class Site(object):
 
             if self.calc_lid:
                 if self.depth[0] < self.lid_value:
-                    self.lid_depth = np.array([self.depth[0], self.lid_value, self.depth[-1]])
-                    self.lid_lid = np.array([self.depth[0], self.lid_value, self.lid_value])
+                    self.lid_depth = np.array([self.depth[0], self.lid_value-0.01, self.lid_value, self.depth[-1]])
+                    self.lid_lid = np.array([np.nan, np.nan, self.lid_value, self.lid_value])
                 else:
                     self.lid_depth = np.array([self.depth[0], self.depth[-1]])
                     self.lid_lid = np.array([self.lid_value, self.lid_value])
