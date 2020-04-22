@@ -1235,7 +1235,7 @@ class Site(object):
         mpl.fill_betweenx(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
                           color=pccfg.color_ci)
         x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
+        mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
         ax2 = ax1.twiny()
         ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
                  label='1$\sigma$')
