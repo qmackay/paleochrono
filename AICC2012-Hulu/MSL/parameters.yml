@@ -14,3 +14,4 @@ deporate_prior_rep: 'linear'
 calc_deporate: True
 deporate0: 1.09e-2
 deporate_prior_sigma: 0.2
+depth_unit: 'mm'

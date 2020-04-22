@@ -7,6 +7,7 @@ Module for the SitePair class.
 """
 
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as mpl
 from matplotlib.backends.backend_pdf import PdfPages
@@ -259,13 +260,13 @@ class SitePair(object):
         if np.size(self.iceicehorizons_depth1)>0:
             fig, ax = mpl.subplots()
             if self.site1.archive == 'icecore':
-                mpl.xlabel(self.site1.label+' ice age (yr b1950)')
+                mpl.xlabel(self.site1.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             else:
-                mpl.xlabel(self.site1.label+' age (yr b1950)')
+                mpl.xlabel(self.site1.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             if self.site2.archive == 'icecore':
-                mpl.ylabel(self.site2.label+' ice age (yr b1950)')
+                mpl.ylabel(self.site2.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             else:
-                mpl.ylabel(self.site2.label+' age (yr b1950)')
+                mpl.ylabel(self.site2.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             if np.size(self.iceicehorizons_depth1) > 0:
                 if pccfg.show_initial:
                     mpl.plot(self.site1.fct_age_init(self.iceicehorizons_depth1),
@@ -309,8 +310,8 @@ class SitePair(object):
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
             if np.size(self.airairhorizons_depth1)>0:
                 fig, ax = mpl.subplots()
-                mpl.xlabel(self.site1.label+' air age (yr b1950)')
-                mpl.ylabel(self.site2.label+' air age (yr b1950)')
+                mpl.xlabel(self.site1.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+                mpl.ylabel(self.site2.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 if np.size(self.airairhorizons_depth1) > 0:
                     if pccfg.show_initial:
                         mpl.plot(self.site1.fct_airage_init(self.airairhorizons_depth1),
@@ -356,10 +357,10 @@ class SitePair(object):
             if np.size(self.iceairhorizons_depth1)>0:
                 fig, ax = mpl.subplots()
                 if self.site1.archive == 'icecore':
-                    mpl.xlabel(self.site1.label+' ice age (yr b1950)')
+                    mpl.xlabel(self.site1.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 else:
-                    mpl.xlabel(self.site1.label+' age (yr b1950)')
-                mpl.ylabel(self.site2.label+' air age (yr b1950)')
+                    mpl.xlabel(self.site1.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+                mpl.ylabel(self.site2.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 if np.size(self.iceairhorizons_depth1) > 0:
                     if pccfg.show_initial:
                         mpl.plot(self.site1.fct_age_init(self.iceairhorizons_depth1),
@@ -407,11 +408,11 @@ class SitePair(object):
         if self.site1.archive == 'icecore':
             if np.size(self.airicehorizons_depth1)>0:
                 fig, ax = mpl.subplots()
-                mpl.xlabel(self.site1.label+' air age (yr b1950)')
+                mpl.xlabel(self.site1.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 if self.site2.archive == 'icecore':
-                    mpl.ylabel(self.site2.label+' ice age (yr b1950)')
+                    mpl.ylabel(self.site2.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 else:
-                    mpl.ylabel(self.site2.label+' age (yr b1950)')
+                    mpl.ylabel(self.site2.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 if np.size(self.airicehorizons_depth1) > 0:
                     if pccfg.show_initial:
                         mpl.plot(self.site1.fct_airage_init(self.airicehorizons_depth1),

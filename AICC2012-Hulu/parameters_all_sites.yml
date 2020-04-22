@@ -28,3 +28,4 @@ corr_thinning_grid: #Depth grid for the thinning correction function
 lambda_thinning: 70
 lambda_deporate: 4000
 lambda_lid: 4000
+depth_unit: 'm'

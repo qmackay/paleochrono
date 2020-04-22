@@ -31,6 +31,8 @@ show_figures = False  #whether to show or not the figures at the end of the run
 show_airlayerthick = False #whether to show the air layer thickness figure (buggy on anaconda)
 tol = 1e-6      #Tolerance for the termination.
 tr_solver = 'lsmr'
+age_unit = 'yr'
+age_unit_ref = 'B1950'
 #nb_runs = 0
 
 

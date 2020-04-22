@@ -56,6 +56,7 @@ class Site(object):
         self.muprime = None
         self.sliding = None
         self.dens_firn = None
+        self.depth_unit = 'm'
 
 ##Setting of the parameters from the parameter files
         
@@ -1170,8 +1171,8 @@ class Site(object):
 
         fig, ax1 = mpl.subplots()
         mpl.title(self.label+' Deposition rate')
-        mpl.xlabel('Optimized age (yr b1950)')
-        mpl.ylabel('Deposition rate (m/yr)')
+        mpl.xlabel('Optimized age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+        mpl.ylabel('Deposition rate ('+self.depth_unit+'/'+pccfg.age_unit+')')
         if pccfg.show_initial:
             mpl.step(self.age, np.concatenate((self.a_init, np.array([self.a_init[-1]]))),
                      color=pccfg.color_init, where='post', label='Initial')
@@ -1188,7 +1189,7 @@ class Site(object):
         ax2.plot((self.corr_a_age[1:]+self.corr_a_age[:-1])/2, 
                  self.corr_a_age[1:]-self.corr_a_age[:-1], label='resolution',
                  color=pccfg.color_resolution)
-        ax2.set_ylabel('resolution (yr)')
+        ax2.set_ylabel('resolution ('+pccfg.age_unit+')')
         ax2.spines['right'].set_color(pccfg.color_resolution)
         ax2.yaxis.label.set_color(pccfg.color_resolution)
         ax2.tick_params(axis='y', colors=pccfg.color_resolution)
@@ -1207,8 +1208,8 @@ class Site(object):
             mpl.title(self.label+' ice age')
         else:
             mpl.title(self.label+' age')
-        mpl.xlabel('age (yr b1950)')
-        mpl.ylabel('depth (m)')
+        mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+        mpl.ylabel('depth ('+self.depth_unit+')')
         if pccfg.show_initial:
             mpl.plot(self.age_init, self.depth, color=pccfg.color_init, label='Initial')
         if np.size(self.icehorizons_depth) > 0:
@@ -1241,7 +1242,7 @@ class Site(object):
                  label='1$\sigma$')
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((0., x_up, y_low, y_up))
-        ax2.set_xlabel('1$\sigma$ uncertainty (yr)')
+        ax2.set_xlabel('1$\sigma$ uncertainty ('+pccfg.age_unit+')')
         ax2.spines['top'].set_color(pccfg.color_sigma)
         ax2.xaxis.label.set_color(pccfg.color_sigma)
         ax2.tick_params(axis='x', colors=pccfg.color_sigma)
@@ -1262,8 +1263,8 @@ class Site(object):
 
             fig, ax = mpl.subplots()
             mpl.title(self.label+' ice layer thickness')
-            mpl.xlabel('thickness of layers (m/yr)')
-            mpl.ylabel('Depth (m)')
+            mpl.xlabel('thickness of layers ('+self.depth_unit+'/'+pccfg.age_unit+')')
+            mpl.ylabel('Depth ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.icelayerthick_init, self.depth_mid, color=pccfg.color_init,
                          label='Initial')
@@ -1284,7 +1285,7 @@ class Site(object):
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' thinning')
             mpl.xlabel('Thinning')
-            mpl.ylabel('Depth')
+            mpl.ylabel('Depth ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.tau_init, self.depth_mid, color=pccfg.color_init, label='Initial')
             mpl.plot(self.tau_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
@@ -1297,7 +1298,7 @@ class Site(object):
             ax2.plot(self.corr_tau_depth[1:]-self.corr_tau_depth[:-1], 
                      (self.corr_tau_depth[1:]+self.corr_tau_depth[:-1])/2, label='resolution',
                      color=pccfg.color_resolution)
-            ax2.set_xlabel('resolution (m)')
+            ax2.set_xlabel('resolution ('+self.depth_unit+')')
             ax2.spines['top'].set_color(pccfg.color_resolution)
             ax2.xaxis.label.set_color(pccfg.color_resolution)
             ax2.tick_params(axis='x', colors=pccfg.color_resolution)
@@ -1314,8 +1315,8 @@ class Site(object):
             if pccfg.show_airlayerthick:
                 fig, ax = mpl.subplots()
                 mpl.title(self.label+' air layer thickness')
-                mpl.xlabel('thickness of annual layers (m/yr)')
-                mpl.ylabel('Depth')
+                mpl.xlabel('thickness of annual layers ('+self.depth_unit+'/'+pccfg.age_unit+')')
+                mpl.ylabel('Depth ('+self.depth_unit+')')
                 if pccfg.show_initial:
                     mpl.plot(self.airlayerthick_init, self.depth_mid, color=pccfg.color_init,
                              label='Initial')
@@ -1336,8 +1337,8 @@ class Site(object):
 
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' Lock-In Depth')
-            mpl.xlabel('Optimized age (yr b1950)')
-            mpl.ylabel('LID (m)')
+            mpl.xlabel('Optimized age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+            mpl.ylabel('LID ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.age, self.lid_init, color=pccfg.color_init, label='Initial')
             mpl.plot(self.age, self.lid_model, color=pccfg.color_mod, label='Prior')
@@ -1350,7 +1351,7 @@ class Site(object):
             ax2.plot((self.corr_lid_age[1:]+self.corr_lid_age[:-1])/2, 
                      self.corr_lid_age[1:]-self.corr_lid_age[:-1], label='resolution',
                      color=pccfg.color_resolution)
-            ax2.set_ylabel('resolution (yr)')
+            ax2.set_ylabel('resolution ('+pccfg.age_unit+')')
             ax2.spines['right'].set_color(pccfg.color_resolution)
             ax2.yaxis.label.set_color(pccfg.color_resolution)
             ax2.tick_params(axis='y', colors=pccfg.color_resolution)
@@ -1366,8 +1367,8 @@ class Site(object):
 
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' $\Delta$age')
-            mpl.xlabel('Optimized age (yr b1950)')
-            mpl.ylabel('$\Delta$age (yr)')
+            mpl.xlabel('Optimized age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+            mpl.ylabel('$\Delta$age ('+pccfg.age_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.age, self.age_init-self.airage_init, color=pccfg.color_init,
                          label='Initial')
@@ -1390,8 +1391,8 @@ class Site(object):
             fig, ax1 = mpl.subplots()
 #            mpl.figure(self.label+' air age')
             mpl.title(self.label+' air age')
-            mpl.xlabel('age (yr b1950)')
-            mpl.ylabel('depth (m)')
+            mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+            mpl.ylabel('depth ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.airage_init, self.depth, color=pccfg.color_init, label='Initial')
             if np.size(self.airhorizons_depth) > 0:
@@ -1427,7 +1428,7 @@ class Site(object):
                      label='1$\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0., x_up, y_low, y_up))
-            ax2.set_xlabel('1$\sigma$ uncertainty (yr)')
+            ax2.set_xlabel('1$\sigma$ uncertainty ('+pccfg.age_unit+')')
             ax2.spines['top'].set_color(pccfg.color_sigma)
             ax2.xaxis.label.set_color(pccfg.color_sigma)
             ax2.tick_params(axis='x', colors=pccfg.color_sigma)
@@ -1445,8 +1446,8 @@ class Site(object):
 
             fig, ax = mpl.subplots()
             mpl.title(self.label+' $\Delta$depth')
-            mpl.xlabel('$\Delta$depth (m)')
-            mpl.ylabel('Air depth (m)')
+            mpl.xlabel('$\Delta$depth ('+self.depth_unit+')')
+            mpl.ylabel('Air depth ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.delta_depth_init, self.depth, color=pccfg.color_init, label='Initial')
             if np.size(self.delta_depth_depth) > 0:
