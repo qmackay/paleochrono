@@ -23,18 +23,19 @@ class SitePair(object):
         self.site2 = site2
         self.label = self.site1.label+'-'+self.site2.label
 
+        self.age_age_label = self.site1.age_label+self.site2.age_label
+        if len(self.age_age_label)>0:
+            self.age_age_label = self.age_age_label + '_'
+        self.age_age2_label = self.site1.age_label+self.site2.age2_label + '_'
+        self.age2_age_label = self.site1.age2_label+self.site2.age_label + '_'
+        self.age2_age2_label = self.site1.age2_label+self.site2.age2_label + '_'
+        
 
 #TODO: allow to have either dlabel1+'-'dlabel2 or dlbel2+'-'dlabel1 as directory
-        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-            filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-                       '/iceice_synchro_horizons.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/ice_depth.txt'
-        elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
-            filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-                       '/ice_synchro_horizons.txt'
-        else:
-            filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/synchro_horizons.txt'
+        filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
+            '/'+self.age_age_label+'synchro_horizons.txt'
+        if not os.path.isfile(filename):
+            filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/ice_depth.txt'
         if os.path.isfile(filename) and open(filename).read():
             readarray = np.loadtxt(filename)
             if np.size(readarray) == np.shape(readarray)[0]:
@@ -50,7 +51,7 @@ class SitePair(object):
 
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
             filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-                       '/airair_synchro_horizons.txt'
+                       '/'+self.age2_age2_label+'synchro_horizons.txt'
             if not os.path.isfile(filename):
                 filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/air_depth.txt'
             if os.path.isfile(filename) and open(filename).read():
@@ -67,15 +68,10 @@ class SitePair(object):
             self.airairhorizons_correlation = np.diag(np.ones(np.size(self.airairhorizons_depth1)))
 
         if self.site2.archive == 'icecore':
-            if self.site1.archive == 'icecore':
-                filename = pccfg.datadir+self.site1.label+'-'+\
-                            self.site2.label+'/iceair_synchro_horizons.txt'
-                if not os.path.isfile(filename):
-                    filename = pccfg.datadir+self.site1.label+'-'+\
-                                self.site2.label+'/iceair_depth.txt'
-            else:
-                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-                           '/air_synchro_horizons.txt'
+            filename = pccfg.datadir+self.site1.label+'-'+\
+                            self.site2.label+'/'+self.age_age2_label+'synchro_horizons.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/iceair_depth.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
                 if np.size(readarray) == np.shape(readarray)[0]:
@@ -90,15 +86,10 @@ class SitePair(object):
             self.iceairhorizons_correlation = np.diag(np.ones(np.size(self.iceairhorizons_depth1)))
 
         if self.site1.archive == 'icecore':
-            if self.site2.archive == 'icecore':
-                filename = pccfg.datadir+self.site1.label+'-'+\
-                            self.site2.label+'/airice_synchro_horizons.txt'
-                if not os.path.isfile(filename):
-                    filename = pccfg.datadir+self.site1.label+'-'+\
-                                self.site2.label+'/airice_depth.txt'
-            else:
-                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-                           '/air_synchro_horizons.txt'
+            filename = pccfg.datadir+self.site1.label+'-'+\
+                        self.site2.label+'/'+self.age2_age_label+'synchro_horizons.txt'
+            if not os.path.isfile(filename):
+                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/airice_depth.txt'
             if os.path.isfile(filename) and open(filename).read():
                 readarray = np.loadtxt(filename)
                 if np.size(readarray) == np.shape(readarray)[0]:
@@ -259,14 +250,8 @@ class SitePair(object):
         """Build the figures related to a pair of sites."""
         if np.size(self.iceicehorizons_depth1)>0:
             fig, ax = mpl.subplots()
-            if self.site1.archive == 'icecore':
-                mpl.xlabel(self.site1.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-            else:
-                mpl.xlabel(self.site1.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-            if self.site2.archive == 'icecore':
-                mpl.ylabel(self.site2.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-            else:
-                mpl.ylabel(self.site2.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+            mpl.xlabel(self.site1.label+' '+self.site1.age_labelsp+'age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+            mpl.ylabel(self.site2.label+' '+self.site2.age_labelsp+'age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             if np.size(self.iceicehorizons_depth1) > 0:
                 if pccfg.show_initial:
                     mpl.plot(self.site1.fct_age_init(self.iceicehorizons_depth1),
@@ -296,12 +281,7 @@ class SitePair(object):
             mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement', zorder=0)
             mpl.legend(loc="best")
             ax.set_aspect('equal')
-            if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
-                printed_page = PdfPages(pccfg.datadir+self.label+'/ice_ice_synchro.pdf')
-            elif self.site1.archive == 'icecore' or self.site2.archive == 'icecore':
-                printed_page = PdfPages(pccfg.datadir+self.label+'/ice_synchro.pdf')
-            else:
-                printed_page = PdfPages(pccfg.datadir+self.label+'/synchro.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_age_label+'synchro.pdf')
             printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
@@ -310,8 +290,10 @@ class SitePair(object):
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
             if np.size(self.airairhorizons_depth1)>0:
                 fig, ax = mpl.subplots()
-                mpl.xlabel(self.site1.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-                mpl.ylabel(self.site2.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+                mpl.xlabel(self.site1.label+' '+self.site1.age2_labelsp+'age ('+pccfg.age_unit+' '+
+                           pccfg.age_unit_ref+')')
+                mpl.ylabel(self.site2.label+' '+self.site2.age2_labelsp+'age ('+pccfg.age_unit+' '+
+                           pccfg.age_unit_ref+')')
                 if np.size(self.airairhorizons_depth1) > 0:
                     if pccfg.show_initial:
                         mpl.plot(self.site1.fct_airage_init(self.airairhorizons_depth1),
@@ -347,7 +329,8 @@ class SitePair(object):
                          zorder=0)
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
-                printed_page = PdfPages(pccfg.datadir+self.label+'/air_air_synchro.pdf')
+                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_age2_label+
+                                        'synchro.pdf')
                 printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
@@ -356,11 +339,10 @@ class SitePair(object):
         if self.site2.archive == 'icecore':
             if np.size(self.iceairhorizons_depth1)>0:
                 fig, ax = mpl.subplots()
-                if self.site1.archive == 'icecore':
-                    mpl.xlabel(self.site1.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-                else:
-                    mpl.xlabel(self.site1.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-                mpl.ylabel(self.site2.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+                mpl.xlabel(self.site1.label+' '+self.site1.age_labelsp+'age ('+pccfg.age_unit+' '+
+                           pccfg.age_unit_ref+')')
+                mpl.ylabel(self.site2.label+' '+self.site2.age2_labelsp+'age ('+pccfg.age_unit+' '+
+                           pccfg.age_unit_ref+')')
                 if np.size(self.iceairhorizons_depth1) > 0:
                     if pccfg.show_initial:
                         mpl.plot(self.site1.fct_age_init(self.iceairhorizons_depth1),
@@ -396,10 +378,8 @@ class SitePair(object):
                          zorder=0)
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
-                if self.site1.archive == 'icecore':
-                    printed_page = PdfPages(pccfg.datadir+self.label+'/ice_air_synchro.pdf')
-                else:
-                    printed_page = PdfPages(pccfg.datadir+self.label+'/air_synchro.pdf')
+                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_age2_label+
+                                        'synchro.pdf')
                 printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
@@ -408,11 +388,10 @@ class SitePair(object):
         if self.site1.archive == 'icecore':
             if np.size(self.airicehorizons_depth1)>0:
                 fig, ax = mpl.subplots()
-                mpl.xlabel(self.site1.label+' air age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-                if self.site2.archive == 'icecore':
-                    mpl.ylabel(self.site2.label+' ice age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-                else:
-                    mpl.ylabel(self.site2.label+' age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+                mpl.xlabel(self.site1.label+' '+self.site1.age2_labelsp+'age ('+pccfg.age_unit+' '+
+                           pccfg.age_unit_ref+')')
+                mpl.ylabel(self.site2.label+' '+self.site2.age_labelsp+'age ('+pccfg.age_unit+' '+
+                           pccfg.age_unit_ref+')')
                 if np.size(self.airicehorizons_depth1) > 0:
                     if pccfg.show_initial:
                         mpl.plot(self.site1.fct_airage_init(self.airicehorizons_depth1),
@@ -446,10 +425,8 @@ class SitePair(object):
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='perfect agreement')
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
-                if self.site2.archive == 'icecore':
-                    printed_page = PdfPages(pccfg.datadir+self.label+'/air_ice_synchro.pdf')
-                else:
-                    printed_page = PdfPages(pccfg.datadir+self.label+'/air_synchro.pdf')
+                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_age_label+
+                                        'synchro.pdf')
                 printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:

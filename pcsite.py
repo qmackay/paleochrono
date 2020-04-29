@@ -57,6 +57,8 @@ class Site(object):
         self.sliding = None
         self.dens_firn = None
         self.depth_unit = 'm'
+        self.age_label ='ice'
+        self.age2_label = 'air'
 
 ##Setting of the parameters from the parameter files
         
@@ -223,6 +225,20 @@ class Site(object):
             print('WARNING: Now use lid_value instead of LID_value')
         except AttributeError:
             pass
+        
+        if len(self.age_label)>0:
+            self.age_label_ = self.age_label + '_'
+            self.age_labelsp = self.age_label + ' '
+        else:
+            self.age_label_ = self.age_label
+            self.age_labelsp = self.age_label
+        if len(self.age2_label)>0:
+            self.age2_label_ = self.age2_label + '_'
+            self.age2_labelsp = self.age2_label + ' '
+        else:
+            self.age2_label_ = self.age2_label
+            self.age2_labelsp = self.age2_label
+        
         
         ##Initialisation of variables
         self.depth_mid = (self.depth[1:]+self.depth[:-1])/2
@@ -485,12 +501,9 @@ class Site(object):
 
 #Reading of observations
 
-        if self.archive == 'icecore':
-            filename = pccfg.datadir+self.label+'/ice_age_horizons.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.label+'/ice_age.txt'
-        else:
-            filename = pccfg.datadir+self.label+'/age_horizons.txt'
+        filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons.txt'
+        if not os.path.isfile(filename):
+            filename = pccfg.datadir+self.label+'/ice_age.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -506,10 +519,7 @@ class Site(object):
                 self.icehorizons_age = np.array([])
                 self.icehorizons_sigma = np.array([])
 
-        if self.archive == 'icecore':
-            filename = pccfg.datadir+self.label+'/ice_age_intervals.txt'
-        else:
-            filename = pccfg.datadir+self.label+'/age_intervals.txt'
+        filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_intervals.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
@@ -528,7 +538,7 @@ class Site(object):
                 self.iceintervals_sigma = np.array([])
 
         if self.archive == 'icecore':
-            filename = pccfg.datadir+self.label+'/air_age_horizons.txt'
+            filename = pccfg.datadir+self.label+'/'+self.age2_label_+'age_horizons.txt'
             if not os.path.isfile(filename):
                 filename = pccfg.datadir+self.label+'/air_age.txt'
             with warnings.catch_warnings():
@@ -546,7 +556,7 @@ class Site(object):
                     self.airhorizons_age = np.array([])
                     self.airhorizons_sigma = np.array([])
 
-            filename = pccfg.datadir+self.label+'/air_age_intervals.txt'
+            filename = pccfg.datadir+self.label+'/'+self.age2_label_+'age_intervals.txt'
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if os.path.isfile(filename) and open(filename).read() and\
@@ -1204,10 +1214,7 @@ class Site(object):
             mpl.close()
 
         fig, ax1 = mpl.subplots()
-        if self.archive == 'icecore':
-            mpl.title(self.label+' ice age')
-        else:
-            mpl.title(self.label+' age')
+        mpl.title(self.label+' '+self.age_labelsp+'age')
         mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
         mpl.ylabel('depth ('+self.depth_unit+')')
         if pccfg.show_initial:
@@ -1250,10 +1257,7 @@ class Site(object):
         lines2, labels2 = ax2.get_legend_handles_labels()
         ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
         fig.tight_layout()
-        if self.archive == 'icecore':
-            printed_page = PdfPages(pccfg.datadir+self.label+'/ice_age.pdf')
-        else:
-            printed_page = PdfPages(pccfg.datadir+self.label+'/age.pdf')
+        printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_label_+'age.pdf')
         printed_page.savefig(fig)
         printed_page.close()
         if not pccfg.show_figures:
@@ -1262,7 +1266,7 @@ class Site(object):
         if self.archive == 'icecore':
 
             fig, ax = mpl.subplots()
-            mpl.title(self.label+' ice layer thickness')
+            mpl.title(self.label+' '+self.age_labelsp+'layer thickness')
             mpl.xlabel('thickness of layers ('+self.depth_unit+'/'+pccfg.age_unit+')')
             mpl.ylabel('Depth ('+self.depth_unit+')')
             if pccfg.show_initial:
@@ -1276,7 +1280,7 @@ class Site(object):
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.datadir+self.label+'/ice_layer_thickness.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_label_+'layer_thickness.pdf')
             printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
@@ -1314,7 +1318,7 @@ class Site(object):
 
             if pccfg.show_airlayerthick:
                 fig, ax = mpl.subplots()
-                mpl.title(self.label+' air layer thickness')
+                mpl.title(self.label+' '+self.age2_label_+'layer thickness')
                 mpl.xlabel('thickness of annual layers ('+self.depth_unit+'/'+pccfg.age_unit+')')
                 mpl.ylabel('Depth ('+self.depth_unit+')')
                 if pccfg.show_initial:
@@ -1329,7 +1333,7 @@ class Site(object):
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
                 mpl.legend(loc="best")
-                printed_page = PdfPages(pccfg.datadir+self.label+'/air_layer_thickness.pdf')
+                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_label_+'layer_thickness.pdf')
                 printed_page.savefig(fig)
                 printed_page.close()
                 if not pccfg.show_figures:
@@ -1340,9 +1344,9 @@ class Site(object):
             mpl.xlabel('Optimized age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             mpl.ylabel('LID ('+self.depth_unit+')')
             if pccfg.show_initial:
-                mpl.plot(self.age, self.lid_init, color=pccfg.color_init, label='Initial')
-            mpl.plot(self.age, self.lid_model, color=pccfg.color_mod, label='Prior')
-            mpl.plot(self.age, self.lid, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
+                mpl.plot(self.airage, self.lid_init, color=pccfg.color_init, label='Initial')
+            mpl.plot(self.airage, self.lid_model, color=pccfg.color_mod, label='Prior')
+            mpl.plot(self.airage, self.lid, color=pccfg.color_opt, label='Posterior +/-$\sigma$')
             mpl.fill_between(self.age, self.lid-self.sigma_lid, self.lid+self.sigma_lid,
                              color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
@@ -1367,16 +1371,16 @@ class Site(object):
 
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' $\Delta$age')
-            mpl.xlabel('Optimized age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+            mpl.xlabel('Optimized '+self.age2_labelsp+'age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             mpl.ylabel('$\Delta$age ('+pccfg.age_unit+')')
             if pccfg.show_initial:
-                mpl.plot(self.age, self.age_init-self.airage_init, color=pccfg.color_init,
+                mpl.plot(self.airage, self.age_init-self.airage_init, color=pccfg.color_init,
                          label='Initial')
-            mpl.plot(self.age, self.age_model-self.airage_model, color=pccfg.color_mod,
+            mpl.plot(self.airage, self.age_model-self.airage_model, color=pccfg.color_mod,
                      label='Prior')
-            mpl.plot(self.age, self.age-self.airage, color=pccfg.color_opt,
+            mpl.plot(self.airage, self.age-self.airage, color=pccfg.color_opt,
                      label='Posterior +/-$\sigma$')
-            mpl.fill_between(self.age, self.age-self.airage-self.sigma_delta_age,
+            mpl.fill_between(self.airage, self.age-self.airage-self.sigma_delta_age,
                              self.age-self.airage+self.sigma_delta_age,
                              color=pccfg.color_ci)
             x_low, x_up, y_low, y_up = mpl.axis()
@@ -1390,7 +1394,7 @@ class Site(object):
 
             fig, ax1 = mpl.subplots()
 #            mpl.figure(self.label+' air age')
-            mpl.title(self.label+' air age')
+            mpl.title(self.label+' '+self.age2_labelsp+'age')
             mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             mpl.ylabel('depth ('+self.depth_unit+')')
             if pccfg.show_initial:
@@ -1438,7 +1442,7 @@ class Site(object):
             fig.tight_layout()
 #            mpl.plot(self.sigma_airage*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
 #                     label='1$\sigma$')            
-            printed_page = PdfPages(pccfg.datadir+self.label+'/air_age.pdf')
+            printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_label_+'age.pdf')
             printed_page.savefig(fig)
             printed_page.close()
             if not pccfg.show_figures:
@@ -1447,7 +1451,7 @@ class Site(object):
             fig, ax = mpl.subplots()
             mpl.title(self.label+' $\Delta$depth')
             mpl.xlabel('$\Delta$depth ('+self.depth_unit+')')
-            mpl.ylabel('Air depth ('+self.depth_unit+')')
+            mpl.ylabel(self.age2_labelsp+'depth ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.delta_depth_init, self.depth, color=pccfg.color_init, label='Initial')
             if np.size(self.delta_depth_depth) > 0:
@@ -1500,16 +1504,20 @@ class Site(object):
                                 np.append(self.sigma_accu_model, self.sigma_accu_model[-1])))
         with open(pccfg.datadir+self.label+'/output.txt', 'w') as file_save:
             if self.archive == 'icecore':
-                file_save.write('#depth\tage\tsigma_age\tair_age\tsigma_air_age'
+                file_save.write('#depth\t'+self.age_label_+'age\tsigma_'+self.age_label_+'age\t'
+                                ''+self.age2_label_+'age\tsigma_'+self.age2_label_+'age'
                                 '\tsigma_delta_age\tdeporate'
                                 '\tsigma_deporate\tthinning\tsigma_thinning\tLID\tsigma_LID'
                                  '\tdelta_depth\tsigma_delta_depth\tdeporate_model'
                                  '\tsigma_deporate_model'
                                  '\tthinning_model\tsigma_thinning_model\tLID_model'
-                                 '\tsigma_LID_model\ticelayerthick\tsigma_icelayerthick'
-                                 '\tairlayerthick\tsigma_airlayerthick\n')
+                                 '\tsigma_LID_model\t'+self.age_label+'layerthick\t'
+                                 'sigma_'+self.age_label+'layerthick'
+                                 '\t'+self.age2_label+'layerthick\tsigma_'+self.age2_label+
+                                 'layerthick\n')
             else:
-                file_save.write('#depth\tage\tsigma_age\tdeporate\tsigma_deporate\tdeporate_model'
+                file_save.write('#depth\t'+self.age_label+'age\tsigma_'+self.age_label+
+                                'age\tdeporate\tsigma_deporate\tdeporate_model'
                                 '\tsigma_deporate_model\n')
             np.savetxt(file_save, np.transpose(output), delimiter='\t')
             file_save.close()
