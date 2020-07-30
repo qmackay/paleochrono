@@ -1189,7 +1189,7 @@ class Site(object):
                  color=pccfg.color_opt,
                  where='post', label='Posterior $\pm\sigma$')
         mpl.fill_between(self.age[:-1], self.accu-self.sigma_accu, self.accu+self.sigma_accu,
-                         color=pccfg.color_ci)
+                         color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, y_low, y_up))
         ax2 = ax1.twinx()
@@ -1236,9 +1236,10 @@ class Site(object):
                 mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
                              capsize=1)
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
-        mpl.plot(self.age, self.depth, color=pccfg.color_opt, label='Posterior $\pm\sigma$')
+        mpl.plot(self.age, self.depth, color=pccfg.color_opt,
+                 label='Posterior $\pm\sigma$')
         mpl.fill_betweenx(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
-                          color=pccfg.color_ci)
+                          color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
         ax2 = ax1.twiny()
@@ -1273,7 +1274,8 @@ class Site(object):
             mpl.plot(self.icelayerthick, self.depth_mid, color=pccfg.color_opt,
                      label='Posterior $\pm\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.icelayerthick-self.sigma_icelayerthick,
-                              self.icelayerthick+self.sigma_icelayerthick, color=pccfg.color_ci)
+                              self.icelayerthick+self.sigma_icelayerthick, color=pccfg.color_ci,
+                              label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
@@ -1290,9 +1292,10 @@ class Site(object):
             if pccfg.show_initial:
                 mpl.plot(self.tau_init, self.depth_mid, color=pccfg.color_init, label='Initial')
             mpl.plot(self.tau_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
-            mpl.plot(self.tau, self.depth_mid, color=pccfg.color_opt, label='Posterior $\pm\sigma$')
+            mpl.plot(self.tau, self.depth_mid, color=pccfg.color_opt,
+                     label='Posterior $\pm\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.tau-self.sigma_tau, self.tau+self.sigma_tau,
-                              color=pccfg.color_ci)
+                              color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             ax2 = ax1.twiny()
@@ -1326,7 +1329,8 @@ class Site(object):
                 mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.color_opt,
                          label='Posterior $\pm\sigma$')
                 mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
-                                  self.airlayerthick+self.sigma_airlayerthick, color=pccfg.color_ci)
+                                  self.airlayerthick+self.sigma_airlayerthick,
+                                  color=pccfg.color_ci, label="Confidence interval")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
                 mpl.legend(loc="best")
@@ -1343,9 +1347,10 @@ class Site(object):
             if pccfg.show_initial:
                 mpl.plot(self.airage, self.lid_init, color=pccfg.color_init, label='Initial')
             mpl.plot(self.airage, self.lid_model, color=pccfg.color_mod, label='Prior')
-            mpl.plot(self.airage, self.lid, color=pccfg.color_opt, label='Posterior $\pm\sigma$')
+            mpl.plot(self.airage, self.lid, color=pccfg.color_opt,
+                     label='Posterior $\pm\sigma$')
             mpl.fill_between(self.age, self.lid-self.sigma_lid, self.lid+self.sigma_lid,
-                             color=pccfg.color_ci)
+                             color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, y_low, y_up))
             ax2 = ax1.twinx()
@@ -1379,7 +1384,7 @@ class Site(object):
                      label='Posterior $\pm\sigma$')
             mpl.fill_between(self.airage, self.age-self.airage-self.sigma_delta_age,
                              self.age-self.airage+self.sigma_delta_age,
-                             color=pccfg.color_ci)
+                             color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, y_low, y_up))
             printed_page = PdfPages(pccfg.datadir+self.label+'/delta_age.pdf')
@@ -1419,7 +1424,7 @@ class Site(object):
             mpl.plot(self.airage_model, self.depth, color=pccfg.color_mod, label='Prior')
             mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage,
                               self.airage+self.sigma_airage,
-                              color=pccfg.color_ci)
+                              color=pccfg.color_ci, label="Confidence interval")
             mpl.plot(self.airage, self.depth, color=pccfg.color_opt,
                      label='Posterior $\pm\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
@@ -1460,7 +1465,8 @@ class Site(object):
             mpl.plot(self.delta_depth, self.depth, color=pccfg.color_opt,
                      label='Posterior $\pm\sigma$')
             mpl.fill_betweenx(self.depth, self.delta_depth-self.sigma_delta_depth,
-                              self.delta_depth+self.sigma_delta_depth, color=pccfg.color_ci)
+                              self.delta_depth+self.sigma_delta_depth, color=pccfg.color_ci,
+                              label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc='lower right')
