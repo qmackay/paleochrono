@@ -930,9 +930,6 @@ class Site(object):
             self.corr_lid = var[index+np.size(self.corr_tau)+np.size(self.corr_a):\
                         index+np.size(self.corr_tau)+np.size(self.corr_a)+np.size(self.corr_lid)]
 
-        ##Raw model
-#        self.raw_model()
-
         ##Corrected model
         self.corrected_model()
 
