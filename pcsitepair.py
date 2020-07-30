@@ -264,9 +264,10 @@ class SitePair(object):
                              label="Prior")
                 mpl.errorbar(self.site1.fct_age(self.iceicehorizons_depth1),
                              self.site2.fct_age(self.iceicehorizons_depth2), color=pccfg.color_opt,
+                             ecolor=pccfg.color_ci,
                              xerr=np.zeros(np.size(self.iceicehorizons_depth1)),
                              linestyle='', marker='o', markersize=2,
-                             label="Posterior")
+                             label="Posterior $\pm\sigma$")
                 xstart = self.site1.fct_age(self.iceicehorizons_depth1)-self.iceicehorizons_sigma/2
                 ystart = self.site2.fct_age(self.iceicehorizons_depth2)+self.iceicehorizons_sigma/2
                 for i in range(np.size(self.iceicehorizons_depth1)):
@@ -308,10 +309,10 @@ class SitePair(object):
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_airage(self.airairhorizons_depth1),
                                  self.site2.fct_airage(self.airairhorizons_depth2),
-                                 color=pccfg.color_opt,
+                                 color=pccfg.color_opt, ecolor=pccfg.color_ci,
                                  xerr=np.zeros_like(self.airairhorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
-                                 label="Posterior")
+                                 label="Posterior $\pm\sigma$")
                     xstart = self.site1.fct_airage(self.airairhorizons_depth1)-\
                                  self.airairhorizons_sigma/2
                     ystart = self.site2.fct_airage(self.airairhorizons_depth2)+\
@@ -357,10 +358,10 @@ class SitePair(object):
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_age(self.iceairhorizons_depth1),
                                  self.site2.fct_airage(self.iceairhorizons_depth2),
-                                 color=pccfg.color_opt,
+                                 color=pccfg.color_opt, ecolor=pccfg.color_ci,
                                  xerr=np.zeros_like(self.iceairhorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
-                                 label="Posterior")
+                                 label="Posterior $\pm\sigma$")
                     xstart = self.site1.fct_age(self.iceairhorizons_depth1)-\
                                  self.iceairhorizons_sigma/2
                     ystart = self.site2.fct_airage(self.iceairhorizons_depth2)+\
@@ -405,10 +406,10 @@ class SitePair(object):
                                  label="Prior")
                     mpl.errorbar(self.site1.fct_airage(self.airicehorizons_depth1),
                                  self.site2.fct_age(self.airicehorizons_depth2),
-                                 color=pccfg.color_opt,
+                                 color=pccfg.color_opt, ecolor=pccfg.color_ci,
                                  xerr=np.zeros_like(self.airicehorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
-                                 label="Posterior")
+                                 label="Posterior $\pm\sigma$")
                     xstart = self.site1.fct_airage(self.airicehorizons_depth1)-\
                                  self.airicehorizons_sigma/2
                     ystart = self.site2.fct_age(self.airicehorizons_depth2)+\
