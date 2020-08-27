@@ -139,8 +139,6 @@ You have five general files:
 experiment
 - `parameters_all_sites.yml`: defines site parameters that are the same
 for all sites (there are overidded by site specific parameters).
-- `parameters_covariance_prior_all_sites-init.py`: defines the covariance matrices of the
-background
 - `parameters_covariance_observations_all_sites.py`: defines the covariance of the
 observations that are the same for all sites  (there are overidded by site specific parameters).
 - `parameters_covariance_observations_all_site_pairs.py`: defines the covariance for the
