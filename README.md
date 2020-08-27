@@ -51,7 +51,7 @@ paleochrono is developed and tested using the anaconda distribution, therefore w
 Anaconda can be downloaded here (use the python3 version):  
 http://continuum.io/downloads  
 
-IceChrono probably works on other scipy distributions, provided they contain the following python
+Paleochrono probably works on other scipy distributions, provided they contain the following python
 modules:  
 - sys
 - os
@@ -72,14 +72,14 @@ ipython interpreter:
 
 ```
 cd path-to-palechrono
-run paleochron.py exp_directory
+run paleochron.py exp_directory/
 ```
 
 where `path-to-paleochrono` is the directory containing IceChrono and `exp_directory` is the name of
 your experiment directory. 
-The `AICC2012-Hulu-VLR` experiment directory is provided for you convenience.
-It is an AICC2012 + Hulu experiment, albeit whith a Very Low Resolution.
-It takes about 5 mn to run on a recent computer.
+The `AICC2012-Hulu` experiment directory is provided for you convenience.
+It is an AICC2012 + Hulu experiment.
+It takes <1 mn to run on a recent computer.
 
 
 What are the outputs of a run:
@@ -120,25 +120,24 @@ How to clean an experiment directory after a run?
 -------------------------------------------------
 
 If your run was successful, it has produced output files and figure files.
-If your experiment directory is placed under the paleochrono main directory,
-you can run the following command in ipython:
+To clean it from the results files, you can run the following command in ipython:
 
 ```
-run Clean.py
+run Clean.py exp_directory/
 ```
 
 
 What is the structure of an experiment directory?
 -------------------------------------------------
 
-You can have a look at the provided `AICC2012-Hulu-VLR` directory.
+You can have a look at the provided `AICC2012-Hulu` directory.
 You need to specify your prior scenarios for deposition rate (in all cases) and LID and thinning
 (for an ice core) and your age observations.
 
 You have five general files:
-- `parameters.py`: contains general parameters for the
+- `parameters.yml`: contains general parameters for the
 experiment
-- `parameters_all_sites.py`: defines site parameters that are the same
+- `parameters_all_sites.yml`: defines site parameters that are the same
 for all sites (there are overidded by site specific parameters).
 - `parameters_covariance_prior_all_sites-init.py`: defines the covariance matrices of the
 background
@@ -149,7 +148,7 @@ observations that are the same for all site pairs  (there are overidded by site 
 parameters).
 
 Then you have one directory per site, which contains:
-- `parameters.py`: all the site specific parameters
+- `parameters.yml`: all the site specific parameters
 - `parameters_covariance_observations.py`: this file allows to define the correlation of site
  specific observations
 - `deposition.txt`: depth / background accu (in ice-equivalent) / standard deviation (opt, in %)
@@ -175,26 +174,26 @@ specific observations
 - `iceair_depth.txt`: depth1 / depth2 / sigma on age for ice-air stratigraphic links observations
 - `airice_depth.txt`: depth1 / depth2 / sigma on age for air-ice stratigraphic links observations
 
-A few things you need to know to use Icechrono:
+A few things you need to know to use paleochrono:
 1) You can use whatever units you want but they need to be consistent. For example, if you use meters for the depths and years for the dated horizons, you need to use meters per years for the accumulation rates. 
 2) The site specific parameters override the general parameters for all sites. In the very same way, the site-pair specific parameters override the general parameters for all site-pairs.
 3) The standard deviations defined in the parameters-Covariance*.py override the standard deviation defined in the observation or prior files.
 4) Most of these files are optional. If there is no file for an certain type of observations, that means that there is no observation of this type. If a covariance matrix is not defined for a prior or an observation type, that means that the correlation matrix is supposed to be equal to identity and that the standard deviation is given in the prior or observation file.
 
 
-What is the structure of the general `parameters.py` file?
+What is the structure of the general `parameters.yml` file?
 --------------------------------------------------------
 
 It contains the list of sites, the optimization method to be used and some settings for the figures.
 It is where you define the names of your sites.
-Have a look at the file `AICC2012-VLR/parameters.py`, it is commented.
+Have a look at the file `AICC2012-Hulu/parameters.yml`, it is commented.
 
 
-What is the structure of a site `parameters.py` file?
+What is the structure of a site `parameters.yml` file?
 ---------------------------------------------------------
 
 It defines age at the top of the core, the unthinned depth at the top of the core, the age equation grid, the correction functions grids and the type of representation of the prior accu scenario (linear or staircase). You can also define other parameters that are used to defined the covariance matrices of the priors.
-Have a look at the files `AICC2012-VLR/EDC/parameters.py`, it is commented.
+Have a look at the files `AICC2012-Hulu/EDC/parameters.yml`, it is commented.
 
 
 How to set up the `parameters-CovarianceObservations.py` file?
@@ -225,40 +224,8 @@ self.icemarkers_correlation=k*np.ones((np.shape(self.icemarkers_correlation)))+(
 Don't forget that if you find the use of python and the IceChrono internal variables too difficult, you can define your correlation matrices outside IceChrono and import them here by using for example the `np.loadtxt` function.
 
 
-How to set up the `parameters-CovariancePrior-AllSites-init.py` file?
--------------------------------------------------------------------------
-
-You need to know a little bit of python to do that and also to know a bit of the IceChrono internal variables.
-Have a look at the `AICC2012-VLR` experiment, it is the easiest way to understand how it works.
-Feel free to send an email to the mailing list if you need assistance.
-
-You need to define:
-- `self.correlation_corr_a`     : the correlation matix for the accu correction function
-- `self.correlation_corr_LID`   : the correlation matix for the LID correction function
-- `self.correlation_corr_tau`   : the correlation matix for the thinning correction function
-
-Optionnally, if they have not been imported in the accu-prior.txt, LID-prior.txt and thinning-prior.txt files, you can also define:
-- `self.sigmap_corr_a`          : the standard deviation of the accu correction function
-- `self.sigmap_corr_LID`        : the standard deviation of the LID correction function
-- `self.sigmap_corr_tau`        : the standard deviation of the thinning correction function
-
-
-Let us take a concrete example and assume, as in the AICC2012 example, that the accumulation correlation linearly decreases to zero when the absolute value of the age difference of the accumulation corrections increases to lambda_a yr. We first define a matrix whose term (i,j) is equal to the age difference of the accumulation corrections `self.corr_a_age[i]-self.corr_a_age[j]`:
-
-```
-M=np.ones((np.size(self.corr_a_age),np.size(self.corr_a_age)))*self.corr_a_age-np.transpose(np.ones((np.size(self.corr_a_age),np.size(self.corr_a_age)))*self.corr_a_age)
-```
-
-And then we define the correlation matrix by interpolation a function that linearly decreases from 1 to 0 between 0 and self.lambda_a:
-
-```
-self.correlation_corr_a=np.interp(np.abs(M), np.array([0,self.lambda_a]),np.array([1, 0]))
-```
-
-Don't forget that if you find the use of python and the IceChrono internal variables too difficult, you can define your correlation matrices outside IceChrono and import them here by using for example the `np.loadtxt` function.
-
-
 What to do if something goes wrong?
 -----------------------------------
 
-Please post an email on the mailing list with the error message appearing on the command line.
+Some errors can be eliminated by restarting the kernel in spyder (under "Console">"Restart kernel").
+If the problem persist, please post an email to the author or on the mailing list with the error message appearing on the command line.
