@@ -1,7 +1,7 @@
 paleochrono
 ===========
 
-A statistical and physical model to optimize chronologies of deep polar ice cores.
+A statistical and physical model to optimize chronologies of paleoclimatic sites.
 
 
 What this manual is and is not?
@@ -29,17 +29,17 @@ How to download paleochrono?
 ----------------------------
 
 Go here:  
-https://github.com/parrenin/paleochrono/releases  
-and choose the release you want to download (usually the latest one).  
+https://github.com/parrenin/paleochrono/  
+and click on the donwload button.  
 In the downloaded folder, you will find the following files:
 - README.md		: is the current documentation of paleochrono.
 - LICENCE		: is the paleochrono licence file.
 - paleochrono.py		: is the main paleochrono program that you will run.
 - pccfg.py, pcmath.py, pcsite.py and pcsitepair.py	: are python modules used by paleochrono.py
-- Clean.py		: is a python script to clean all experiment sub-directories
-- AICC2012-Hulu-VLR		: is an example experiment directory: it contains all the necessary
-numerical settings, prior information and observations for the different ice cores and for the MSD
-Hulu speleothem. It has a Very Low Resolution (VLR) and takes about 5 mn to run an a recent
+- Clean.py		: is a python script to clean a dating experiment directory
+- AICC2012-Hulu		: is an example experiment directory: it contains all the necessary
+numerical settings, prior information and observations for the different ice cores in the AICC2012
+dating experiment and for the MSD and MSL Hulu speleothem. It takes <1 mn to run an a recent
 computer.
 
 
