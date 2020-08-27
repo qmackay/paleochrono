@@ -339,11 +339,10 @@ class Site(object):
             #FIXME: implement staircase reprensentation for the density, as is done for accu.
             self.dens = interp(self.depth_mid, self.dens_depth, self.dens_dens)
 
-            if self.calc_tau:
-                self.iedepth = np.cumsum(np.concatenate((np.array([self.iedepth_top]), 
-                                                         self.dens*self.depth_inter)))
-                self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
-                self.thickness_ie = self.thickness-self.depth[-1]+self.iedepth[-1]
+            self.iedepth = np.cumsum(np.concatenate((np.array([self.iedepth_top]), 
+                                                     self.dens*self.depth_inter)))
+            self.iedepth_mid = (self.iedepth[1:]+self.iedepth[:-1])/2
+            self.thickness_ie = self.thickness-self.depth[-1]+self.iedepth[-1]
 
             if self.calc_lid:
                 if self.depth[0] < self.lid_value:
@@ -372,9 +371,7 @@ class Site(object):
 #        print 'depth_mid ', np.size(self.depth_mid)
 #        print 'zeta ', np.size(self.zeta)
             if self.calc_tau:
-                self.thicknessie = self.thickness-self.depth[-1]+self.iedepth[-1]
-                #FIXME: maybe we should use iedepth and thickness_ie here?
-                self.zeta = (self.thicknessie-self.iedepth_mid)/self.thicknessie
+                self.zeta = (self.thickness_ie-self.iedepth_mid)/self.thickness_ie
                 self.tau = np.empty_like(self.depth_mid)
             else:
                 if os.path.isfile(pccfg.datadir+self.label+'/thinning.txt'):
