@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
 """
 Created on Thu Feb  7 10:00:12 2019
 Some mathematical functions for paleochrono.
