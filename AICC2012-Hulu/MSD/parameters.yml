@@ -13,6 +13,6 @@ age_truncation:
 deporate_prior_rep: 'linear'
 calc_deporate: True
 deporate0: 1.17e-2
-deporate_prior_sigma: 0.2
+deporate_prior_sigma: 1.
 depth_unit: 'mm'
 age_label: ''
