@@ -15,7 +15,7 @@ TODO: is there really a computation gain with the change of variable for the
     have the LU factorisation of A does not cost more than computing A^-1 * b
     when we have computed A^-1.
 TODO: make log plot for sedimentation rate, thinning and LID.
-""" 
+"""
 
 
 import sys
