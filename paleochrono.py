@@ -309,7 +309,7 @@ def jacobian_numerical(var):
 ##MAIN
 
 ##Initialisation
-RESI_SIZE = np.empty((np.size(pccfg.list_sites), np.size(pccfg.list_sites)), dtype=np.int)
+RESI_SIZE = np.empty((np.size(pccfg.list_sites), np.size(pccfg.list_sites)), dtype=int)
 
 for di, dlabel in enumerate(pccfg.list_sites):
 
@@ -432,7 +432,7 @@ for di, dlabel in enumerate(pccfg.list_sites):
             DC[dlabel2+'-'+dlabel].figures()
 
 ###Program execution time
-MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds.'
+MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds. '
 print(MESSAGE)
 OUTPUT_FILE.write(MESSAGE)
 
