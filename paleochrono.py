@@ -35,20 +35,19 @@ from pcsitepair import SitePair
 from functools import partial
 import gc
 
-###Registration of start time
+# Registration of start time
 START_TIME = time.perf_counter()
 
-#Read parameter file
+# Read parameter file
 pccfg.read_parameters()
 
-###Opening of output.txt file
+# Opening of output.txt file
 OUTPUT_FILE = open(pccfg.datadir+'output.txt', 'a')
 
-##Global
+# Global
 VARIABLES = np.array([])
 D = {}
 DC = {}
-
 
 
 def residuals(var):
@@ -59,8 +58,9 @@ def residuals(var):
         index = index+np.size(D[dlab].variables)
         D[dlab].model(D[dlab].variables)
 #    pccfg.nb_runs = pccfg.nb_runs + 1
-    gc.collect() 
+    gc.collect()
     return resid()
+
 
 def resid():
     """Calculate the residuals without recalculating the model."""
@@ -69,21 +69,23 @@ def resid():
         resi = np.concatenate((resi, D[dlab].variables))
         resi = np.concatenate((resi, D[dlab].residuals()))
         for j, dlab2 in enumerate(pccfg.list_sites):
-#Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
+            # Note that if I put a new i loop here, to separate the D and DC
+            # terms, the model runs slower
             if j < i:
                 resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
     return resi
-    
+
 
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
     res = residuals(var)
     cost = np.dot(res, np.transpose(res))
-    return cost    
+    return cost
 
-def jacob_column(resizero, dlabj, l):
-    delta = m.sqrt(np.finfo(float).eps) #Stolen from the leastsq code
-    D[dlabj].variables[l] += delta
+
+def jacob_column(resizero, dlabj, k):
+    delta = m.sqrt(np.finfo(float).eps)  # Stolen from the leastsq code
+    D[dlabj].variables[k] += delta
     D[dlabj].model(D[dlabj].variables)
     deriv = [np.array([])]
     index = 0
@@ -91,9 +93,10 @@ def jacob_column(resizero, dlabj, l):
         index = index+len(D[dlab].variables)
         if dlabj == dlab:
             der = np.zeros(len(D[dlab].variables))
-            der[l] = 1.
+            der[k] = 1.
             deriv.append(der)
-            der = (D[dlab].residuals() - resizero[index:index+RESI_SIZE[i, i]]) / delta
+            der = (D[dlab].residuals() -
+                   resizero[index:index+RESI_SIZE[i, i]]) / delta
             deriv.append(der)
         else:
             deriv.append(np.zeros(len(D[dlab].variables)))
@@ -102,17 +105,19 @@ def jacob_column(resizero, dlabj, l):
         for j, dlab2 in enumerate(pccfg.list_sites):
             if j < i:
                 if dlabj == dlab or dlabj == dlab2:
-                    der = (DC[dlab2+'-'+dlab].residuals()-\
+                    der = (DC[dlab2 + '-' + dlab].residuals() -
                            resizero[index:index+RESI_SIZE[j, i]])/delta
                     deriv.append(der)
                 else:
                     deriv.append(np.zeros(RESI_SIZE[j, i]))
                 index = index+RESI_SIZE[j, i]
-    D[dlabj].variables[l] -= delta
+    D[dlabj].variables[k] -= delta
     return np.concatenate(deriv)
 
+
 def jacobian_analytical(var):
-    """Calculate the Jacobian of each residual term with analytical formulas."""
+    """Calculate the Jacobian of each residual term
+    with analytical formulas."""
     jac_list = []
     for k, dlabj in enumerate(pccfg.list_sites):
         D[dlabj].corrected_jacobian()
@@ -122,8 +127,10 @@ def jacobian_analytical(var):
                 deriv.append(np.diag(np.ones(len(D[dlab].variables))))
                 deriv.append(D[dlab].residuals_jacobian())
             else:
-                deriv.append(np.zeros((len(D[dlabj].variables), len(D[dlab].variables))))
-                deriv.append(np.zeros((len(D[dlabj].variables), RESI_SIZE[i, i])))
+                deriv.append(np.zeros((len(D[dlabj].variables),
+                                       len(D[dlab].variables))))
+                deriv.append(np.zeros((len(D[dlabj].variables),
+                                       RESI_SIZE[i, i])))
             for j, dlab2 in enumerate(pccfg.list_sites):
                 if j < i:
                     if dlabj == dlab:
@@ -131,48 +138,56 @@ def jacobian_analytical(var):
                     elif dlabj == dlab2:
                         deriv.append(DC[dlab2+'-'+dlab].residuals_jacobian1())
                     else:
-                        deriv.append(np.zeros((len(D[dlabj].variables), RESI_SIZE[j, i])))
+                        deriv.append(np.zeros((len(D[dlabj].variables),
+                                               RESI_SIZE[j, i])))
         jac_list.append(np.concatenate(deriv, axis=1))
     jacob = np.concatenate(jac_list)
 #    print(np.shape(jacob), np.shape(resid()), len(VARIABLES))
     return np.transpose(jacob)
 
+
 def jacobian_semi_adjoint(var):
 
-    jac = np.array([[None for _ in range(len(pccfg.list_sites))] \
-                     for _ in range(len(pccfg.list_sites)) ])
+    jac = np.array([[None for _ in range(len(pccfg.list_sites))]
+                    for _ in range(len(pccfg.list_sites))])
     for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].corrected_jacobian()
         for j, dlab2 in enumerate(pccfg.list_sites):
             if j == i:
-                jac[i,i] = D[dlab].residuals_jacobian()
+                jac[i, i] = D[dlab].residuals_jacobian()
             if j < i:
-                jac[j,i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
-                jac[i,j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
+                jac[j, i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
+                jac[i, j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
 
     def mv(v):
 
-        index = 0        
+        index = 0
         resi = np.array([])
         for i, dlab in enumerate(pccfg.list_sites):
-            #Why do we need to sometimes flatten here? Strange.
-            D[dlab].var_delta = v[index:index+np.size(D[dlab].variables)].flatten()
+            # Why do we need to sometimes flatten here? Strange.
+            D[dlab].var_delta = v[index:index+np.size(D[dlab].variables)]\
+                .flatten()
             index = index+np.size(D[dlab].variables)
         for i, dlab in enumerate(pccfg.list_sites):
-            #Why do we need to sometimes flatten here? Strange.
+            # Why do we need to sometimes flatten here? Strange.
             resi = np.concatenate((resi, D[dlab].var_delta))
-            resi = np.concatenate((resi, np.dot(np.transpose(jac[i,i]), D[dlab].var_delta)))
+            resi = np.concatenate((resi, np.dot(np.transpose(jac[i, i]),
+                                                D[dlab].var_delta)))
             for j, dlab2 in enumerate(pccfg.list_sites):
-    #Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
+                # Note that if I put a new i loop here,
+                # to separate the D and DC terms, the model runs slower
                 if j < i:
-                    resi = np.concatenate((resi, np.dot(np.transpose(jac[j,i]), D[dlab].var_delta) + 
-                                           np.dot(np.transpose(jac[i,j]), D[dlab2].var_delta)))
-                    
+                    resi = np.concatenate((resi,
+                                           np.dot(np.transpose(jac[j, i]),
+                                                  D[dlab].var_delta) +
+                                           np.dot(np.transpose(jac[i, j]),
+                                                  D[dlab2].var_delta)))
+
         return resi
 
     def rmv(v):
 
-        vari =[]
+        vari = []
         for k, dlabj in enumerate(pccfg.list_sites):
             vari = vari + [np.zeros(np.size(D[dlabj].variables))]
 
@@ -180,57 +195,65 @@ def jacobian_semi_adjoint(var):
         for i, dlab in enumerate(pccfg.list_sites):
             vari[i] = v[index:index+np.size(D[dlab].variables)].flatten()
             index = index+np.size(D[dlab].variables)
-            vari[i] = vari[i] + np.dot(jac[i,i], v[index:index+RESI_SIZE[i,i]])
-#            vari[i] = vari[i] + D[dlab].residuals_adj( v[index:index+RESI_SIZE[i,i]])
-            index = index+RESI_SIZE[i,i]
+            vari[i] = vari[i] +\
+                np.dot(jac[i, i], v[index:index+RESI_SIZE[i, i]])
+            # vari[i] = vari[i] +
+            # D[dlab].residuals_adj( v[index:index+RESI_SIZE[i,i]])
+            index = index+RESI_SIZE[i, i]
             for j, dlab2 in enumerate(pccfg.list_sites):
                 if j < i:
-                    vari[i] = vari[i]+np.dot(jac[j,i],
-                        v[index:index+RESI_SIZE[j,i]])
-                    vari[j] = vari[j]+np.dot(jac[i,j],
-                        v[index:index+RESI_SIZE[j,i]])
-                    index = index + RESI_SIZE[j,i]
-        
+                    vari[i] = vari[i] + np.dot(jac[j, i],
+                                               v[index:index+RESI_SIZE[j, i]])
+                    vari[j] = vari[j]+np.dot(jac[i, j],
+                                             v[index:index+RESI_SIZE[j, i]])
+                    index = index + RESI_SIZE[j, i]
+
         vari = np.concatenate(vari)
 
-        return vari        
+        return vari
 #        return np.dot(np.transpose(jac), v)
-    
+
     return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
+
 
 def jacobian_adjoint(var):
     """Full adjoint method. Not ready yet."""
-    #FIXME: Adjoint give slightly more iterations than semi_adjoint on the med exp.
-    #Check what is the issue.
+    # FIXME: Adjoint give slightly more iterations than semi_adjoint
+    # on the med exp.
+    # Check what is the issue.
     print('Full adjoint is not ready yet. Exiting.')
     sys.exit()
-    
-    jac = np.array([[None for _ in range(len(pccfg.list_sites))] \
-                     for _ in range(len(pccfg.list_sites)) ])
+
+    jac = np.array([[None for _ in range(len(pccfg.list_sites))]
+                    for _ in range(len(pccfg.list_sites))])
     for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].corrected_jacobian()
         for j, dlab2 in enumerate(pccfg.list_sites):
             if j == i:
-                jac[i,i] = D[dlab].residuals_jacobian()
+                jac[i, i] = D[dlab].residuals_jacobian()
             if j < i:
-                jac[j,i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
-                jac[i,j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
+                jac[j, i] = DC[dlab2+'-'+dlab].residuals_jacobian2()
+                jac[i, j] = DC[dlab2+'-'+dlab].residuals_jacobian1()
 
     def mv(v):
 
-        index = 0        
+        index = 0
         resi = np.array([])
         for i, dlab in enumerate(pccfg.list_sites):
-            #Why do we need to sometimes flatten here? Strange.
-            D[dlab].var_delta = v[index:index+np.size(D[dlab].variables)].flatten()
+            # Why do we need to sometimes flatten here? Strange.
+            D[dlab].var_delta = v[index:index+np.size(D[dlab].variables)]\
+                .flatten()
             index = index+np.size(D[dlab].variables)
             resi = np.concatenate((resi, D[dlab].var_delta))
             D[dlab].model_delta(D[dlab].var_delta)
             resi = np.concatenate((resi, D[dlab].residuals_delta()))
             for j, dlab2 in enumerate(pccfg.list_sites):
-    #Note that if I put a new i loop here, to separate the D and DC terms, the model runs slower
+                # Note that if I put a new i loop here,
+                # to separate the D and DC terms, the model runs slower
                 if j < i:
-                    resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals_delta()))
+                    resi = np.concatenate((resi,
+                                           DC[dlab2 + '-' +
+                                              dlab].residuals_delta()))
         return resi
 
     def rmv(v):

@@ -21,7 +21,9 @@ import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation, stretch
 import pccfg
-from numpy import interp
+# from numpy import interp
+from numpy.core.multiarray import interp
+
 #from numpy.core.multiarray import interp
 
 ##dummy use of the interp1d function
@@ -879,7 +881,7 @@ class Site(object):
         #Thinning and LID
         if self.archive == 'icecore':
             self.tau = self.tau_model*np.exp(interp(self.depth_mid, self.corr_tau_depth,\
-                       np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
+                        np.dot(self.chol_tau, self.corr_tau)*self.sigmap_corr_tau))
             self.udepth = self.depth[0]+np.cumsum(np.concatenate((np.array([0]),\
                           self.dens/self.tau*self.depth_inter)))
             corr = np.dot(self.chol_lid, self.corr_lid)*self.sigmap_corr_lid
@@ -893,7 +895,7 @@ class Site(object):
             self.icelayerthick = self.accu
         self.agedens = 1/self.icelayerthick
         self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
-                   self.depth_inter*self.agedens)))
+                    self.depth_inter*self.agedens)))
 
         #Air age
         if self.archive == 'icecore':
