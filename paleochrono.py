@@ -34,6 +34,7 @@ from pcsite import Site
 from pcsitepair import SitePair
 from functools import partial
 import gc
+from numpy import dot
 
 # Registration of start time
 START_TIME = time.perf_counter()
@@ -79,7 +80,7 @@ def resid():
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
     res = residuals(var)
-    cost = np.dot(res, np.transpose(res))
+    cost = dot(res, np.transpose(res))
     return cost
 
 
@@ -171,16 +172,16 @@ def jacobian_semi_adjoint(var):
         for i, dlab in enumerate(pccfg.list_sites):
             # Why do we need to sometimes flatten here? Strange.
             resi = np.concatenate((resi, D[dlab].var_delta))
-            resi = np.concatenate((resi, np.dot(np.transpose(jac[i, i]),
+            resi = np.concatenate((resi, dot(np.transpose(jac[i, i]),
                                                 D[dlab].var_delta)))
             for j, dlab2 in enumerate(pccfg.list_sites):
                 # Note that if I put a new i loop here,
                 # to separate the D and DC terms, the model runs slower
                 if j < i:
                     resi = np.concatenate((resi,
-                                           np.dot(np.transpose(jac[j, i]),
+                                           dot(np.transpose(jac[j, i]),
                                                   D[dlab].var_delta) +
-                                           np.dot(np.transpose(jac[i, j]),
+                                           dot(np.transpose(jac[i, j]),
                                                   D[dlab2].var_delta)))
 
         return resi
@@ -196,22 +197,22 @@ def jacobian_semi_adjoint(var):
             vari[i] = v[index:index+np.size(D[dlab].variables)].flatten()
             index = index+np.size(D[dlab].variables)
             vari[i] = vari[i] +\
-                np.dot(jac[i, i], v[index:index+RESI_SIZE[i, i]])
+                dot(jac[i, i], v[index:index+RESI_SIZE[i, i]])
             # vari[i] = vari[i] +
             # D[dlab].residuals_adj( v[index:index+RESI_SIZE[i,i]])
             index = index+RESI_SIZE[i, i]
             for j, dlab2 in enumerate(pccfg.list_sites):
                 if j < i:
-                    vari[i] = vari[i] + np.dot(jac[j, i],
+                    vari[i] = vari[i] + dot(jac[j, i],
                                                v[index:index+RESI_SIZE[j, i]])
-                    vari[j] = vari[j]+np.dot(jac[i, j],
+                    vari[j] = vari[j]+dot(jac[i, j],
                                              v[index:index+RESI_SIZE[j, i]])
                     index = index + RESI_SIZE[j, i]
 
         vari = np.concatenate(vari)
 
         return vari
-#        return np.dot(np.transpose(jac), v)
+#        return dot(np.transpose(jac), v)
 
     return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
 
@@ -266,21 +267,21 @@ def jacobian_adjoint(var):
         for i, dlab in enumerate(pccfg.list_sites):
             vari[i] = v[index:index+np.size(D[dlab].variables)].flatten()
             index = index+np.size(D[dlab].variables)
-            vari[i] = vari[i] + np.dot(jac[i,i], v[index:index+RESI_SIZE[i,i]])
+            vari[i] = vari[i] + dot(jac[i,i], v[index:index+RESI_SIZE[i,i]])
 #            vari[i] = vari[i] + D[dlab].residuals_adj( v[index:index+RESI_SIZE[i,i]])
             index = index+RESI_SIZE[i,i]
             for j, dlab2 in enumerate(pccfg.list_sites):
                 if j < i:
-                    vari[i] = vari[i]+np.dot(jac[j,i],
+                    vari[i] = vari[i]+dot(jac[j,i],
                         v[index:index+RESI_SIZE[j,i]])
-                    vari[j] = vari[j]+np.dot(jac[i,j],
+                    vari[j] = vari[j]+dot(jac[i,j],
                         v[index:index+RESI_SIZE[j,i]])
                     index = index + RESI_SIZE[j,i]
         
         vari = np.concatenate(vari)
 
         return vari        
-#        return np.dot(np.transpose(jac), v)
+#        return dot(np.transpose(jac), v)
     
     return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
 
@@ -396,7 +397,7 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
     else:
         JACMAT = OptimizeResult.jac
     print('Calculating Hessian matrix.')
-    HESS = np.dot(np.transpose(JACMAT), JACMAT)
+    HESS = dot(np.transpose(JACMAT), JACMAT)
     JACMAT = None
 elif pccfg.opt_method == 'none':
     print('No optimization')
@@ -430,7 +431,7 @@ for dlabel in pccfg.list_sites:
     block = np.vstack((block1, block2, block3))
     toto = solve_triangular(HESS_chol, block, lower=True)
     block = None
-    D[dlabel].cov = np.dot(np.transpose(toto), toto)
+    D[dlabel].cov = dot(np.transpose(toto), toto)
     toto = None
 #    D[dlabel].cov = COV[INDEXSITE:INDEXSITE+SIZESITE,INDEXSITE:INDEXSITE+SIZESITE]
     INDEXSITE = INDEXSITE+np.size(D[dlabel].variables)
