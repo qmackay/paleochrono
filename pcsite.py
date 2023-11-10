@@ -21,6 +21,7 @@ import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation,\
     stretch
+# from pcmath import corrected_jacobian_numba
 import pccfg
 # from numpy import interp
 from numpy.core.multiarray import interp
@@ -31,13 +32,14 @@ from numpy import dot
 # dummy use of the interp1d function
 Fooooooo = interp1d
 
+
 class Site(object):
     """This is the class for a site."""
 
     def __init__(self, dlab):
         self.label = dlab
 
-        #Default parameters
+        # Default parameters
         self.archive = 'icecore'
         self.deporate_prior_rep = 'staircase'
         self.age_top = None
@@ -61,11 +63,11 @@ class Site(object):
         self.sliding = None
         self.dens_firn = None
         self.depth_unit = 'm'
-        self.age_label ='ice'
+        self.age_label = 'ice'
         self.age2_label = 'air'
 
-##Setting of the parameters from the parameter files
-        
+# Setting of the parameters from the parameter files
+
         yamls = ''
         filename = pccfg.datadir+'/parameters_all_sites.yml'
         if os.path.isfile(filename):
@@ -720,9 +722,22 @@ class Site(object):
                                           left=np.nan, right=np.nan)
             with np.errstate(divide='ignore'):
                 self.airlayerthick_model = 1/np.diff(self.airage_model)
-        
+
+    
     def corrected_jacobian(self, full=False):
         """Calculate the Jacobian"""
+
+        # self.accu_jac, self.airage_jac, self.delta_depth_jac,\
+        # self.icelayerthick_jac, self.tau_jac, self.lid_jac, self.age_jac,\
+        # self.airage_jac = corrected_jacobian_numba(full, self.archive, self.age_top_sigma,
+        #                 self. accu, self.tau, self.lid, self.dens, self.dens_firn,
+        #                 self.depth, self.depth_inter, self.depth_mid,
+        #                 self.age, self.airage, self.age_model, self.airage_model,
+        #                 self.ice_equiv_depth, self.agedens, self.icelayerthick,
+        #                 self.corr_a, self.corr_tau, self.corr_lid,
+        #                 self.chol_a, self.chol_tau, self.chol_lid, 
+        #                 self.sigmap_corr_a, self.sigmap_corr_tau, self.sigmap_corr_lid, 
+        #                 self.corr_a_age, self.corr_tau_depth, self.corr_lid_age)
 
         if full:
             self.accu_jac = [np.array([np.zeros(len(self.accu))])]    
@@ -814,7 +829,7 @@ class Site(object):
                                     interp(self.ice_equiv_depth, self.depth_mid, 
                                               self.tau/self.dens)
                 airage_vec = - interp(self.ice_equiv_depth, self.depth_mid, 
-                                         self.agedens) * delta_depth_vec
+                                          self.agedens) * delta_depth_vec
                 self.airage_jac.append(np.array([airage_vec]))
                 self.delta_depth_jac.append(np.array([delta_depth_vec]))
                 if full:

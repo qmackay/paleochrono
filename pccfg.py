@@ -45,7 +45,7 @@ def read_parameters():
     datadir = sys.argv[1]
     if datadir[-1] != '/':
         datadir = datadir+'/'
-    print('Parameters directory is: ', datadir)
+    print('Experiment directory is: ', datadir)
     #os.chdir(datadir)
     
     filename = datadir+'parameters.yml'
