@@ -21,7 +21,8 @@ import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation,\
     stretch
-# from pcmath import corrected_jacobian_numba
+from pcmath import corrected_jacobian_numba_icecore, corrected_jacobian_numba_icecore_full,\
+    corrected_jacobian_numba_simple, corrected_jacobian_numba_simple_full
 import pccfg
 # from numpy import interp
 from numpy.core.multiarray import interp
@@ -727,130 +728,168 @@ class Site(object):
     def corrected_jacobian(self, full=False):
         """Calculate the Jacobian"""
 
-        # self.accu_jac, self.airage_jac, self.delta_depth_jac,\
-        # self.icelayerthick_jac, self.tau_jac, self.lid_jac, self.age_jac,\
-        # self.airage_jac = corrected_jacobian_numba(full, self.archive, self.age_top_sigma,
-        #                 self. accu, self.tau, self.lid, self.dens, self.dens_firn,
-        #                 self.depth, self.depth_inter, self.depth_mid,
-        #                 self.age, self.airage, self.age_model, self.airage_model,
-        #                 self.ice_equiv_depth, self.agedens, self.icelayerthick,
-        #                 self.corr_a, self.corr_tau, self.corr_lid,
-        #                 self.chol_a, self.chol_tau, self.chol_lid, 
-        #                 self.sigmap_corr_a, self.sigmap_corr_tau, self.sigmap_corr_lid, 
-        #                 self.corr_a_age, self.corr_tau_depth, self.corr_lid_age)
-
-        if full:
-            self.accu_jac = [np.array([np.zeros(len(self.accu))])]    
-        self.age_jac = [np.array([self.age_top_sigma * np.ones(len(self.age))])]        
-        if self.archive == 'icecore':
-            self.airage_jac = [np.array([self.age_top_sigma * np.ones(len(self.airage))])]        
-            self.delta_depth_jac = [np.array([np.zeros(len(self.depth))])]
-            if full:
-                self.icelayerthick_jac = [np.array([np.zeros(len(self.icelayerthick))])]
-                self.tau_jac = [np.array([np.zeros(len(self.tau))])]
-                self.lid_jac = [np.array([np.zeros(len(self.lid))])]
-            
-        for i in range(len(self.corr_a)):
-
-            corr_a_vec = np.zeros(len(self.corr_a))
-            corr_a_vec[i] = 1.
-        #Accu
-            corr_vec = dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
-            toto = interp((self.age_model[:-1]+self.age_model[1:])/2,
-                                      self.corr_a_age, corr_vec)
-            agedens_vec = - toto * self.agedens
-            if full:
-                accu_vec =  toto * self.accu
-                self.accu_jac.append(np.array([accu_vec]))
-
-        #Ice age
-            age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
-            self.age_jac.append(np.array([age_vec]))
-
-        #Air age
+        if pccfg.is_numba:
             if self.archive == 'icecore':
-                airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec)
-                self.airage_jac.append(np.array([airage_vec]))
-                delta_depth_vec = np.zeros_like(self.depth)
-                self.delta_depth_jac.append(np.array([delta_depth_vec]))
                 if full:
-                    icelayerthick_vec = toto * self.icelayerthick
-                    self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
-                    tau_vec = np.zeros_like(self.tau)
-                    self.tau_jac.append(np.array([tau_vec]))
-                    lid_vec = np.zeros_like(self.lid)
-                    self.lid_jac.append(np.array([lid_vec]))
-                
+                    self.accu_jac, self.airage_jac, self.delta_depth_jac,\
+                    self.icelayerthick_jac, self.tau_jac, self.lid_jac, self.age_jac,\
+                    = corrected_jacobian_numba_icecore_full(self.age_top_sigma,
+                                    self. accu, self.tau, self.lid, self.dens, self.dens_firn,
+                                    self.depth, self.depth_inter, self.depth_mid,
+                                    self.age, self.airage, self.age_model, self.airage_model,
+                                    self.ice_equiv_depth, self.agedens, self.icelayerthick,
+                                    self.corr_a, self.corr_tau, self.corr_lid,
+                                    self.chol_a, self.chol_tau, self.chol_lid, 
+                                    self.sigmap_corr_a, self.sigmap_corr_tau, self.sigmap_corr_lid, 
+                                    self.corr_a_age, self.corr_tau_depth, self.corr_lid_age)
+                else:
+                    self.airage_jac, self.delta_depth_jac, self.age_jac \
+                        = corrected_jacobian_numba_icecore(self.age_top_sigma,
+                                        self. accu, self.tau, self.lid, self.dens, self.dens_firn,
+                                        self.depth, self.depth_inter, self.depth_mid,
+                                        self.age, self.airage, self.age_model, self.airage_model,
+                                        self.ice_equiv_depth, self.agedens, self.icelayerthick,
+                                        self.corr_a, self.corr_tau, self.corr_lid,
+                                        self.chol_a, self.chol_tau, self.chol_lid, 
+                                        self.sigmap_corr_a, self.sigmap_corr_tau, self.sigmap_corr_lid, 
+                                        self.corr_a_age, self.corr_tau_depth, self.corr_lid_age)
+            else:
+                if full:
+                    self.accu_jac, self.age_jac,\
+                        = corrected_jacobian_numba_simple_full(self.age_top_sigma,
+                                    self. accu,
+                                    self.depth, self.depth_inter, self.depth_mid,
+                                    self.age, self.age_model,
+                                    self.agedens, self.icelayerthick,
+                                    self.corr_a,
+                                    self.chol_a,
+                                    self.sigmap_corr_a, 
+                                    self.corr_a_age,)
+                else:
+                    self.age_jac \
+                        = corrected_jacobian_numba_simple(self.age_top_sigma,
+                                    self. accu,
+                                    self.depth, self.depth_inter, self.depth_mid,
+                                    self.age, self.age_model,
+                                    self.agedens, self.icelayerthick,
+                                    self.corr_a,
+                                    self.chol_a,
+                                    self.sigmap_corr_a, 
+                                    self.corr_a_age,)
+        else:
 
-        if self.archive == 'icecore':
-            
-            for i in range(len(self.corr_tau)):
-                                
-                corr_tau_vec = np.zeros(len(self.corr_tau))
-                corr_tau_vec[i] = 1.
-                corr_vec = dot(self.chol_tau, corr_tau_vec)*self.sigmap_corr_tau
-                tata = interp(self.depth_mid, self.corr_tau_depth, corr_vec)
-                agedens_vec = -tata * self.agedens                
+            if full:
+                self.accu_jac = [np.array([np.zeros(len(self.accu))])]    
+            self.age_jac = [np.array([self.age_top_sigma * np.ones(len(self.age))])]        
+            if self.archive == 'icecore':
+                self.airage_jac = [np.array([self.age_top_sigma * np.ones(len(self.airage))])]        
+                self.delta_depth_jac = [np.array([np.zeros(len(self.depth))])]
+                if full:
+                    self.icelayerthick_jac = [np.array([np.zeros(len(self.icelayerthick))])]
+                    self.tau_jac = [np.array([np.zeros(len(self.tau))])]
+                    self.lid_jac = [np.array([np.zeros(len(self.lid))])]
+                
+            for i in range(len(self.corr_a)):
+    
+                corr_a_vec = np.zeros(len(self.corr_a))
+                corr_a_vec[i] = 1.
+            #Accu
+                corr_vec = dot(self.chol_a, corr_a_vec)*self.sigmap_corr_a
+                toto = interp((self.age_model[:-1]+self.age_model[1:])/2,
+                                          self.corr_a_age, corr_vec)
+                agedens_vec = - toto * self.agedens
+                if full:
+                    accu_vec =  toto * self.accu
+                    self.accu_jac.append(np.array([accu_vec]))
+    
+            #Ice age
                 age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
                 self.age_jac.append(np.array([age_vec]))
+    
+            #Air age
+                if self.archive == 'icecore':
+                    airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec)
+                    self.airage_jac.append(np.array([airage_vec]))
+                    delta_depth_vec = np.zeros_like(self.depth)
+                    self.delta_depth_jac.append(np.array([delta_depth_vec]))
+                    if full:
+                        icelayerthick_vec = toto * self.icelayerthick
+                        self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
+                        tau_vec = np.zeros_like(self.tau)
+                        self.tau_jac.append(np.array([tau_vec]))
+                        lid_vec = np.zeros_like(self.lid)
+                        self.lid_jac.append(np.array([lid_vec]))
+                    
+    
+            if self.archive == 'icecore':
                 
-                thin_vec = -tata * self.dens/self.tau
-                udepth_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*thin_vec)))
-                delta_depth_vec = - interp(self.ice_equiv_depth, self.depth_mid,
-                                              self.tau/self.dens) * (udepth_vec - \
-                                            interp(self.ice_equiv_depth, self.depth, udepth_vec))
-                airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec) \
-                                - interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
-                                delta_depth_vec
-                self.airage_jac.append(np.array([airage_vec]))
-                self.delta_depth_jac.append(np.array([delta_depth_vec]))
-                if full:
-                    accu_vec = np.zeros_like(self.accu)
-                    self.accu_jac.append(np.array([accu_vec]))
-                    icelayerthick_vec = tata * self.icelayerthick
-                    self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
-                    tau_vec = tata * self.tau
-                    self.tau_jac.append(np.array([tau_vec]))
-                    lid_vec = np.zeros_like(self.lid)
-                    self.lid_jac.append(np.array([lid_vec]))
-
-                #To be continued...                
-
-            for i in range(len(self.corr_lid)):
-                                
-                age_vec = np.zeros_like(self.depth)
-                self.age_jac.append(np.array([age_vec]))
-                
-                corr_lid_vec = np.zeros(len(self.corr_lid))
-                corr_lid_vec[i] = 1.
-                corr_vec = dot(self.chol_lid, corr_lid_vec)*self.sigmap_corr_lid
-                lid_vec = interp(self.airage_model, self.corr_lid_age, corr_vec) * self.lid
-                delta_depth_vec = self.dens_firn * lid_vec * \
-                                    interp(self.ice_equiv_depth, self.depth_mid, 
-                                              self.tau/self.dens)
-                airage_vec = - interp(self.ice_equiv_depth, self.depth_mid, 
-                                          self.agedens) * delta_depth_vec
-                self.airage_jac.append(np.array([airage_vec]))
-                self.delta_depth_jac.append(np.array([delta_depth_vec]))
-                if full:
-                    accu_vec = np.zeros_like(self.accu)
-                    self.accu_jac.append(np.array([accu_vec]))
-                    icelayerthick_vec = np.zeros_like(self.icelayerthick)
-                    self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
-                    tau_vec = np.zeros_like(self.tau)
-                    self.tau_jac.append(np.array([tau_vec]))
-                    self.lid_jac.append(np.array([lid_vec]))
-
-        if full:
-            self.accu_jac = np.concatenate((self.accu_jac))
-        self.age_jac = np.concatenate((self.age_jac))
-        if self.archive == 'icecore':
-            self.airage_jac = np.concatenate((self.airage_jac))
-            self.delta_depth_jac = np.concatenate((self.delta_depth_jac))
+                for i in range(len(self.corr_tau)):
+                                    
+                    corr_tau_vec = np.zeros(len(self.corr_tau))
+                    corr_tau_vec[i] = 1.
+                    corr_vec = dot(self.chol_tau, corr_tau_vec)*self.sigmap_corr_tau
+                    tata = interp(self.depth_mid, self.corr_tau_depth, corr_vec)
+                    agedens_vec = -tata * self.agedens                
+                    age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
+                    self.age_jac.append(np.array([age_vec]))
+                    
+                    thin_vec = -tata * self.dens/self.tau
+                    udepth_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*thin_vec)))
+                    delta_depth_vec = - interp(self.ice_equiv_depth, self.depth_mid,
+                                                  self.tau/self.dens) * (udepth_vec - \
+                                                interp(self.ice_equiv_depth, self.depth, udepth_vec))
+                    airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec) \
+                                    - interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
+                                    delta_depth_vec
+                    self.airage_jac.append(np.array([airage_vec]))
+                    self.delta_depth_jac.append(np.array([delta_depth_vec]))
+                    if full:
+                        accu_vec = np.zeros_like(self.accu)
+                        self.accu_jac.append(np.array([accu_vec]))
+                        icelayerthick_vec = tata * self.icelayerthick
+                        self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
+                        tau_vec = tata * self.tau
+                        self.tau_jac.append(np.array([tau_vec]))
+                        lid_vec = np.zeros_like(self.lid)
+                        self.lid_jac.append(np.array([lid_vec]))
+    
+                    #To be continued...                
+    
+                for i in range(len(self.corr_lid)):
+                                    
+                    age_vec = np.zeros_like(self.depth)
+                    self.age_jac.append(np.array([age_vec]))
+                    
+                    corr_lid_vec = np.zeros(len(self.corr_lid))
+                    corr_lid_vec[i] = 1.
+                    corr_vec = dot(self.chol_lid, corr_lid_vec)*self.sigmap_corr_lid
+                    lid_vec = interp(self.airage_model, self.corr_lid_age, corr_vec) * self.lid
+                    delta_depth_vec = self.dens_firn * lid_vec * \
+                                        interp(self.ice_equiv_depth, self.depth_mid, 
+                                                  self.tau/self.dens)
+                    airage_vec = - interp(self.ice_equiv_depth, self.depth_mid, 
+                                              self.agedens) * delta_depth_vec
+                    self.airage_jac.append(np.array([airage_vec]))
+                    self.delta_depth_jac.append(np.array([delta_depth_vec]))
+                    if full:
+                        accu_vec = np.zeros_like(self.accu)
+                        self.accu_jac.append(np.array([accu_vec]))
+                        icelayerthick_vec = np.zeros_like(self.icelayerthick)
+                        self.icelayerthick_jac.append(np.array([icelayerthick_vec]))
+                        tau_vec = np.zeros_like(self.tau)
+                        self.tau_jac.append(np.array([tau_vec]))
+                        self.lid_jac.append(np.array([lid_vec]))
+    
             if full:
-                self.icelayerthick_jac = np.concatenate((self.icelayerthick_jac))
-                self.tau_jac = np.concatenate((self.tau_jac))
-                self.lid_jac = np.concatenate((self.lid_jac))
+                self.accu_jac = np.concatenate((self.accu_jac))
+            self.age_jac = np.concatenate((self.age_jac))
+            if self.archive == 'icecore':
+                self.airage_jac = np.concatenate((self.airage_jac))
+                self.delta_depth_jac = np.concatenate((self.delta_depth_jac))
+                if full:
+                    self.icelayerthick_jac = np.concatenate((self.icelayerthick_jac))
+                    self.tau_jac = np.concatenate((self.tau_jac))
+                    self.lid_jac = np.concatenate((self.lid_jac))
 
     def corrected_jacobian_free(self):
         self.accu_jac = None

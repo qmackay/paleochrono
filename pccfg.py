@@ -14,6 +14,7 @@ list_sites = []
 opt_method = 'trf'  #leastsq, leastsq-parallel, none
 is_parallel = False
 is_analytical_jacobian = True
+is_numba = True
 jacobian = 'semi_adjoint'
 nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
 datadir = './'
