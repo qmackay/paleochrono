@@ -286,7 +286,7 @@ def jacobian_adjoint(var):
     return LinearOperator((RESI_SIZE_TOT, VAR_SIZE), matvec=mv, rmatvec=rmv)
 
 def jacobian_semi_analytical(var):
-    """Calculate the Jacobian of each residual term with a finite difference scheme."""
+    """Calculate the Jacobian with a finite difference scheme for each block."""
     resizero = residuals(var)
     jac_list = []
     for k, dlabj in enumerate(pccfg.list_sites):
