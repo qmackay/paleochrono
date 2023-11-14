@@ -80,7 +80,7 @@ def resid():
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
     res = residuals(var)
-    cost = dot(res, np.transpose(res))
+    cost = dot(res, np.transpose(res)) / 2.
     return cost
 
 
