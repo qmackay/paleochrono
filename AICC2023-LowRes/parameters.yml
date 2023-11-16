@@ -15,6 +15,6 @@ show_initial: False  #always put to False for now
 color_init: 'c'      #always put to 'c' for now
 show_figures: False  #whether to show or not the figures at the end of the run
 show_airlayerthick: False #whether to show the air layer thickness figure (buggy on anaconda)
-tol: 1.e-6          #Tolerance level for the termination of the optimization.
+tol: 1.e-5          #Tolerance level for the termination of the optimization.
 age_unit: 'yr'
 age_unit_ref: 'B1950'
