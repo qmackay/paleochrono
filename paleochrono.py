@@ -43,7 +43,7 @@ START_TIME = time.perf_counter()
 pccfg.read_parameters()
 
 # Opening of output.txt file
-OUTPUT_FILE = open(pccfg.datadir+'output.txt', 'a')
+OUTPUT_FILE = open(pccfg.datadir+'output.txt', 'w')
 
 # Global
 VARIABLES = np.array([])
@@ -364,7 +364,9 @@ print('Size of RESIDUALS vector', RESI_SIZE_TOT)
 
 ##Optimization
 START_TIME_OPT = time.perf_counter()
-print('cost function: ', cost_function(VARIABLES))
+MESSAGE = 'Initial cost function: '+ str(cost_function(VARIABLES))
+print(MESSAGE)
+OUTPUT_FILE.write(MESSAGE+'\n')
 #print(jacobian_semi_analytical(VARIABLES))
 #print(jacobian_analytical(VARIABLES))
 if pccfg.opt_method == 'leastsq':
@@ -386,7 +388,9 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    jac=jac,
                                    tr_solver=pccfg.tr_solver,
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
-    print('Optimization execution time: ', time.perf_counter() - START_TIME_OPT, 'seconds')
+    MESSAGE = 'Optimization execution time: ' + str(time.perf_counter() - START_TIME_OPT) + ' seconds'
+    print(MESSAGE)
+    OUTPUT_FILE.write(MESSAGE+'\n')
     VARIABLES = OptimizeResult.x
     if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
         print('Calculating Jacobian matrix.')
@@ -407,7 +411,9 @@ else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
 #print 'solution: ',VARIABLES
-print('cost function: ', cost_function(VARIABLES))
+MESSAGE = 'Optimized cost function: ' + str(cost_function(VARIABLES))
+print(MESSAGE)
+OUTPUT_FILE.write(MESSAGE+'\n')
 
 print('Factorisation of the Hessian matrix')
 HESS_chol = cholesky(HESS)
@@ -457,9 +463,9 @@ for di, dlabel in enumerate(pccfg.list_sites):
             DC[dlabel2+'-'+dlabel].figures()
 
 ###Program execution time
-MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds. '
+MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds'
 print(MESSAGE)
-OUTPUT_FILE.write(MESSAGE)
+OUTPUT_FILE.write(MESSAGE+'\n')
 
 if pccfg.show_figures:
     mpl.show()
