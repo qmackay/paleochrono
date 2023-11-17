@@ -35,6 +35,7 @@ from pcsitepair import SitePair
 from functools import partial
 import gc
 from numpy import dot
+import resource
 
 # Registration of start time
 START_TIME = time.perf_counter()
@@ -464,6 +465,8 @@ for di, dlabel in enumerate(pccfg.list_sites):
 
 # Program execution time
 pcprint('Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds')
+mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+pcprint('Max memory usage: '+str(mem)+' kbytes')
 
 if pccfg.show_figures:
     mpl.show()
