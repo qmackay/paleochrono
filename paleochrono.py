@@ -51,6 +51,12 @@ D = {}
 DC = {}
 
 
+def pcprint(message):
+    print(message)
+    OUTPUT_FILE.write(message+'\n')
+    return
+
+
 def residuals(var):
     """Calculate the residuals as a function of the variables vector."""
     index = 0
@@ -359,14 +365,12 @@ for di, dlabel in enumerate(pccfg.list_sites):
 
 VAR_SIZE = len(VARIABLES)
 RESI_SIZE_TOT = len(resid())
-print('Size of VARIABLES vector', VAR_SIZE)
-print('Size of RESIDUALS vector', RESI_SIZE_TOT)
+pcprint('Size of VARIABLES vector: '+ str(VAR_SIZE))
+pcprint('Size of RESIDUALS vector: '+ str(RESI_SIZE_TOT))
 
 ##Optimization
 START_TIME_OPT = time.perf_counter()
-MESSAGE = 'Initial cost function: '+ str(cost_function(VARIABLES))
-print(MESSAGE)
-OUTPUT_FILE.write(MESSAGE+'\n')
+pcprint('Initial cost function: '+ str(cost_function(VARIABLES)))
 #print(jacobian_semi_analytical(VARIABLES))
 #print(jacobian_analytical(VARIABLES))
 if pccfg.opt_method == 'leastsq':
@@ -388,10 +392,9 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    jac=jac,
                                    tr_solver=pccfg.tr_solver,
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
-    MESSAGE = 'Optimization execution time: ' + str(time.perf_counter() - START_TIME_OPT) + ' seconds'
-    print(MESSAGE)
-    OUTPUT_FILE.write(MESSAGE+'\n')
+    pcprint('Optimization execution time: ' + str(time.perf_counter() - START_TIME_OPT) + ' seconds')
     VARIABLES = OptimizeResult.x
+    pcprint('Optimized cost function: ' + str(cost_function(VARIABLES)))
     if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
         print('Calculating Jacobian matrix.')
         JACMAT = jacobian_analytical(VARIABLES)
@@ -411,9 +414,6 @@ else:
     print(pccfg.opt_method, ': Optimization method not recognized.')
     sys.exit()
 #print 'solution: ',VARIABLES
-MESSAGE = 'Optimized cost function: ' + str(cost_function(VARIABLES))
-print(MESSAGE)
-OUTPUT_FILE.write(MESSAGE+'\n')
 
 print('Factorisation of the Hessian matrix')
 HESS_chol = cholesky(HESS)
@@ -424,9 +424,9 @@ HESS = None
 #HESS = None
 
 print('Calculation of confidence intervals')
-#COV = np.linalg.inv(HESS)
+# COV = np.linalg.inv(HESS)
 INDEXSITE = 0
-for dlabel in pccfg.list_sites: 
+for dlabel in pccfg.list_sites:
     print('Covariance matrix for '+dlabel)
 #    input('Before solving the triangular system. Program paused.')
     SIZESITE = np.size(D[dlabel].variables)
@@ -445,15 +445,15 @@ for dlabel in pccfg.list_sites:
 #    COV[INDEXSITE:INDEXSITE+SIZESITE,:] = None
 #    COV[:,INDEXSITE:INDEXSITE+SIZESITE] = None
 HESS_chol = None
-for dlabel in pccfg.list_sites: 
+for dlabel in pccfg.list_sites:
     print('Confidence intervals for '+dlabel)
     D[dlabel].sigma()
     D[dlabel].cov = None
 
-###Final display and output
+# Final display and output
 print('Display and saving of results')
 for di, dlabel in enumerate(pccfg.list_sites):
-    print('Display and saving of',dlabel)
+    print('Display and saving of', dlabel)
     D[dlabel].save()
     D[dlabel].figures()
 for di, dlabel in enumerate(pccfg.list_sites):
@@ -462,13 +462,11 @@ for di, dlabel in enumerate(pccfg.list_sites):
             print('Display of '+dlabel2+'-'+dlabel+' site pair')
             DC[dlabel2+'-'+dlabel].figures()
 
-###Program execution time
-MESSAGE = 'Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds'
-print(MESSAGE)
-OUTPUT_FILE.write(MESSAGE+'\n')
+# Program execution time
+pcprint('Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds')
 
 if pccfg.show_figures:
     mpl.show()
 
-###Closing output file
+# Closing output file
 OUTPUT_FILE.close()
