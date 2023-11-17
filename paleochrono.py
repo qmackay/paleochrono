@@ -393,9 +393,9 @@ if pccfg.opt_method == "trf" or pccfg.opt_method == 'lm':
                                    jac=jac,
                                    tr_solver=pccfg.tr_solver,
                                    xtol=pccfg.tol, ftol=pccfg.tol, gtol=pccfg.tol, verbose=2)
-    pcprint('Optimization execution time: ' + str(time.perf_counter() - START_TIME_OPT) + ' seconds')
     VARIABLES = OptimizeResult.x
     pcprint('Optimized cost function: ' + str(cost_function(VARIABLES)))
+    pcprint('Optimization execution time: ' + str(time.perf_counter() - START_TIME_OPT) + ' seconds')
     if pccfg.jacobian == 'adjoint' or pccfg.jacobian == 'semi_adjoint':
         print('Calculating Jacobian matrix.')
         JACMAT = jacobian_analytical(VARIABLES)
