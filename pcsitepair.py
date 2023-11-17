@@ -279,7 +279,7 @@ class SitePair(object):
 #            y_low = self.site2.age_top
 #            mpl.axis((x_low, x_up, y_low, y_up))
             rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
-            mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='Perfect agreement', zorder=0)
+            mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='1:1 line', zorder=0)
             mpl.legend(loc="best")
             ax.set_aspect('equal')
             printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_age_label+'synchro.pdf')
@@ -326,7 +326,7 @@ class SitePair(object):
 #                y_low = self.site2.age_top
 #                mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
-                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='Perfect agreement',
+                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='1:1 line',
                          zorder=0)
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
@@ -375,7 +375,7 @@ class SitePair(object):
 #                y_low = self.site2.age_top
 #                mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
-                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='Perfect agreement',
+                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='1:1 line',
                          zorder=0)
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
@@ -423,7 +423,7 @@ class SitePair(object):
 #                y_low = self.site2.age_top
 #                mpl.axis((x_low, x_up, y_low, y_up))
                 rangefig = np.array([min(x_low, y_low), max(x_up, y_up)])
-                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='Perfect agreement')
+                mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='1:1 line')
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
                 printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_age_label+

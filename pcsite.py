@@ -741,21 +741,24 @@ class Site(object):
     def corrected_jacobian(self, full=False):
         """Calculate the Jacobian"""
 
-        if full:
-            self.accu_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.accu)))
-        self.age_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.age)))
-        self.age_jac[0, :] = self.age_top_sigma * np.ones(len(self.age))
         if self.archive == 'icecore':
+            self.age_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.age)))
             self.airage_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.airage)))
             self.airage_jac[0, :] = self.age_top_sigma * np.ones(len(self.airage))
             self.delta_depth_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.depth)))
     #        delta_depth_jac[0, :] = np.zeros(len(depth))
             if full:
-                self.icelayerthick_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.icelayerthick)))
-            #        icelayerthick_jac[0, :] = np.zeros(len(icelayerthick))
+                self.accu_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.accu)))
                 self.tau_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.tau)))
                 self.lid_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.lid)))
+                self.icelayerthick_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.icelayerthick)))
+            #        icelayerthick_jac[0, :] = np.zeros(len(icelayerthick))
+        else:
+            self.age_jac = np.zeros((1+len(self.corr_a), len(self.age)))
+            if full:
+                self.accu_jac = np.zeros((1+len(self.corr_a), len(self.accu)))
 
+        self.age_jac[0, :] = self.age_top_sigma * np.ones(len(self.age))
             
         for i in range(len(self.corr_a)):
 
