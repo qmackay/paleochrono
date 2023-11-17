@@ -33,6 +33,7 @@ tol = 1e-5      #Tolerance for the termination.
 tr_solver = 'lsmr'
 age_unit = 'yr'
 age_unit_ref = 'B1950'
+fig_format = 'pdf'
 #nb_runs = 0
 
 

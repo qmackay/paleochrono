@@ -18,3 +18,4 @@ show_airlayerthick: False #whether to show the air layer thickness figure (buggy
 tol: 1.e-5          #Tolerance level for the termination of the optimization.
 age_unit: 'yr'
 age_unit_ref: 'B1950'
+fig_format: 'svg'

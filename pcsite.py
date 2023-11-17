@@ -1189,10 +1189,8 @@ class Site(object):
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
         ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
-        fig.tight_layout()
-        printed_page = PdfPages(pccfg.datadir+self.label+'/deposition.pdf')
-        printed_page.savefig(fig)
-        printed_page.close()
+        mpl.savefig(pccfg.datadir+self.label+'/deposition.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
             mpl.close()
 
@@ -1240,10 +1238,8 @@ class Site(object):
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
         ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
-        fig.tight_layout()
-        printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_label_+'age.pdf')
-        printed_page.savefig(fig)
-        printed_page.close()
+        mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
             mpl.close()
 
@@ -1265,9 +1261,8 @@ class Site(object):
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc="best")
-            printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_label_+'layer_thickness.pdf')
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'layer_thickness.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 
@@ -1295,10 +1290,8 @@ class Site(object):
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
             ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
-            fig.tight_layout()
-            printed_page = PdfPages(pccfg.datadir+self.label+'/thinning.pdf')
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/thinning.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 
@@ -1320,9 +1313,8 @@ class Site(object):
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
                 mpl.legend(loc="best")
-                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_label_+'layer_thickness.pdf')
-                printed_page.savefig(fig)
-                printed_page.close()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'layer_thickness.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
 
@@ -1350,10 +1342,8 @@ class Site(object):
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
             ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
-            fig.tight_layout()
-            printed_page = PdfPages(pccfg.datadir+self.label+'/lock_in_depth.pdf')
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/lock_in_depth.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 
@@ -1373,10 +1363,8 @@ class Site(object):
                              color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, y_low, y_up))
-            printed_page = PdfPages(pccfg.datadir+self.label+'/delta_age.pdf')
-            mpl.legend(loc="best")
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/delta_age.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 
@@ -1427,12 +1415,8 @@ class Site(object):
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
             ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
-            fig.tight_layout()
-#            mpl.plot(self.sigma_airage*pccfg.scale_ageci, self.depth, color=pccfg.color_sigma,
-#                     label='1$\sigma$')            
-            printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_label_+'age.pdf')
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'age.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 
@@ -1456,9 +1440,8 @@ class Site(object):
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
             mpl.legend(loc='lower right')
-            printed_page = PdfPages(pccfg.datadir+self.label+'/delta_depth.pdf')
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/delta_depth.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 

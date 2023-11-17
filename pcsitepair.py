@@ -282,9 +282,8 @@ class SitePair(object):
             mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='1:1 line', zorder=0)
             mpl.legend(loc="best")
             ax.set_aspect('equal')
-            printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_age_label+'synchro.pdf')
-            printed_page.savefig(fig)
-            printed_page.close()
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age_age_label+'synchro.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
 
@@ -330,10 +329,8 @@ class SitePair(object):
                          zorder=0)
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
-                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_age2_label+
-                                        'synchro.pdf')
-                printed_page.savefig(fig)
-                printed_page.close()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_age2_label+'synchro.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
 
@@ -379,10 +376,8 @@ class SitePair(object):
                          zorder=0)
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
-                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age_age2_label+
-                                        'synchro.pdf')
-                printed_page.savefig(fig)
-                printed_page.close()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age_age2_label+'synchro.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
 
@@ -426,9 +421,7 @@ class SitePair(object):
                 mpl.plot(rangefig, rangefig, color=pccfg.color_obs, label='1:1 line')
                 mpl.legend(loc="best")
                 ax.set_aspect('equal')
-                printed_page = PdfPages(pccfg.datadir+self.label+'/'+self.age2_age_label+
-                                        'synchro.pdf')
-                printed_page.savefig(fig)
-                printed_page.close()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_age_label+'synchro.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
