@@ -65,6 +65,7 @@ class Site(object):
         self.depth_unit = 'm'
         self.age_label = 'ice'
         self.age2_label = 'air'
+        self.tuning = {}
 
 # Setting of the parameters from the parameter files
 
@@ -685,6 +686,14 @@ class Site(object):
                 self.delta_depth_lu_piv = lu_factor(np.transpose(self.delta_depth_chol))
             else:
                 self.delta_depth_correlation_bool = False
+
+        for key in self.tuning:
+            readarray = np.loadtxt(pccfg.datadir+self.label+'/'+self.tuning[key]["data_file"])
+            self.tuning[key]["data_depth"] = readarray[:, 0]
+            self.tuning[key]["data_value"] = readarray[:, 1]
+            readarray = np.loadtxt(pccfg.datadir+self.label+'/'+self.tuning[key]["target_file"])
+            self.tuning[key]["target_age"] = readarray[:, 0]
+            self.tuning[key]["target_value"] = readarray[:, 1]
 
     def raw_model(self):
         """Calculate the raw model, that is before applying correction functions."""
@@ -1445,7 +1454,19 @@ class Site(object):
             if not pccfg.show_figures:
                 mpl.close()
 
-
+            for key in self.tuning:
+                fig, ax1 = mpl.subplots()
+    #            mpl.figure(self.label+' air age')
+                mpl.title(self.label+' '+key+' tuning')
+                mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+                mpl.ylabel(key+' ('+self.tuning[key]["unit"]+')')
+                x = self.tuning[key]["target_age"] * 1000
+                y = self.tuning[key]["target_value"] * self.tuning[key]["slope"] + self.tuning[key]["offset"]
+                mpl.plot(x, y)
+                mpl.savefig(pccfg.datadir+self.label+'/'+key+'_tuning.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
 
     def save(self):
         """Save various variables for a site."""
