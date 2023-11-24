@@ -19,3 +19,4 @@ tol: 1.e-5          #Tolerance level for the termination of the optimization.
 age_unit: 'yr'
 age_unit_ref: 'B1950'
 fig_format: 'pdf'
+calc_errors: False

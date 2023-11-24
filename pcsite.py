@@ -270,9 +270,14 @@ class Site(object):
         self.delta_depth_init = np.empty_like(self.depth)
         self.sigma_lid_model = np.empty_like(self.depth)
         self.lid_init = np.empty_like(self.depth)
-        self.sigma_age = np.empty_like(self.depth)
-        self.sigma_airage = np.empty_like(self.depth)
-        self.sigma_lid = np.empty_like(self.depth)
+        self.sigma_age = np.zeros_like(self.depth)
+        self.sigma_airage = np.zeros_like(self.depth)
+        self.sigma_lid = np.zeros_like(self.depth)
+        self.sigma_delta_age = np.zeros_like(self.depth)
+        self.sigma_delta_depth = np.zeros_like(self.depth)
+        self.sigma_icelayerthick = np.zeros_like(self.depth_mid)
+        self.sigma_accu = np.zeros_like(self.depth_mid)
+        self.sigma_tau = np.zeros_like(self.depth_mid)
         self.ulidie = np.empty_like(self.depth)
         self.cov = np.array([])
 
@@ -1167,7 +1172,8 @@ class Site(object):
             self.sigma_tau_model = interp(self.depth_mid, self.corr_tau_depth,
                                                  self.sigmap_corr_tau)
         self.corrected_jacobian_free()
-            
+
+        
     def figures(self):
         """Build the figures of a site."""
 

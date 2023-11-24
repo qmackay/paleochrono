@@ -34,6 +34,7 @@ tr_solver = 'lsmr'
 age_unit = 'yr'
 age_unit_ref = 'B1950'
 fig_format = 'pdf'
+calc_errors = True
 #nb_runs = 0
 
 

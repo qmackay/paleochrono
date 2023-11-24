@@ -448,7 +448,8 @@ for dlabel in pccfg.list_sites:
 HESS_chol = None
 for dlabel in pccfg.list_sites:
     print('Confidence intervals for '+dlabel)
-    D[dlabel].sigma()
+    if pccfg.calc_errors:
+        D[dlabel].sigma()
     D[dlabel].cov = None
 
 # Final display and output
