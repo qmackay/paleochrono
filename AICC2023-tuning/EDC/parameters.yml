@@ -10,8 +10,16 @@ tuning:
     "TAC":
         "data_file": "TAC.txt"
         "target_file": "Half-Year-Summer-Insolation.txt"
-        "offset": 0.1225
+        "offset": 0.123
         "slope": -0.000088
         "sigma": 0.002
         "air_proxy": False
         "unit": "cm$^3$/g"
+    "O2N2":
+        "data_file": "O2N2.txt"
+        "target_file": "Summer-Solstice-Insolation.txt"
+        "offset": 45.
+        "slope": -0.1
+        "sigma": 2.
+        "air_proxy": False
+        "unit": "per mil"

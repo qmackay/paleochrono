@@ -425,7 +425,7 @@ class Site(object):
                 self.corr_lid = np.zeros(np.size(self.corr_lid_age))
                 self.corr_tau = np.zeros(np.size(self.corr_tau_depth))
         elif self.start == 'random':
-            self.resi_age_top = np.random.normal(loc=0., scale=1., size=1.)
+            self.resi_age_top = np.random.normal(loc=0., scale=1., size=1)
             self.corr_a = np.random.normal(loc=0., scale=1., size=np.size(self.corr_a_age))
             if self.archive == 'icecore':
                 self.corr_lid = np.random.normal(loc=0., scale=1., size=np.size(self.corr_lid_age))
@@ -1014,6 +1014,7 @@ class Site(object):
                       self.iceintervals_duration)/self.iceintervals_sigma
         if self.iceintervals_correlation_bool:
             resi_iceint = lu_solve(self.iceintervals_lu_piv, resi_iceint)
+            
 
         if self.archive == 'icecore':
             resi_airage = (self.fct_airage(self.airhorizons_depth)-self.airhorizons_age)/\
@@ -1029,10 +1030,22 @@ class Site(object):
                                 self.delta_depth_delta_depth)/self.delta_depth_sigma
             if self.delta_depth_correlation_bool:
                 resi_delta_depth = lu_solve(self.delta_depth_lu_piv, resi_delta_depth)
-            return np.concatenate((resi_age, resi_airage,
+            resi = np.concatenate((resi_age, resi_airage,
                                    resi_iceint, resi_airint, resi_delta_depth))
         else:
-            return np.concatenate((resi_age, resi_iceint))
+            resi = np.concatenate((resi_age, resi_iceint))
+            
+        for key in self.tuning:
+            if self.tuning[key]["air_proxy"]:
+                data_age = self.fct_airage(self.tuning[key]["data_depth"])
+            else:
+                data_age = self.fct_age(self.tuning[key]["data_depth"])
+            target_value_data = interp(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"])
+            target_value_data = target_value_data * self.tuning[key]["slope"] + self.tuning[key]["offset"]
+            resi_tuning = (self.tuning[key]["data_value"] - target_value_data) / self.tuning[key]["sigma"]
+            resi = np.concatenate((resi, resi_tuning))
+            
+        return resi
 
     def residuals_jacobian(self):
         #FIXME: We don't take into account covariance here!
@@ -1466,9 +1479,15 @@ class Site(object):
                 mpl.title(self.label+' '+key+' tuning')
                 mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 mpl.ylabel(key+' ('+self.tuning[key]["unit"]+')')
-                x = self.tuning[key]["target_age"] * 1000
+                x = self.tuning[key]["target_age"]
                 y = self.tuning[key]["target_value"] * self.tuning[key]["slope"] + self.tuning[key]["offset"]
-                mpl.plot(x, y)
+                mpl.plot(x, y, label='target', color='r')
+                if self.tuning[key]["air_proxy"]:
+                    x = interp(self.tuning[key]["data_depth"], self.depth, self.airage)
+                else:
+                    x = interp(self.tuning[key]["data_depth"], self.depth, self.age)
+                y = self.tuning[key]["data_value"]
+                mpl.plot(x, y, label='record', color='k')
                 mpl.savefig(pccfg.datadir+self.label+'/'+key+'_tuning.'+pccfg.fig_format,
                             format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:

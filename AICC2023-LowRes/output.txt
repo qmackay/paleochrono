@@ -1,0 +1,3 @@
+Size of VARIABLES vector: 3250
+Size of RESIDUALS vector: 5389
+Initial cost function: 4965634.878495723
