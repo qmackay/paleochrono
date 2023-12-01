@@ -1,7 +1,7 @@
 # list_sites: ['EDC','TALDICE','VK','EDML','NGRIP']
 list_sites: ['EDC']
 
-opt_method: 'trf'  #trf, lm or none. lm is slightly faster. trf has an interactive output.
+opt_method: 'trf'  #trf, lm or none.
 jacobian: 'semi_analytical' #automatic, numerical, semi_analytical, analytical or semi_adjoint.
 tr_solver: 'lsmr'  #'exact' (recommended for small system) or 'lsmr' (recommended for large systems)
 
