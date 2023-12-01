@@ -1,6 +1,7 @@
 #Parameters specific to the EDC ice core
 age_top_prior: -55. #age at the top of the sequence
 age_top_sigma: 10. #Error on top age
+restart_file: "restart-AICC2023.bin"
 depth_grid: #depth grid for the age calculation
     type: 'regular'
     start: 0.
@@ -15,11 +16,11 @@ tuning:
         "sigma": 0.002
         "air_proxy": False
         "unit": "cm$^3$/g"
-    "O2N2":
-        "data_file": "O2N2.txt"
-        "target_file": "Summer-Solstice-Insolation.txt"
-        "offset": 45.
-        "slope": -0.1
-        "sigma": 2.
-        "air_proxy": False
-        "unit": "per mil"
+    # "O2N2":
+    #     "data_file": "O2N2.txt"
+    #     "target_file": "Summer-Solstice-Insolation.txt"
+    #     "offset": 45.
+    #     "slope": -0.1
+    #     "sigma": 2.
+    #     "air_proxy": False
+    #     "unit": "per mil"

@@ -6,17 +6,17 @@ start: 'restart'  #prior, restart or random
 calc_deporate_method: 'staircase' #linear or staircase. Define the prior deporate representation.
 
 corr_deporate_grid: #Age grid for the deporate correction function
-    type: 'linear' #regular or linear
+    type: 'regular' #regular or linear
     start: -50.
     end:  999950.
     nb_steps: 1000 
-    ratio: 0.1 #Ratio of the first step size to the average step size
+    # ratio: 0.1 #Ratio of the first step size to the average step size
 corr_lid_grid: #Age grid for the LID correction function
-    type: 'linear'
+    type: 'regular'
     start: -50.
     end: 999950.
     nb_steps: 1000
-    ratio: 0.1
+    # ratio: 0.1
 corr_thinning_grid: #Depth grid for the thinning correction function
     type: 'linear'
     start: 0.

@@ -20,7 +20,7 @@ from scipy.optimize import leastsq
 import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation,\
-    stretch
+    stretch, interp_lin_slope
 import pccfg
 # from numpy import interp
 from numpy.core.multiarray import interp
@@ -66,6 +66,7 @@ class Site(object):
         self.age_label = 'ice'
         self.age2_label = 'air'
         self.tuning = {}
+        self.restart_file = "restart.bin"
 
 # Setting of the parameters from the parameter files
 
@@ -1042,7 +1043,7 @@ class Site(object):
                 data_age = self.fct_age(self.tuning[key]["data_depth"])
             target_value_data = interp(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"])
             target_value_data = target_value_data * self.tuning[key]["slope"] + self.tuning[key]["offset"]
-            resi_tuning = (self.tuning[key]["data_value"] - target_value_data) / self.tuning[key]["sigma"]
+            resi_tuning = (target_value_data - self.tuning[key]["data_value"]) / self.tuning[key]["sigma"]
             resi = np.concatenate((resi, resi_tuning))
             
         return resi
@@ -1058,11 +1059,25 @@ class Site(object):
                           self.fct_airage_jac(self.airintervals_depthtop))/self.airintervals_sigma
             resi_delta_depth_jac = self.fct_delta_depth_jac(self.delta_depth_depth)/ \
                                     self.delta_depth_sigma
-            return np.concatenate((resi_age_jac, resi_airage_jac, resi_iceint_jac, resi_airint_jac, 
+            resi_jac = np.concatenate((resi_age_jac, resi_airage_jac, resi_iceint_jac, resi_airint_jac, 
                                resi_delta_depth_jac),
                               axis = 1)
         else:
-            return np.concatenate((resi_age_jac, resi_iceint_jac), axis=1)
+            resi_jac = np.concatenate((resi_age_jac, resi_iceint_jac), axis=1)
+
+        for key in self.tuning:
+            # FIXME: maybe we could save that instead of re-calculatiing it.
+            if self.tuning[key]["air_proxy"]:
+                data_age = self.fct_airage(self.tuning[key]["data_depth"])
+                resi_tuning_jac = interp_lin_slope(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"]) *\
+                    self.fct_airage_jac(self.tuning[key]["data_depth"]) * self.tuning[key]["slope"] / self.tuning[key]["sigma"]
+            else:
+                data_age = self.fct_age(self.tuning[key]["data_depth"])
+                resi_tuning_jac = interp_lin_slope(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"]) *\
+                    self.fct_age_jac(self.tuning[key]["data_depth"]) * self.tuning[key]["slope"] / self.tuning[key]["sigma"]
+            resi_jac = np.concatenate((resi_jac, resi_tuning_jac), axis = 1)
+            
+        return resi_jac
     
     def residuals_delta(self):
         resi_age = self.fct_age_delta(self.icehorizons_depth)/self.icehorizons_sigma
@@ -1090,6 +1105,7 @@ class Site(object):
         model0 = self.model(self.variables)
         return jacob
 
+# FIXME: Is this really needed anymore?
     def optimisation(self):
         """Optimize a site."""
         self.variables, self.cov = leastsq(self.residuals, self.variables, full_output=1)
@@ -1488,6 +1504,7 @@ class Site(object):
                     x = interp(self.tuning[key]["data_depth"], self.depth, self.age)
                 y = self.tuning[key]["data_value"]
                 mpl.plot(x, y, label='record', color='k')
+                mpl.legend()
                 mpl.savefig(pccfg.datadir+self.label+'/'+key+'_tuning.'+pccfg.fig_format,
                             format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
@@ -1547,7 +1564,7 @@ class Site(object):
             corr_lid = self.corr_lid
             corr_tau_depth = self.corr_tau_depth
             corr_tau = self.corr_tau
-        with open(pccfg.datadir+self.label+'/restart.bin', 'wb') as f:
+        with open(pccfg.datadir+self.label+self.restart_file, 'wb') as f:
             if self.archive == 'icecore':
                 pickle.dump([resi_age_top, corr_a_age, corr_a, corr_lid_age,
                              corr_lid, corr_tau_depth, corr_tau], f)

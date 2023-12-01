@@ -43,6 +43,15 @@ def interp_stair_aver(x_out, x_in, y_in):
             (x_out[1:]-x_out[:-1])
     return y_out
 
+def interp_stair(x, xp, yp): # FIXME: use the same notation for the other function in pcmath
+    indices = np.searchsorted(xp, x, side='right')
+    y = np.concatenate(([0], yp)) # FIXME: use this formulation in other concatenate.
+    return y[indices]
+
+def interp_lin_slope(x, xp, yp):
+    indices = np.searchsorted(xp, x, side='right')
+    y = np.concatenate(([0], (yp[1:]-yp[:-1])/(xp[1:]-xp[:-1]), [0])) # FIXME: use this formulation in other concatenate.
+    return y[indices]
 
 def gaussian(x_in):
     """Return the value of the gaussian function (no multiplicative constant)
