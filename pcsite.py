@@ -27,6 +27,7 @@ from numpy.core.multiarray import interp
 # Should be safe, the only difference is when dealing with complex numbers
 # or with a periodic function. Gain is 20s/300s on AICC2023-LowRes on xps13
 from numpy import dot
+import scipy.stats as stats
 # from threadpoolctl import threadpool_limits
 
 # dummy use of the interp1d function
@@ -1041,9 +1042,12 @@ class Site(object):
                 data_age = self.fct_airage(self.tuning[key]["data_depth"])
             else:
                 data_age = self.fct_age(self.tuning[key]["data_depth"])
-            target_value_data = interp(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"])
-            target_value_data = target_value_data * self.tuning[key]["slope"] + self.tuning[key]["offset"]
-            resi_tuning = (target_value_data - self.tuning[key]["data_value"]) / self.tuning[key]["sigma"]
+            self.tuning[key]["data_age"] = data_age
+            target_interp_value = interp(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"])
+            self.tuning[key]["target_interp_value"] = target_interp_value
+            target_data_value = target_interp_value * self.tuning[key]["slope"] + self.tuning[key]["offset"]
+            self.tuning[key]["target_data_value"] = target_data_value
+            resi_tuning = (target_data_value - self.tuning[key]["data_value"]) / self.tuning[key]["sigma"]
             resi = np.concatenate((resi, resi_tuning))
             
         return resi
@@ -1067,12 +1071,11 @@ class Site(object):
 
         for key in self.tuning:
             # FIXME: maybe we could save that instead of re-calculatiing it.
+            data_age = self.tuning[key]["data_age"]
             if self.tuning[key]["air_proxy"]:
-                data_age = self.fct_airage(self.tuning[key]["data_depth"])
                 resi_tuning_jac = interp_lin_slope(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"]) *\
                     self.fct_airage_jac(self.tuning[key]["data_depth"]) * self.tuning[key]["slope"] / self.tuning[key]["sigma"]
             else:
-                data_age = self.fct_age(self.tuning[key]["data_depth"])
                 resi_tuning_jac = interp_lin_slope(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"]) *\
                     self.fct_age_jac(self.tuning[key]["data_depth"]) * self.tuning[key]["slope"] / self.tuning[key]["sigma"]
             resi_jac = np.concatenate((resi_jac, resi_tuning_jac), axis = 1)
@@ -1490,8 +1493,8 @@ class Site(object):
                 mpl.close()
 
             for key in self.tuning:
+                
                 fig, ax1 = mpl.subplots()
-    #            mpl.figure(self.label+' air age')
                 mpl.title(self.label+' '+key+' tuning')
                 mpl.xlabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
                 mpl.ylabel(key+' ('+self.tuning[key]["unit"]+')')
@@ -1506,6 +1509,23 @@ class Site(object):
                 mpl.plot(x, y, label='record', color='k')
                 mpl.legend()
                 mpl.savefig(pccfg.datadir+self.label+'/'+key+'_tuning.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+                    
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+key+' regression')
+                mpl.xlabel(self.tuning[key]["target_name"]+' ('+self.tuning[key]["target_unit"]+")")
+                mpl.ylabel(key+' ('+self.tuning[key]["unit"]+')')
+                mpl.scatter(self.tuning[key]["target_interp_value"], self.tuning[key]["data_value"])
+                b, a, r_value, p_value, std_err = stats.linregress(self.tuning[key]["target_interp_value"], self.tuning[key]["data_value"])
+                xseq = np.linspace(np.min(self.tuning[key]["target_interp_value"]), np.max(self.tuning[key]["target_interp_value"]), num=10)
+                r2_value = r_value**2
+                std_err = m.sqrt(np.mean((self.tuning[key]["target_data_value"]-self.tuning[key]["data_value"])**2))
+                mpl.plot(xseq, a+b*xseq, color='k', lw=2.,
+                         label=f"y={b:.6f}x {a:+.4f}, R$^2$={r2_value:.2f}, stderr={std_err:.4f}")
+                mpl.legend(framealpha=0.5)
+                mpl.savefig(pccfg.datadir+self.label+'/'+key+'_regression.'+pccfg.fig_format,
                             format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
