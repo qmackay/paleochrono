@@ -408,7 +408,7 @@ class Site(object):
 ## Now we set up the correction functions
 
         if self.start == 'restart':
-            with open(pccfg.datadir+self.label+self.restart_file, 'rb') as f:
+            with open(pccfg.datadir+self.label+'/'+self.restart_file, 'rb') as f:
                 if self.archive == 'icecore':
                     resi_age_top, corr_a_age, corr_a, corr_lid_age, corr_lid, corr_tau_depth,\
                         corr_tau = pickle.load(f)
