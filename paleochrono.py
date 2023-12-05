@@ -474,7 +474,7 @@ if os.name != 'nt':
     mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 else:
     process = psutil.Process(os.getpid())
-    mem = process.get_ext_memory_info().peak_wset
+    mem = process.get_ex_memory_info().peak_wset
 pcprint('Max memory usage: '+str(mem)+' kbytes')
 if pccfg.show_figures:
     mpl.show()
