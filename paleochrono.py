@@ -38,8 +38,8 @@ from numpy import dot
 import os
 if os.name != 'nt':
     import resource
-else:
-    import psutil
+# else:
+#     import psutil
 
 # Registration of start time
 START_TIME = time.perf_counter()
@@ -472,10 +472,11 @@ for di, dlabel in enumerate(pccfg.list_sites):
 pcprint('Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds')
 if os.name != 'nt':
     mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-else:
-    process = psutil.Process(os.getpid())
-    mem = process.get_ex_memory_info().peak_wset
-pcprint('Max memory usage: '+str(mem)+' kbytes')
+    pcprint('Max memory usage: '+str(mem)+' kbytes')
+# else:
+#     process = psutil.Process(os.getpid())
+#     mem = int(process.memory_info().rss / 1024)
+
 if pccfg.show_figures:
     mpl.show()
 
