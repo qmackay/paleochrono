@@ -7,17 +7,17 @@ depth_grid: #depth grid for the age calculation
     start: 0.
     end: 3259.3
     resolution: 0.55
-tuning: 
-    "TAC":
-        "data_file": "TAC.txt"
-        "target_file": "Half-Year-Summer-Insolation.txt"
-        "offset": 0.1264
-        "slope": -0.000100
-        "sigma": 0.0021
-        "air_proxy": False
-        "unit": "cm$^3$/g"
-        "target_unit": "W/m$^2$"
-        "target_name": "Half year summer insolation"
+# tuning: 
+    # "TAC":
+    #     "data_file": "TAC.txt"
+    #     "target_file": "Half-Year-Summer-Insolation.txt"
+    #     "offset": 0.1264
+    #     "slope": -0.000100
+    #     "sigma": 0.0021
+    #     "air_proxy": False
+    #     "unit": "cm$^3$/g"
+    #     "target_unit": "W/m$^2$"
+    #     "target_name": "Half year summer insolation"
     # "O2N2":
     #     "data_file": "O2N2.txt"
     #     "target_file": "Summer-Solstice-Insolation.txt"
