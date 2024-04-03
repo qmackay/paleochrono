@@ -1591,3 +1591,9 @@ class Site(object):
             else:
                 pickle.dump([resi_age_top, corr_a_age, corr_a], f)
              
+    def check_airage_inversion(self):
+        """Check if there are air age inversion"""
+        if self.archive == 'icecore':
+            if (self.airlayerthick < 0).any():
+                return True
+        return False

@@ -468,6 +468,11 @@ for di, dlabel in enumerate(pccfg.list_sites):
             print('Display of '+dlabel2+'-'+dlabel+' site pair')
             DC[dlabel2+'-'+dlabel].figures()
 
+print('Checking for air age inversion')
+for di, dlabel in enumerate(pccfg.list_sites):
+    if D[dlabel].check_airage_inversion():
+        print("WARNING: air age inversion for", dlabel)
+
 # Program execution time
 pcprint('Program execution time: '+str(time.perf_counter()-START_TIME)+' seconds')
 if os.name != 'nt':
