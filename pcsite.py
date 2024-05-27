@@ -1220,7 +1220,7 @@ class Site(object):
                  color=pccfg.color_mod, where='post', label='Prior')
         mpl.step(self.age, np.concatenate((self.accu, np.array([self.accu[-1]]))),
                  color=pccfg.color_opt,
-                 where='post', label='Posterior $\pm\sigma$')
+                 where='post', label='Posterior $\\pm\\sigma$')
         mpl.fill_between(self.age[:-1], self.accu-self.sigma_accu, self.accu+self.sigma_accu,
                          color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
@@ -1268,17 +1268,17 @@ class Site(object):
                              capsize=1)
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.age, self.depth, color=pccfg.color_opt,
-                 label='Posterior $\pm\sigma$')
+                 label='Posterior $\\pm\\sigma$')
         mpl.fill_betweenx(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
                           color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
         ax2 = ax1.twiny()
         ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
-                 label='1$\sigma$')
+                 label='1$\\sigma$')
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((0., x_up, y_low, y_up))
-        ax2.set_xlabel('1$\sigma$ uncertainty ('+pccfg.age_unit+')')
+        ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
         ax2.spines['top'].set_color(pccfg.color_sigma)
         ax2.xaxis.label.set_color(pccfg.color_sigma)
         ax2.tick_params(axis='x', colors=pccfg.color_sigma)
@@ -1301,7 +1301,7 @@ class Site(object):
                          label='Initial')
             mpl.plot(self.icelayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
             mpl.plot(self.icelayerthick, self.depth_mid, color=pccfg.color_opt,
-                     label='Posterior $\pm\sigma$')
+                     label='Posterior $\\pm\\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.icelayerthick-self.sigma_icelayerthick,
                               self.icelayerthick+self.sigma_icelayerthick, color=pccfg.color_ci,
                               label="Confidence interval")
@@ -1321,7 +1321,7 @@ class Site(object):
                 mpl.plot(self.tau_init, self.depth_mid, color=pccfg.color_init, label='Initial')
             mpl.plot(self.tau_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
             mpl.plot(self.tau, self.depth_mid, color=pccfg.color_opt,
-                     label='Posterior $\pm\sigma$')
+                     label='Posterior $\\pm\\sigma$')
             mpl.fill_betweenx(self.depth_mid, self.tau-self.sigma_tau, self.tau+self.sigma_tau,
                               color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
@@ -1353,7 +1353,7 @@ class Site(object):
                 mpl.plot(self.airlayerthick_model, self.depth_mid, color=pccfg.color_mod,
                          label='Prior')
                 mpl.plot(self.airlayerthick, self.depth_mid, color=pccfg.color_opt,
-                         label='Posterior $\pm\sigma$')
+                         label='Posterior $\\pm\\sigma$')
                 mpl.fill_betweenx(self.depth_mid, self.airlayerthick-self.sigma_airlayerthick,
                                   self.airlayerthick+self.sigma_airlayerthick,
                                   color=pccfg.color_ci, label="Confidence interval")
@@ -1373,7 +1373,7 @@ class Site(object):
                 mpl.plot(self.airage, self.lid_init, color=pccfg.color_init, label='Initial')
             mpl.plot(self.airage, self.lid_model, color=pccfg.color_mod, label='Prior')
             mpl.plot(self.airage, self.lid, color=pccfg.color_opt,
-                     label='Posterior $\pm\sigma$')
+                     label='Posterior $\\pm\\sigma$')
             mpl.fill_between(self.age, self.lid-self.sigma_lid, self.lid+self.sigma_lid,
                              color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
@@ -1395,16 +1395,16 @@ class Site(object):
                 mpl.close()
 
             fig, ax1 = mpl.subplots()
-            mpl.title(self.label+' $\Delta$age')
+            mpl.title(self.label+' $\\Delta$age')
             mpl.xlabel('Optimized '+self.age2_labelsp+'age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
-            mpl.ylabel('$\Delta$age ('+pccfg.age_unit+')')
+            mpl.ylabel('$\\Delta$age ('+pccfg.age_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.airage, self.age_init-self.airage_init, color=pccfg.color_init,
                          label='Initial')
             mpl.plot(self.airage, self.age_model-self.airage_model, color=pccfg.color_mod,
                      label='Prior')
             mpl.plot(self.airage, self.age-self.airage, color=pccfg.color_opt,
-                     label='Posterior $\pm\sigma$')
+                     label='Posterior $\\pm\\sigma$')
             mpl.fill_between(self.airage, self.age-self.airage-self.sigma_delta_age,
                              self.age-self.airage+self.sigma_delta_age,
                              color=pccfg.color_ci, label="Confidence interval")
@@ -1447,15 +1447,15 @@ class Site(object):
                               self.airage+self.sigma_airage,
                               color=pccfg.color_ci, label="Confidence interval")
             mpl.plot(self.airage, self.depth, color=pccfg.color_opt,
-                     label='Posterior $\pm\sigma$')
+                     label='Posterior $\\pm\\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
             ax2 = ax1.twiny()
             ax2.plot(self.sigma_airage, self.depth, color=pccfg.color_sigma,
-                     label='1$\sigma$')
+                     label='1$\\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((0., x_up, y_low, y_up))
-            ax2.set_xlabel('1$\sigma$ uncertainty ('+pccfg.age_unit+')')
+            ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
             ax2.spines['top'].set_color(pccfg.color_sigma)
             ax2.xaxis.label.set_color(pccfg.color_sigma)
             ax2.tick_params(axis='x', colors=pccfg.color_sigma)
@@ -1468,8 +1468,8 @@ class Site(object):
                 mpl.close()
 
             fig, ax = mpl.subplots()
-            mpl.title(self.label+' $\Delta$depth')
-            mpl.xlabel('$\Delta$depth ('+self.depth_unit+')')
+            mpl.title(self.label+' $\\Delta$depth')
+            mpl.xlabel('$\\Delta$depth ('+self.depth_unit+')')
             mpl.ylabel(self.age2_labelsp+'depth ('+self.depth_unit+')')
             if pccfg.show_initial:
                 mpl.plot(self.delta_depth_init, self.depth, color=pccfg.color_init, label='Initial')
@@ -1480,7 +1480,7 @@ class Site(object):
                              label="observations")
             mpl.plot(self.delta_depth_model, self.depth, color=pccfg.color_mod, label='Prior')
             mpl.plot(self.delta_depth, self.depth, color=pccfg.color_opt,
-                     label='Posterior $\pm\sigma$')
+                     label='Posterior $\\pm\\sigma$')
             mpl.fill_betweenx(self.depth, self.delta_depth-self.sigma_delta_depth,
                               self.delta_depth+self.sigma_delta_depth, color=pccfg.color_ci,
                               label="Confidence interval")
