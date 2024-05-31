@@ -9,8 +9,8 @@ Module for the SitePair class.
 import os
 import sys
 import numpy as np
+import math as m
 import matplotlib.pyplot as mpl
-from matplotlib.backends.backend_pdf import PdfPages
 from scipy.linalg import lu_factor, lu_solve
 from scipy.linalg import cholesky
 import pccfg
@@ -246,9 +246,10 @@ class SitePair(object):
         return resi_iceice
 
     def figures(self):
-        
         """Build the figures related to a pair of sites."""
+        
         if np.size(self.iceicehorizons_depth1)>0:
+            
             fig, ax = mpl.subplots()
             mpl.xlabel(self.site1.label+' '+self.site1.age_labelsp+'age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
             mpl.ylabel(self.site2.label+' '+self.site2.age_labelsp+'age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
@@ -283,6 +284,27 @@ class SitePair(object):
             mpl.legend(loc="best")
             ax.set_aspect('equal')
             mpl.savefig(pccfg.datadir+self.label+'/'+self.age_age_label+'synchro.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+
+            resi = (self.site1.fct_age(self.iceicehorizons_depth1)-\
+                           self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
+            for i in np.where(resi>pccfg.outlier_level)[0]:
+                print('Outlier in',self.age_age_label,'at index:', i)
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' '+self.age_age_label[:-1]+' Residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age_age_label+'synchro_residuals.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
@@ -334,6 +356,28 @@ class SitePair(object):
                 if not pccfg.show_figures:
                     mpl.close()
 
+                resi = (self.site1.fct_airage(self.airairhorizons_depth1)-\
+                               self.site2.fct_airage(self.airairhorizons_depth2))/self.airairhorizons_sigma
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in',self.age2_age2_label,'at index:', i)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+self.age2_age2_label[:-1]+' Residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_age2_label+'synchro_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+
+
         if self.site2.archive == 'icecore':
             if np.size(self.iceairhorizons_depth1)>0:
                 fig, ax = mpl.subplots()
@@ -381,6 +425,29 @@ class SitePair(object):
                 if not pccfg.show_figures:
                     mpl.close()
 
+                resi = (self.site1.fct_age(self.iceairhorizons_depth1)-\
+                              self.site2.fct_airage(self.iceairhorizons_depth2))/\
+                              self.iceairhorizons_sigma
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in',self.age_age2_label,'at index:', i)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+self.age_age2_label[:-1]+' Residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age_age2_label+'synchro_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+
+
         if self.site1.archive == 'icecore':
             if np.size(self.airicehorizons_depth1)>0:
                 fig, ax = mpl.subplots()
@@ -425,3 +492,44 @@ class SitePair(object):
                         format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
+                
+                resi = (self.site1.fct_airage(self.airicehorizons_depth1)-\
+                               self.site2.fct_age(self.airicehorizons_depth2))/self.airicehorizons_sigma
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in',self.age2_age_label,'at index:', i)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+self.age2_age_label[:-1]+' Residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_age_label+'synchro_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+
+
+        resi = self.residuals()
+        if np.size(resi)>0:
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' Residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()

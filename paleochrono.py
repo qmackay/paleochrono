@@ -87,7 +87,78 @@ def resid():
                 resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
     return resi
 
+def obs_resid():
+    """Calculate the observation residuals without recalculating the model."""
+    resi = np.array([])
+    for i, dlab in enumerate(pccfg.list_sites):
+        resi = np.concatenate((resi, D[dlab].residuals()))
+        for j, dlab2 in enumerate(pccfg.list_sites):
+            # Note that if I put a new i loop here, to separate the D and DC
+            # terms, the model runs slower
+            if j < i:
+                resi = np.concatenate((resi, DC[dlab2+'-'+dlab].residuals()))
+    return resi
 
+def prior_resid():
+    """Calculate the residuals without recalculating the model."""
+    resi = np.array([])
+    for i, dlab in enumerate(pccfg.list_sites):
+        resi = np.concatenate((resi, D[dlab].variables))
+    return resi
+
+def residuals_plot():
+    """Plot the histogram of the residuals."""
+    mpl.title('Global residuals')
+    mpl.xlabel('Residuals (no unit)')
+    mpl.ylabel('Probability density')
+    resi = resid()
+    rms = m.sqrt(np.sum(resi**2)/len(resi))
+    mini = np.min(resi, initial=0)
+    maxi = np.max(resi, initial=0)
+    mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+    x_low, x_up, y_low, y_up = mpl.axis()
+    mpl.axis((-4., 4., y_low, y_up))
+    mpl.legend()
+    mpl.savefig(pccfg.datadir+'/residuals.'+pccfg.fig_format,
+                format=pccfg.fig_format, bbox_inches='tight')
+    if not pccfg.show_figures:
+        mpl.close()
+
+    mpl.title('Observation residuals')
+    mpl.xlabel('Residuals (no unit)')
+    mpl.ylabel('Probability density')
+    resi = obs_resid()
+    rms = m.sqrt(np.sum(resi**2)/len(resi))
+    mini = np.min(resi, initial=0)
+    maxi = np.max(resi, initial=0)
+    mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+    x_low, x_up, y_low, y_up = mpl.axis()
+    mpl.axis((-4., 4., y_low, y_up))
+    mpl.legend()
+    mpl.savefig(pccfg.datadir+'/obs_residuals.'+pccfg.fig_format,
+                format=pccfg.fig_format, bbox_inches='tight')
+    if not pccfg.show_figures:
+        mpl.close()
+
+    mpl.title('Prior residuals')
+    mpl.xlabel('Residuals (no unit)')
+    mpl.ylabel('Probability density')
+    resi = prior_resid()
+    rms = m.sqrt(np.sum(resi**2)/len(resi))
+    mini = np.min(resi, initial=0)
+    maxi = np.max(resi, initial=0)
+    mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+    x_low, x_up, y_low, y_up = mpl.axis()
+    mpl.axis((-4., 4., y_low, y_up))
+    mpl.legend()
+    mpl.savefig(pccfg.datadir+'/prior_residuals.'+pccfg.fig_format,
+                format=pccfg.fig_format, bbox_inches='tight')
+    if not pccfg.show_figures:
+        mpl.close()
+        
 def cost_function(var):
     """Calculate the cost function terms related to a pair of sites."""
     res = residuals(var)
@@ -457,9 +528,9 @@ for dlabel in pccfg.list_sites:
     D[dlabel].cov = None
 
 # Final display and output
-print('Display and saving of results')
+print('Figures, outliers detection and saving')
 for di, dlabel in enumerate(pccfg.list_sites):
-    print('Display and saving of', dlabel)
+    print('Figures, outliers detection and saving of', dlabel)
     D[dlabel].save()
     D[dlabel].figures()
 for di, dlabel in enumerate(pccfg.list_sites):
@@ -467,6 +538,9 @@ for di, dlabel in enumerate(pccfg.list_sites):
         if dj < di:
             print('Display of '+dlabel2+'-'+dlabel+' site pair')
             DC[dlabel2+'-'+dlabel].figures()
+
+# Plotting histogram of residuals
+residuals_plot()
 
 print('Checking for air age inversion')
 for di, dlabel in enumerate(pccfg.list_sites):

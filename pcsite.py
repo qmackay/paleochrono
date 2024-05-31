@@ -12,7 +12,6 @@ import warnings
 import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
-from matplotlib.backends.backend_pdf import PdfPages
 from scipy.linalg import lu_factor, lu_solve
 from numpy.linalg import cholesky
 from scipy.interpolate import interp1d
@@ -1529,6 +1528,271 @@ class Site(object):
                             format=pccfg.fig_format, bbox_inches='tight')
                 if not pccfg.show_figures:
                     mpl.close()
+
+        # Plotting residuals and detecting outliers
+        
+        fig, ax1 = mpl.subplots()
+        mpl.title(self.label+' Prior residuals')
+        mpl.xlabel('Residuals (no unit)')
+        mpl.ylabel('Probability density')
+        resi = self.variables
+        rms = m.sqrt(np.sum(resi**2)/len(resi))
+        mini = np.min(resi, initial=0)
+        maxi = np.max(resi, initial=0)
+        mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                 label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((-4., 4., y_low, y_up))
+        mpl.legend()
+        mpl.savefig(pccfg.datadir+self.label+'/prior_residuals.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+        fig, ax1 = mpl.subplots()
+        mpl.title(self.label+' Deporate residuals')
+        mpl.xlabel('Residuals (no unit)')
+        mpl.ylabel('Probability density')
+        resi = self.corr_a
+        rms = m.sqrt(np.sum(resi**2)/len(resi))
+        mini = np.min(resi, initial=0)
+        maxi = np.max(resi, initial=0)
+        mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                 label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((-4., 4., y_low, y_up))
+        mpl.legend()
+        mpl.savefig(pccfg.datadir+self.label+'/deporate_residuals.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+        # corr = dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
+        # step = min(np.abs(self.corr_a_age[1:]-self.corr_a_age[:-1]))
+        # age_reg = np.arange(min(self.corr_a_age), max(self.corr_a_age), step)
+        # corr_reg = np.interp(age_reg, self.corr_a_age, corr)
+        # fig, ax1 = mpl.subplots()
+        # mpl.title(self.label+' Deporate autocorrelation')
+        # ax1.acorr(corr_reg, usevlines=True, normed=True, maxlags=50, lw=2)
+        # mpl.savefig(pccfg.datadir+self.label+'/deporate_autocorrelation.'+pccfg.fig_format,
+        #             format=pccfg.fig_format, bbox_inches='tight')
+        # if not pccfg.show_figures:
+        #     mpl.close()
+
+        if self.archive == 'icecore':
+            
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' Thinning residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            resi = self.corr_tau
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/thinning_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+                
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' Lock-in depth residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            resi = self.corr_lid
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/lock_in_depth_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+
+
+        resi = self.residuals()
+        if np.size(resi)>0:
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' Observations residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/obs_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+
+
+        resi = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
+                   /self.icehorizons_sigma
+        if np.size(resi)>0:
+            for i in np.where(resi>pccfg.outlier_level)[0]:
+                print('Outlier in', self.age_label,'age horizon at index:', i, 'and depth:',
+                      self.icehorizons_depth[i], self.depth_unit)
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' '+self.age_label+' age horizons residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+
+        resi = (self.fct_age(self.iceintervals_depthbot)-\
+                      self.fct_age(self.iceintervals_depthtop)-\
+                      self.iceintervals_duration)/self.iceintervals_sigma
+        if np.size(resi)>0:
+            for i in np.where(resi>pccfg.outlier_level)[0]:
+                print('Outlier in', self.age_label,'age interval at index:', i,
+                      'and top depth:',
+                      self.iceintervals_depthtop[i], self.depth_unit)
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' '+self.age_label+' age intervals residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_intervals_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+
+        if self.archive == 'icecore':
+            resi = (self.fct_airage(self.airhorizons_depth)-self.airhorizons_age)/\
+                          self.airhorizons_sigma
+            if np.size(resi)>0:
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in', self.age2_label,'age horizon at index:', i,
+                          'and depth:',
+                          self.airhorizons_depth[i], self.depth_unit)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+self.age2_label+' age horizons residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'age_horizons_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+
+                resi = (self.fct_airage(self.airintervals_depthbot)-\
+                               self.fct_airage(self.airintervals_depthtop)-\
+                               self.airintervals_duration)/self.airintervals_sigma
+            if np.size(resi)>0:
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in', self.age2_label,'age interval at index:', i,
+                          'and top depth:',
+                          self.airintervals_depthtop[i], self.depth_unit)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+self.age2_label+' age intervals residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'age_intervals_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+               
+            resi = (self.fct_delta_depth(self.delta_depth_depth)-\
+                       self.delta_depth_delta_depth)/self.delta_depth_sigma
+            if np.size(resi)>0:
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in $\\Delta$depth at index:', i,
+                          'and air depth:',
+                          self.delta_depth_depth[i], self.depth_unit)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' $\\Delta$depth residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/delta_depth_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+ 
+        for key in self.tuning:
+            if self.tuning[key]["air_proxy"]:
+                data_age = self.fct_airage(self.tuning[key]["data_depth"])
+            else:
+                data_age = self.fct_age(self.tuning[key]["data_depth"])
+            self.tuning[key]["data_age"] = data_age
+            target_interp_value = interp(data_age, self.tuning[key]["target_age"], self.tuning[key]["target_value"])
+            self.tuning[key]["target_interp_value"] = target_interp_value
+            target_data_value = target_interp_value * self.tuning[key]["slope"] + self.tuning[key]["offset"]
+            self.tuning[key]["target_data_value"] = target_data_value
+            resi = (target_data_value - self.tuning[key]["data_value"]) / self.tuning[key]["sigma"]
+            if np.size(resi)>0:
+                for i in np.where(resi>pccfg.outlier_level)[0]:
+                    print('Outlier in', key, 'tuning at index:', i,
+                          'and air depth:',
+                          self.tuning[key]["data_depth"][i], self.depth_unit)
+                fig, ax1 = mpl.subplots()
+                mpl.title(self.label+' '+key+' tuning residuals')
+                mpl.xlabel('Residuals (no unit)')
+                mpl.ylabel('Probability density')
+                rms = m.sqrt(np.sum(resi**2)/len(resi))
+                mini = np.min(resi, initial=0)
+                maxi = np.max(resi, initial=0)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                x_low, x_up, y_low, y_up = mpl.axis()
+                mpl.axis((-4., 4., y_low, y_up))
+                mpl.legend()
+                mpl.savefig(pccfg.datadir+self.label+'/'+key+'_tuning_residuals.'+pccfg.fig_format,
+                            format=pccfg.fig_format, bbox_inches='tight')
+                if not pccfg.show_figures:
+                    mpl.close()
+
 
     def save(self):
         """Save various variables for a site."""

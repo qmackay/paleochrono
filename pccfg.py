@@ -35,6 +35,7 @@ age_unit = 'yr'
 age_unit_ref = 'B1950'
 fig_format = 'pdf'
 calc_errors = True
+outlier_level = 3.
 #nb_runs = 0
 
 
@@ -47,8 +48,13 @@ def read_parameters():
     datadir = sys.argv[1]
     if datadir[-1] != '/':
         datadir = datadir+'/'
-    print('Experiment directory is: ', datadir)
+    if os.path.isdir(datadir):
+        print('Experiment directory is: ', datadir)
+    else:
+        print('Experiment directory does not exist.')
+        sys.exit()
     #os.chdir(datadir)
+    
     
     filename = datadir+'parameters.yml'
     if os.path.isfile(filename):
