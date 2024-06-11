@@ -36,6 +36,7 @@ age_unit_ref = 'B1950'
 fig_format = 'pdf'
 calc_errors = True
 outlier_level = 3.
+show_prior_residuals = False
 #nb_runs = 0
 
 

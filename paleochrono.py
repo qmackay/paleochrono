@@ -29,6 +29,7 @@ from scipy.optimize import least_squares
 from scipy.linalg import solve_triangular
 from numpy.linalg import cholesky
 from scipy.sparse.linalg import LinearOperator
+from scipy import stats
 import pccfg
 from pcsite import Site
 from pcsitepair import SitePair
@@ -108,22 +109,46 @@ def prior_resid():
 
 def residuals_plot():
     """Plot the histogram of the residuals."""
-    mpl.title('Global residuals')
-    mpl.xlabel('Residuals (no unit)')
-    mpl.ylabel('Probability density')
-    resi = resid()
-    rms = m.sqrt(np.sum(resi**2)/len(resi))
-    mini = np.min(resi, initial=0)
-    maxi = np.max(resi, initial=0)
-    mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
-    x_low, x_up, y_low, y_up = mpl.axis()
-    mpl.axis((-4., 4., y_low, y_up))
-    mpl.legend()
-    mpl.savefig(pccfg.datadir+'/residuals.'+pccfg.fig_format,
-                format=pccfg.fig_format, bbox_inches='tight')
-    if not pccfg.show_figures:
-        mpl.close()
+    
+    if pccfg.show_prior_residuals:
+        mpl.title('Global residuals')
+        mpl.xlabel('Residuals (no unit)')
+        mpl.ylabel('Probability density')
+        resi = resid()
+        rms = m.sqrt(np.sum(resi**2)/len(resi))
+        mini = np.min(resi, initial=0)
+        maxi = np.max(resi, initial=0)
+        student = stats.t.fit(resi)
+        mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                 label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                 f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((-4., 4., y_low, y_up))
+        mpl.legend()
+        mpl.savefig(pccfg.datadir+'/residuals.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+    if pccfg.show_prior_residuals:
+        mpl.title('Prior residuals')
+        mpl.xlabel('Residuals (no unit)')
+        mpl.ylabel('Probability density')
+        resi = prior_resid()
+        rms = m.sqrt(np.sum(resi**2)/len(resi))
+        mini = np.min(resi, initial=0)
+        maxi = np.max(resi, initial=0)
+        student = stats.t.fit(resi)
+        mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                 label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                 f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((-4., 4., y_low, y_up))
+        mpl.legend()
+        mpl.savefig(pccfg.datadir+'/prior_residuals.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
 
     mpl.title('Observation residuals')
     mpl.xlabel('Residuals (no unit)')
@@ -132,29 +157,14 @@ def residuals_plot():
     rms = m.sqrt(np.sum(resi**2)/len(resi))
     mini = np.min(resi, initial=0)
     maxi = np.max(resi, initial=0)
-    mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+    student = stats.t.fit(resi)
+    mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+             f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
     x_low, x_up, y_low, y_up = mpl.axis()
     mpl.axis((-4., 4., y_low, y_up))
     mpl.legend()
     mpl.savefig(pccfg.datadir+'/obs_residuals.'+pccfg.fig_format,
-                format=pccfg.fig_format, bbox_inches='tight')
-    if not pccfg.show_figures:
-        mpl.close()
-
-    mpl.title('Prior residuals')
-    mpl.xlabel('Residuals (no unit)')
-    mpl.ylabel('Probability density')
-    resi = prior_resid()
-    rms = m.sqrt(np.sum(resi**2)/len(resi))
-    mini = np.min(resi, initial=0)
-    maxi = np.max(resi, initial=0)
-    mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-             label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
-    x_low, x_up, y_low, y_up = mpl.axis()
-    mpl.axis((-4., 4., y_low, y_up))
-    mpl.legend()
-    mpl.savefig(pccfg.datadir+'/prior_residuals.'+pccfg.fig_format,
                 format=pccfg.fig_format, bbox_inches='tight')
     if not pccfg.show_figures:
         mpl.close()

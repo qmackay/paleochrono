@@ -16,6 +16,7 @@ from scipy.linalg import lu_factor, lu_solve
 from numpy.linalg import cholesky
 from scipy.interpolate import interp1d
 from scipy.optimize import leastsq
+from scipy import stats
 import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation,\
@@ -1531,41 +1532,46 @@ class Site(object):
 
         # Plotting residuals and detecting outliers
         
-        fig, ax1 = mpl.subplots()
-        mpl.title(self.label+' Prior residuals')
-        mpl.xlabel('Residuals (no unit)')
-        mpl.ylabel('Probability density')
-        resi = self.variables
-        rms = m.sqrt(np.sum(resi**2)/len(resi))
-        mini = np.min(resi, initial=0)
-        maxi = np.max(resi, initial=0)
-        mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
-                 label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
-        x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((-4., 4., y_low, y_up))
-        mpl.legend()
-        mpl.savefig(pccfg.datadir+self.label+'/prior_residuals.'+pccfg.fig_format,
-                    format=pccfg.fig_format, bbox_inches='tight')
-        if not pccfg.show_figures:
-            mpl.close()
+        if pccfg.show_prior_residuals:
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' Prior residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            resi = self.variables
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/prior_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
 
-        fig, ax1 = mpl.subplots()
-        mpl.title(self.label+' Deporate residuals')
-        mpl.xlabel('Residuals (no unit)')
-        mpl.ylabel('Probability density')
-        resi = self.corr_a
-        rms = m.sqrt(np.sum(resi**2)/len(resi))
-        mini = np.min(resi, initial=0)
-        maxi = np.max(resi, initial=0)
-        mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
-                 label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
-        x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((-4., 4., y_low, y_up))
-        mpl.legend()
-        mpl.savefig(pccfg.datadir+self.label+'/deporate_residuals.'+pccfg.fig_format,
-                    format=pccfg.fig_format, bbox_inches='tight')
-        if not pccfg.show_figures:
-            mpl.close()
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' Deporate residuals')
+            mpl.xlabel('Residuals (no unit)')
+            mpl.ylabel('Probability density')
+            resi = self.corr_a
+            rms = m.sqrt(np.sum(resi**2)/len(resi))
+            mini = np.min(resi, initial=0)
+            maxi = np.max(resi, initial=0)
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((-4., 4., y_low, y_up))
+            mpl.legend()
+            mpl.savefig(pccfg.datadir+self.label+'/deporate_residuals.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
 
         # corr = dot(self.chol_a, self.corr_a)*self.sigmap_corr_a
         # step = min(np.abs(self.corr_a_age[1:]-self.corr_a_age[:-1]))
@@ -1579,7 +1585,7 @@ class Site(object):
         # if not pccfg.show_figures:
         #     mpl.close()
 
-        if self.archive == 'icecore':
+        if self.archive == 'icecore' and pccfg.show_prior_residuals:
             
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' Thinning residuals')
@@ -1589,8 +1595,10 @@ class Site(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
+            student = stats.t.fit(resi)
             mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
@@ -1607,8 +1615,10 @@ class Site(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
+            student = stats.t.fit(resi)
             mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
@@ -1627,8 +1637,10 @@ class Site(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
-            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
@@ -1651,8 +1663,10 @@ class Site(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
-            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
@@ -1676,8 +1690,10 @@ class Site(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
-            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
@@ -1701,8 +1717,10 @@ class Site(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()
@@ -1726,8 +1744,10 @@ class Site(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()
@@ -1750,8 +1770,10 @@ class Site(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()
@@ -1783,8 +1805,10 @@ class Site(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()

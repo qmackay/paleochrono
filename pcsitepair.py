@@ -13,6 +13,7 @@ import math as m
 import matplotlib.pyplot as mpl
 from scipy.linalg import lu_factor, lu_solve
 from scipy.linalg import cholesky
+from scipy import stats
 import pccfg
 
 class SitePair(object):
@@ -268,7 +269,7 @@ class SitePair(object):
                              ecolor=pccfg.color_ci,
                              xerr=np.zeros(np.size(self.iceicehorizons_depth1)),
                              linestyle='', marker='o', markersize=2,
-                             label="Posterior $\pm\sigma$")
+                             label="Posterior $\\pm\\sigma$")
                 xstart = self.site1.fct_age(self.iceicehorizons_depth1)-self.iceicehorizons_sigma/2
                 ystart = self.site2.fct_age(self.iceicehorizons_depth2)+self.iceicehorizons_sigma/2
                 for i in range(np.size(self.iceicehorizons_depth1)):
@@ -299,8 +300,10 @@ class SitePair(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
-            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
@@ -333,7 +336,7 @@ class SitePair(object):
                                  color=pccfg.color_opt, ecolor=pccfg.color_ci,
                                  xerr=np.zeros_like(self.airairhorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
-                                 label="Posterior $\pm\sigma$")
+                                 label="Posterior $\\pm\\sigma$")
                     xstart = self.site1.fct_airage(self.airairhorizons_depth1)-\
                                  self.airairhorizons_sigma/2
                     ystart = self.site2.fct_airage(self.airairhorizons_depth2)+\
@@ -367,8 +370,10 @@ class SitePair(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()
@@ -402,7 +407,7 @@ class SitePair(object):
                                  color=pccfg.color_opt, ecolor=pccfg.color_ci,
                                  xerr=np.zeros_like(self.iceairhorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
-                                 label="Posterior $\pm\sigma$")
+                                 label="Posterior $\\pm\\sigma$")
                     xstart = self.site1.fct_age(self.iceairhorizons_depth1)-\
                                  self.iceairhorizons_sigma/2
                     ystart = self.site2.fct_airage(self.iceairhorizons_depth2)+\
@@ -437,8 +442,10 @@ class SitePair(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()
@@ -471,7 +478,7 @@ class SitePair(object):
                                  color=pccfg.color_opt, ecolor=pccfg.color_ci,
                                  xerr=np.zeros_like(self.airicehorizons_sigma),
                                  linestyle='', marker='o', markersize=2,
-                                 label="Posterior $\pm\sigma$")
+                                 label="Posterior $\\pm\\sigma$")
                     xstart = self.site1.fct_airage(self.airicehorizons_depth1)-\
                                  self.airicehorizons_sigma/2
                     ystart = self.site2.fct_age(self.airicehorizons_depth2)+\
@@ -504,8 +511,10 @@ class SitePair(object):
                 rms = m.sqrt(np.sum(resi**2)/len(resi))
                 mini = np.min(resi, initial=0)
                 maxi = np.max(resi, initial=0)
-                mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+                student = stats.t.fit(resi)
+                mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                         label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                         f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
                 x_low, x_up, y_low, y_up = mpl.axis()
                 mpl.axis((-4., 4., y_low, y_up))
                 mpl.legend()
@@ -524,8 +533,10 @@ class SitePair(object):
             rms = m.sqrt(np.sum(resi**2)/len(resi))
             mini = np.min(resi, initial=0)
             maxi = np.max(resi, initial=0)
-            mpl.hist(resi, bins=40, range=(-4., 4.), density=True,
-                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3}")
+            student = stats.t.fit(resi)
+            mpl.hist(resi, bins=40, range=(-4., 4.), density=True, 
+                     label=f"RMS: {rms:.3}, min: {mini:.3}, max: {maxi:.3},\n"
+                     f"loc: {student[1]:.3}, scale: {student[2]:.3}, df: {student[0]:.3e}")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((-4., 4., y_low, y_up))
             mpl.legend()
