@@ -291,8 +291,8 @@ class SitePair(object):
 
             resi = (self.site1.fct_age(self.iceicehorizons_depth1)-\
                            self.site2.fct_age(self.iceicehorizons_depth2))/self.iceicehorizons_sigma
-            for i in np.where(resi>pccfg.outlier_level)[0]:
-                print('Outlier in',self.age_age_label,'at index:', i)
+            for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
+                print('Outlier in',self.age_age_label,'synchro at index:', i)
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' '+self.age_age_label[:-1]+' Residuals')
             mpl.xlabel('Residuals (no unit)')
@@ -361,8 +361,8 @@ class SitePair(object):
 
                 resi = (self.site1.fct_airage(self.airairhorizons_depth1)-\
                                self.site2.fct_airage(self.airairhorizons_depth2))/self.airairhorizons_sigma
-                for i in np.where(resi>pccfg.outlier_level)[0]:
-                    print('Outlier in',self.age2_age2_label,'at index:', i)
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
+                    print('Outlier in',self.age2_age2_label,'synchro at index:', i)
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' '+self.age2_age2_label[:-1]+' Residuals')
                 mpl.xlabel('Residuals (no unit)')
@@ -433,8 +433,8 @@ class SitePair(object):
                 resi = (self.site1.fct_age(self.iceairhorizons_depth1)-\
                               self.site2.fct_airage(self.iceairhorizons_depth2))/\
                               self.iceairhorizons_sigma
-                for i in np.where(resi>pccfg.outlier_level)[0]:
-                    print('Outlier in',self.age_age2_label,'at index:', i)
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
+                    print('Outlier in',self.age_age2_label,'synchro at index:', i)
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' '+self.age_age2_label[:-1]+' Residuals')
                 mpl.xlabel('Residuals (no unit)')
@@ -502,8 +502,8 @@ class SitePair(object):
                 
                 resi = (self.site1.fct_airage(self.airicehorizons_depth1)-\
                                self.site2.fct_age(self.airicehorizons_depth2))/self.airicehorizons_sigma
-                for i in np.where(resi>pccfg.outlier_level)[0]:
-                    print('Outlier in',self.age2_age_label,'at index:', i)
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
+                    print('Outlier in',self.age2_age_label,'synchro at index:', i)
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' '+self.age2_age_label[:-1]+' Residuals')
                 mpl.xlabel('Residuals (no unit)')

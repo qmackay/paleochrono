@@ -111,6 +111,7 @@ def residuals_plot():
     """Plot the histogram of the residuals."""
     
     if pccfg.show_prior_residuals:
+        fig, ax1 = mpl.subplots()
         mpl.title('Global residuals')
         mpl.xlabel('Residuals (no unit)')
         mpl.ylabel('Probability density')
@@ -131,6 +132,7 @@ def residuals_plot():
             mpl.close()
 
     if pccfg.show_prior_residuals:
+        fig, ax1 = mpl.subplots()
         mpl.title('Prior residuals')
         mpl.xlabel('Residuals (no unit)')
         mpl.ylabel('Probability density')
@@ -150,6 +152,7 @@ def residuals_plot():
         if not pccfg.show_figures:
             mpl.close()
 
+    fig, ax1 = mpl.subplots()
     mpl.title('Observation residuals')
     mpl.xlabel('Residuals (no unit)')
     mpl.ylabel('Probability density')

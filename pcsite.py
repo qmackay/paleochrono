@@ -1523,7 +1523,7 @@ class Site(object):
                 r2_value = r_value**2
                 std_err = m.sqrt(np.mean((self.tuning[key]["target_data_value"]-self.tuning[key]["data_value"])**2))
                 mpl.plot(xseq, a+b*xseq, color='k', lw=2.,
-                         label=f"y={b:.6f}x {a:+.4f}, R$^2$={r2_value:.2f}, stderr={std_err:.4f}")
+                         label=f"y={b:.2e}x {a:+.2e}, R$^2$={r2_value:.2f}, stderr={std_err:.2e}")
                 mpl.legend(framealpha=0.5)
                 mpl.savefig(pccfg.datadir+self.label+'/'+key+'_regression.'+pccfg.fig_format,
                             format=pccfg.fig_format, bbox_inches='tight')
@@ -1653,7 +1653,7 @@ class Site(object):
         resi = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
                    /self.icehorizons_sigma
         if np.size(resi)>0:
-            for i in np.where(resi>pccfg.outlier_level)[0]:
+            for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
                 print('Outlier in', self.age_label,'age horizon at index:', i, 'and depth:',
                       self.icehorizons_depth[i], self.depth_unit)
             fig, ax1 = mpl.subplots()
@@ -1679,7 +1679,7 @@ class Site(object):
                       self.fct_age(self.iceintervals_depthtop)-\
                       self.iceintervals_duration)/self.iceintervals_sigma
         if np.size(resi)>0:
-            for i in np.where(resi>pccfg.outlier_level)[0]:
+            for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
                 print('Outlier in', self.age_label,'age interval at index:', i,
                       'and top depth:',
                       self.iceintervals_depthtop[i], self.depth_unit)
@@ -1706,7 +1706,7 @@ class Site(object):
             resi = (self.fct_airage(self.airhorizons_depth)-self.airhorizons_age)/\
                           self.airhorizons_sigma
             if np.size(resi)>0:
-                for i in np.where(resi>pccfg.outlier_level)[0]:
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
                     print('Outlier in', self.age2_label,'age horizon at index:', i,
                           'and depth:',
                           self.airhorizons_depth[i], self.depth_unit)
@@ -1733,7 +1733,7 @@ class Site(object):
                                self.fct_airage(self.airintervals_depthtop)-\
                                self.airintervals_duration)/self.airintervals_sigma
             if np.size(resi)>0:
-                for i in np.where(resi>pccfg.outlier_level)[0]:
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
                     print('Outlier in', self.age2_label,'age interval at index:', i,
                           'and top depth:',
                           self.airintervals_depthtop[i], self.depth_unit)
@@ -1759,7 +1759,7 @@ class Site(object):
             resi = (self.fct_delta_depth(self.delta_depth_depth)-\
                        self.delta_depth_delta_depth)/self.delta_depth_sigma
             if np.size(resi)>0:
-                for i in np.where(resi>pccfg.outlier_level)[0]:
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
                     print('Outlier in $\\Delta$depth at index:', i,
                           'and air depth:',
                           self.delta_depth_depth[i], self.depth_unit)
@@ -1794,7 +1794,7 @@ class Site(object):
             self.tuning[key]["target_data_value"] = target_data_value
             resi = (target_data_value - self.tuning[key]["data_value"]) / self.tuning[key]["sigma"]
             if np.size(resi)>0:
-                for i in np.where(resi>pccfg.outlier_level)[0]:
+                for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
                     print('Outlier in', key, 'tuning at index:', i,
                           'and air depth:',
                           self.tuning[key]["data_depth"][i], self.depth_unit)
