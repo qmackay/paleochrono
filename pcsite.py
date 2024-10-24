@@ -257,7 +257,6 @@ class Site(object):
         self.sigma_airlayerthick = np.empty_like(self.depth_mid)
         self.airlayerthick_init = np.empty_like(self.depth_mid)
         self.age_init = np.empty_like(self.depth)
-        self.sigma_accu = np.empty_like(self.depth_mid)
         self.sigma_accu_model = np.empty_like(self.depth_mid)
         self.tau_init = np.empty_like(self.depth_mid)
         self.a_init = np.empty_like(self.depth_mid)
@@ -1221,7 +1220,8 @@ class Site(object):
         mpl.step(self.age, np.concatenate((self.accu, np.array([self.accu[-1]]))),
                  color=pccfg.color_opt,
                  where='post', label='Posterior $\\pm\\sigma$')
-        mpl.fill_between(self.age[:-1], self.accu-self.sigma_accu, self.accu+self.sigma_accu,
+        mpl.fill_between(self.age[:-1], np.exp(np.log(self.accu)-self.sigma_accu/self.accu),
+                         np.exp(np.log(self.accu)+self.sigma_accu/self.accu),
                          color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.age_top, x_up, y_low, y_up))
@@ -1237,6 +1237,40 @@ class Site(object):
         lines2, labels2 = ax2.get_legend_handles_labels()
         ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
         mpl.savefig(pccfg.datadir+self.label+'/deposition.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+        fig, ax1 = mpl.subplots()
+        mpl.title(self.label+' Deposition rate (log)')
+        mpl.xlabel('Optimized age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+        mpl.ylabel('Deposition rate ('+self.depth_unit+'/'+pccfg.age_unit+')')
+        if pccfg.show_initial:
+            mpl.step(self.age, np.concatenate((self.a_init, np.array([self.a_init[-1]]))),
+                     color=pccfg.color_init, where='post', label='Initial')
+        mpl.step(self.age, np.concatenate((self.a_model, np.array([self.a_model[-1]]))),
+                 color=pccfg.color_mod, where='post', label='Prior')
+        mpl.step(self.age, np.concatenate((self.accu, np.array([self.accu[-1]]))),
+                 color=pccfg.color_opt,
+                 where='post', label='Posterior $\\pm\\sigma$')
+        mpl.fill_between(self.age[:-1], np.exp(np.log(self.accu)-self.sigma_accu/self.accu),
+                         np.exp(np.log(self.accu)+self.sigma_accu/self.accu),
+                         color=pccfg.color_ci, label="Confidence interval")
+        ax1.axes.set_yscale('log')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((self.age_top, x_up, y_low, y_up))
+        ax2 = ax1.twinx()
+        ax2.plot((self.corr_a_age[1:]+self.corr_a_age[:-1])/2, 
+                 self.corr_a_age[1:]-self.corr_a_age[:-1], label='resolution',
+                 color=pccfg.color_resolution)
+        ax2.set_ylabel('resolution ('+pccfg.age_unit+')')
+        ax2.spines['right'].set_color(pccfg.color_resolution)
+        ax2.yaxis.label.set_color(pccfg.color_resolution)
+        ax2.tick_params(axis='y', colors=pccfg.color_resolution)
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+        mpl.savefig(pccfg.datadir+self.label+'/deposition_log.'+pccfg.fig_format,
                     format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
             mpl.close()
