@@ -26,8 +26,6 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
 from scipy.optimize import least_squares
-from scipy.linalg import solve_triangular
-from numpy.linalg import cholesky
 from scipy.sparse.linalg import LinearOperator
 from scipy import stats
 import pccfg
@@ -35,7 +33,6 @@ from pcsite import Site
 from pcsitepair import SitePair
 from functools import partial
 import gc
-from numpy import dot
 import os
 if os.name != 'nt':
     import resource
@@ -47,6 +44,15 @@ START_TIME = time.perf_counter()
 
 # Read parameter file
 pccfg.read_parameters()
+
+if pccfg.is_jax:
+    from jax.numpy import dot
+    from jax.scipy.linalg import solve_triangular
+    from jax.numpy.linalg import cholesky
+else:
+    from numpy import dot
+    from scipy.linalg import solve_triangular
+    from numpy.linalg import cholesky
 
 # Opening of output.txt file
 OUTPUT_FILE = open(pccfg.datadir+'output.txt', 'w')

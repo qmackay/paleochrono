@@ -26,9 +26,14 @@ import pccfg
 from numpy.core.multiarray import interp
 # Should be safe, the only difference is when dealing with complex numbers
 # or with a periodic function. Gain is 20s/300s on AICC2023-LowRes on xps13
-from numpy import dot
 import scipy.stats as stats
 # from threadpoolctl import threadpool_limits
+
+if pccfg.is_jax: 
+    from jax.numpy import dot
+else:
+    from numpy import dot
+
 
 # dummy use of the interp1d function
 Fooooooo = interp1d

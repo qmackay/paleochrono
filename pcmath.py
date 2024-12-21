@@ -5,7 +5,7 @@ Some mathematical functions for paleochrono.
 """
 import numpy as np
 import math as m
-# from numba import jit, njit, prange
+#from numba import jit
 
 def interp_lin_aver(x_out, x_in, y_in):
     """Return a linear interpolation of a (x_in,y_in) series at x_out abscissas with averaging."""

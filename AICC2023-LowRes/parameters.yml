@@ -3,6 +3,7 @@ list_sites: ['EDC','TALDICE','VK','EDML','NGRIP']
 opt_method: 'trf'  #trf, lm or none. lm is slightly faster. trf has an interactive output.
 jacobian: 'semi_adjoint' #automatic, numerical, semi_analytical, analytical or semi_adjoint.
 tr_solver: 'lsmr'  #'exact' (recommended for small system) or 'lsmr' (recommended for large systems)
+is_jax: False
 
 #Defines the colors for the graphs
 color_obs: 'r'       #color for the observations
