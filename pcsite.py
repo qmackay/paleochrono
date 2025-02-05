@@ -75,6 +75,7 @@ class Site(object):
         self.tuning = {}
         self.restart_file = "restart.bin"
         self.fig_age_show_unc = True   #Whether to show the age uncertainty in the age figure
+        self.fig_age_switch_axes = False
 
 # Setting of the parameters from the parameter files
 
@@ -1331,6 +1332,44 @@ class Site(object):
             mpl.legend(loc="best")
         mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age.'+pccfg.fig_format,
                     format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+        fig, ax1 = mpl.subplots()
+        mpl.title(self.label+' '+self.age_labelsp+'age')
+        mpl.ylabel('age ('+pccfg.age_unit+' '+pccfg.age_unit_ref+')')
+        mpl.xlabel('depth ('+self.depth_unit+')')
+        if pccfg.show_initial:
+            mpl.plot(self.depth, self.age_init, color=pccfg.color_init, label='Initial')
+        if np.size(self.icehorizons_depth) > 0:
+            mpl.errorbar(self.icehorizons_depth, self.icehorizons_age, color=pccfg.color_obs,
+                         yerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
+                         label="dated horizons")
+        mpl.plot(self.depth, self.age_model, color=pccfg.color_mod, label='Prior')
+        mpl.plot(self.depth, self.age, color=pccfg.color_opt,
+                 label='Posterior $\\pm\\sigma$')
+        mpl.fill_between(self.depth, self.age-self.sigma_age, self.age+self.sigma_age,
+                          color=pccfg.color_ci, label="Confidence interval")
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((self.depth[0], self.depth[-1], y_low, y_up))
+        if self.fig_age_show_unc: 
+            ax2 = ax1.twinx()
+            ax2.plot(self.depth, self.sigma_age, color=pccfg.color_sigma,
+                     label='1$\\sigma$')
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((x_low, x_up, 0, y_up*5))
+            ax2.set_ylabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
+            ax2.spines['right'].set_color(pccfg.color_sigma)
+            ax2.yaxis.label.set_color(pccfg.color_sigma)
+            ax2.tick_params(axis='y', colors=pccfg.color_sigma)
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
+        else:
+            mpl.legend(loc="upper left")
+        if self.fig_age_switch_axes:
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_switch_axes.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
             mpl.close()
 
