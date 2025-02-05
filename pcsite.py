@@ -1312,18 +1312,21 @@ class Site(object):
                           color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
-        ax2 = ax1.twiny()
-        ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
-                 label='1$\\sigma$')
-        x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((0., x_up, y_low, y_up))
-        ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
-        ax2.spines['top'].set_color(pccfg.color_sigma)
-        ax2.xaxis.label.set_color(pccfg.color_sigma)
-        ax2.tick_params(axis='x', colors=pccfg.color_sigma)
-        lines1, labels1 = ax1.get_legend_handles_labels()
-        lines2, labels2 = ax2.get_legend_handles_labels()
-        ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+        if pccfg.show_age_unc: 
+            ax2 = ax1.twiny()
+            ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
+                     label='1$\\sigma$')
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((0., x_up, y_low, y_up))
+            ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
+            ax2.spines['top'].set_color(pccfg.color_sigma)
+            ax2.xaxis.label.set_color(pccfg.color_sigma)
+            ax2.tick_params(axis='x', colors=pccfg.color_sigma)
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+        else:
+            mpl.legend(loc="best")
         mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age.'+pccfg.fig_format,
                     format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
