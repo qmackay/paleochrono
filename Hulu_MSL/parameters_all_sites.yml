@@ -12,8 +12,5 @@ corr_deporate_grid: #Age grid for the deporate correction function
     nb_steps: 5000 
 
 #Parameters needed to define the covariance matrices as in AICC2012.
-deporate_prior_sigma: 2.
-lambda_deporate: 100
-depth_unit: 'm'
-age_label: 'ice'
-age2_label: 'air'
+deporate_prior_sigma: 0.5
+lambda_deporate: 500

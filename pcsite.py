@@ -62,6 +62,7 @@ class Site(object):
         self.start = 'prior'
         self.corr_lid_age = None
         self.corr_tau_depth = None
+        self.lambda_thinning = None
         self.accu0 = None
         self.beta = None
         self.pprime = None
@@ -73,6 +74,7 @@ class Site(object):
         self.age2_label = 'air'
         self.tuning = {}
         self.restart_file = "restart.bin"
+        self.fig_age_show_unc = True   #Whether to show the age uncertainty in the age figure
 
 # Setting of the parameters from the parameter files
 
@@ -1312,12 +1314,12 @@ class Site(object):
                           color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
-        if pccfg.show_age_unc: 
+        if self.fig_age_show_unc: 
             ax2 = ax1.twiny()
             ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
                      label='1$\\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
-            mpl.axis((0., x_up, y_low, y_up))
+            mpl.axis((0., x_up*5, y_low, y_up))
             ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
             ax2.spines['top'].set_color(pccfg.color_sigma)
             ax2.xaxis.label.set_color(pccfg.color_sigma)
