@@ -775,11 +775,13 @@ class Site(object):
                 self.tau_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.tau)))
                 self.lid_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.lid)))
                 self.icelayerthick_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.icelayerthick)))
+                self.agedens_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.agedens)))
             #        icelayerthick_jac[0, :] = np.zeros(len(icelayerthick))
         else:
             self.age_jac = np.zeros((1+len(self.corr_a), len(self.age)))
             if full:
                 self.accu_jac = np.zeros((1+len(self.corr_a), len(self.accu)))
+                self.agedens_jac = np.zeros((1+len(self.corr_a), len(self.agedens)))
 
         self.age_jac[0, :] = self.age_top_sigma * np.ones(len(self.age))
             
@@ -789,6 +791,7 @@ class Site(object):
             if full:
                 accu_vec =  self.corr_a_jacmat[i, :] * self.accu
                 self.accu_jac[1+i, :] = accu_vec
+                self.agedens_jac[1+i, :] = agedens_vec
 
         #Ice age
             age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
@@ -825,6 +828,7 @@ class Site(object):
                     self.icelayerthick_jac[1+len(self.corr_a)+i, :] = icelayerthick_vec
                     tau_vec = self.corr_tau_jacmat[i, :] * self.tau
                     self.tau_jac[1+len(self.corr_a)+i, :] = tau_vec
+                    self.agedens_jac[1+len(self.corr_a)+i, :] = agedens_vec
 
                 #To be continued...                
 
@@ -1182,6 +1186,9 @@ class Site(object):
             self.sigma_accu = np.sqrt(np.diag(c_model))
             c_model = dot(np.transpose(self.age_jac), dot(self.cov, self.age_jac))
             self.sigma_age = np.sqrt(np.diag(c_model))
+            c_model = dot(np.transpose(self.agedens_jac), 
+                             dot(self.cov, self.agedens_jac))
+            self.sigma_agedens = np.sqrt(np.diag(c_model))
             
     #        input('After calculating sigma_age with the analytical method. Program paused.')
             if self.archive == 'icecore':
@@ -1293,21 +1300,21 @@ class Site(object):
             mpl.errorbar(self.icehorizons_age, self.icehorizons_depth, color=pccfg.color_obs,
                          xerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
                          label="dated horizons")
-        for i in range(np.size(self.iceintervals_duration)):
-            y_low = self.iceintervals_depthtop[i]
-            y_up = self.iceintervals_depthbot[i]
-            x_low = self.fct_age(y_low)
-            x_up = x_low+self.iceintervals_duration[i]
-            xseries = np.array([x_low, x_up, x_up, x_low, x_low])
-            yseries = np.array([y_low, y_low, y_up, y_up, y_low])
-            if i == 0:
-                mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
-                mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
-                             capsize=1)
-            else:
-                mpl.plot(xseries, yseries, color=pccfg.color_di)
-                mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
-                             capsize=1)
+        # for i in range(np.size(self.iceintervals_duration)):
+        #     y_low = self.iceintervals_depthtop[i]
+        #     y_up = self.iceintervals_depthbot[i]
+        #     x_low = self.fct_age(y_low)
+        #     x_up = x_low+self.iceintervals_duration[i]
+        #     xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+        #     yseries = np.array([y_low, y_low, y_up, y_up, y_low])
+        #     if i == 0:
+        #         mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
+        #                      capsize=1)
+        #     else:
+        #         mpl.plot(xseries, yseries, color=pccfg.color_di)
+        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
+        #                      capsize=1)
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.age, self.depth, color=pccfg.color_opt,
                  label='Posterior $\\pm\\sigma$')
@@ -1352,6 +1359,21 @@ class Site(object):
                           color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.depth[0], self.depth[-1], y_low, y_up))
+        # for i in range(np.size(self.iceintervals_duration)):
+        #     y_low = self.iceintervals_depthtop[i]
+        #     y_up = self.iceintervals_depthbot[i]
+        #     x_low = self.fct_age(y_low)
+        #     x_up = x_low+self.iceintervals_duration[i]
+        #     xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+        #     yseries = np.array([y_low, y_low, y_up, y_up, y_low])
+        #     if i == 0:
+        #         mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
+        #                      capsize=1)
+        #     else:
+        #         mpl.plot(xseries, yseries, color=pccfg.color_di)
+        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
+        #                      capsize=1)
         if self.fig_age_show_unc: 
             ax2 = ax1.twinx()
             ax2.plot(self.depth, self.sigma_age, color=pccfg.color_sigma,
@@ -1370,6 +1392,42 @@ class Site(object):
         if self.fig_age_switch_axes:
             mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_switch_axes.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+        fig, ax = mpl.subplots()
+        mpl.title(self.label+' '+self.age_labelsp+'age density')
+        mpl.xlabel('age density ('+pccfg.age_unit+'/'+self.depth_unit+')')
+        mpl.ylabel('Depth ('+self.depth_unit+')')
+        if pccfg.show_initial:
+            mpl.plot(1/self.icelayerthick_init, self.depth_mid, color=pccfg.color_init,
+                     label='Initial')
+        mpl.plot(1/self.icelayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+        mpl.plot(self.agedens, self.depth_mid, color=pccfg.color_opt,
+                 label='Posterior $\\pm\\sigma$')
+        mpl.fill_betweenx(self.depth_mid, self.agedens-self.sigma_agedens,
+                          self.agedens+self.sigma_agedens, color=pccfg.color_ci,
+                          label="Confidence interval")
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
+        for i in range(np.size(self.iceintervals_duration)):
+            y_low = self.iceintervals_depthtop[i]
+            y_up = self.iceintervals_depthbot[i]
+            x_low = self.iceintervals_duration[i]/(y_up-y_low)
+            x_up = x_low
+            xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+            yseries = np.array([y_low, y_low, y_up, y_up, y_low])
+            if i == 0:
+                mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+                mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
+                             capsize=1)
+            else:
+                mpl.plot(xseries, yseries, color=pccfg.color_di)
+                mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
+                             capsize=1)
+        mpl.legend(loc="best")
+        mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_density.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
             mpl.close()
 
