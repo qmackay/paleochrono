@@ -1405,8 +1405,8 @@ class Site(object):
         mpl.plot(1/self.icelayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.agedens, self.depth_mid, color=pccfg.color_opt,
                  label='Posterior $\\pm\\sigma$')
-        mpl.fill_betweenx(self.depth_mid, self.agedens-self.sigma_agedens,
-                          self.agedens+self.sigma_agedens, color=pccfg.color_ci,
+        mpl.fill_betweenx(self.depth_mid, np.exp(np.log(self.agedens)-self.sigma_agedens/self.agedens),
+                          np.exp(np.log(self.agedens)+self.sigma_agedens/self.agedens), color=pccfg.color_ci,
                           label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
@@ -1427,6 +1427,43 @@ class Site(object):
                              capsize=1)
         mpl.legend(loc="best")
         mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_density.'+pccfg.fig_format,
+                    format=pccfg.fig_format, bbox_inches='tight')
+        if not pccfg.show_figures:
+            mpl.close()
+
+        fig, ax = mpl.subplots()
+        mpl.title(self.label+' '+self.age_labelsp+'age density (log)')
+        mpl.xlabel('age density ('+pccfg.age_unit+'/'+self.depth_unit+')')
+        mpl.ylabel('Depth ('+self.depth_unit+')')
+        if pccfg.show_initial:
+            mpl.plot(1/self.icelayerthick_init, self.depth_mid, color=pccfg.color_init,
+                     label='Initial')
+        mpl.plot(1/self.icelayerthick_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+        mpl.plot(self.agedens, self.depth_mid, color=pccfg.color_opt,
+                 label='Posterior $\\pm\\sigma$')
+        mpl.fill_betweenx(self.depth_mid, np.exp(np.log(self.agedens)-self.sigma_agedens/self.agedens),
+                          np.exp(np.log(self.agedens)+self.sigma_agedens/self.agedens), color=pccfg.color_ci,
+                          label="Confidence interval")
+        ax.axes.set_xscale('log')
+        x_low, x_up, y_low, y_up = mpl.axis()
+        mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
+        for i in range(np.size(self.iceintervals_duration)):
+            y_low = self.iceintervals_depthtop[i]
+            y_up = self.iceintervals_depthbot[i]
+            x_low = self.iceintervals_duration[i]/(y_up-y_low)
+            x_up = x_low
+            xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+            yseries = np.array([y_low, y_low, y_up, y_up, y_low])
+            if i == 0:
+                mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+                mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
+                             capsize=1)
+            else:
+                mpl.plot(xseries, yseries, color=pccfg.color_di)
+                mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
+                             capsize=1)
+        mpl.legend(loc="best")
+        mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_density_log.'+pccfg.fig_format,
                     format=pccfg.fig_format, bbox_inches='tight')
         if not pccfg.show_figures:
             mpl.close()
