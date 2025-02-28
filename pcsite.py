@@ -1446,7 +1446,7 @@ class Site(object):
                           label="Confidence interval")
         ax.axes.set_xscale('log')
         x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((0, x_up, self.depth[-1], self.depth[0]))
+        mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
         for i in range(np.size(self.iceintervals_duration)):
             y_low = self.iceintervals_depthtop[i]
             y_up = self.iceintervals_depthbot[i]
