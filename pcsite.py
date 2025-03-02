@@ -1154,6 +1154,7 @@ class Site(object):
                 c_model = dot(jacob[index:index+np.size(self.icelayerthick), :], dot(self.cov,\
                                        np.transpose(jacob[index:index+np.size(self.icelayerthick), :])))
                 self.sigma_icelayerthick = np.sqrt(np.diag(c_model))
+                self.sigma_agedens = - self.sigma_icelayerthick / self.icelayerthick**2
                 index = index+np.size(self.icelayerthick)
                 c_model = dot(jacob[index:index+np.size(self.airage), :], dot(self.cov,\
                                        np.transpose(jacob[index:index+np.size(self.airage), :])))
