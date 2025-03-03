@@ -1152,7 +1152,7 @@ class Site(object):
             c_model = dot(jacob[index:index+np.size(self.accu), :], dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.accu), :])))
             self.sigma_accu = np.sqrt(np.diag(c_model))
-            self.sigma_agedens = - self.sigma_accu / self.accu**2
+            self.sigma_agedens = self.sigma_accu / self.accu**2
             index = index+np.size(self.accu)
     
             self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
@@ -1183,6 +1183,7 @@ class Site(object):
                 c_model = dot(jacob[index:index+np.size(self.airagedens), :], dot(self.cov,\
                                        np.transpose(jacob[index:index+np.size(self.airagedens), :])))
                 self.sigma_airagedens = np.sqrt(np.diag(c_model))
+                index = index+np.size(self.airagedens)
                 c_model = dot(jacob[index:index+np.size(self.airlayerthick), :], dot(self.cov,\
                                        np.transpose(jacob[index:index+np.size(self.airlayerthick), :])))
                 self.sigma_airlayerthick = np.sqrt(np.diag(c_model))
@@ -1223,6 +1224,7 @@ class Site(object):
                 c_model = dot(np.transpose(self.airagedens_jac), 
                                  dot(self.cov, self.airagedens_jac))
                 self.sigma_airagedens = np.sqrt(np.diag(c_model))
+                self.sigma_airlayerthick = self.sigma_airagedens / self.agedens**2
                 
 
         self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
