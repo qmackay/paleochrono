@@ -262,7 +262,7 @@ class Site(object):
         self.depth_inter = (self.depth[1:]-self.depth[:-1])
         self.lid = np.empty_like(self.depth)
         self.sigma_delta_depth = np.empty_like(self.depth)
-        self.sigma_airlayerthick = np.empty_like(self.depth_mid)
+        self.sigma_airlayerthick = np.zeros_like(self.depth_mid)
         self.airlayerthick_init = np.empty_like(self.depth_mid)
         self.age_init = np.empty_like(self.depth)
         self.sigma_accu_model = np.empty_like(self.depth_mid)
@@ -757,8 +757,9 @@ class Site(object):
             self.delta_depth_model = self.depth-self.ice_equiv_depth_model
             self.airage_model = interp(self.ice_equiv_depth_model, self.depth, self.age_model,
                                           left=np.nan, right=np.nan)
+            self.airagedens_model = np.diff(self.airage_model)
             with np.errstate(divide='ignore'):
-                self.airlayerthick_model = 1/np.diff(self.airage_model)
+                self.airlayerthick_model = 1/self.airagedens_model
 
     
     def corrected_jacobian(self, full=False):
@@ -776,6 +777,7 @@ class Site(object):
                 self.lid_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.lid)))
                 self.icelayerthick_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.icelayerthick)))
                 self.agedens_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.agedens)))
+                self.airagedens_jac = np.zeros((1+len(self.corr_a)+len(self.corr_tau)+len(self.corr_lid), len(self.airagedens)))
             #        icelayerthick_jac[0, :] = np.zeros(len(icelayerthick))
         else:
             self.age_jac = np.zeros((1+len(self.corr_a), len(self.age)))
@@ -803,7 +805,8 @@ class Site(object):
                 self.airage_jac[1+i, :] = airage_vec
                 if full:
                     icelayerthick_vec = self.corr_a_jacmat[i, :] * self.icelayerthick
-                    self.icelayerthick_jac[1+i, :] = icelayerthick_vec                    
+                    self.icelayerthick_jac[1+i, :] = icelayerthick_vec
+                    self.airagedens_jac[1+i, :] = np.diff(airage_vec)
 
         if self.archive == 'icecore':
             
@@ -829,6 +832,7 @@ class Site(object):
                     tau_vec = self.corr_tau_jacmat[i, :] * self.tau
                     self.tau_jac[1+len(self.corr_a)+i, :] = tau_vec
                     self.agedens_jac[1+len(self.corr_a)+i, :] = agedens_vec
+                    self.airagedens_jac[1+len(self.corr_a)+i, :] = np.diff(airage_vec)
 
                 #To be continued...                
 
@@ -844,6 +848,7 @@ class Site(object):
                 self.delta_depth_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = delta_depth_vec
                 if full:
                     self.lid_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = lid_vec
+                    self.airagedens_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = np.diff(airage_vec)
 
     def corrected_jacobian_free(self):
         self.accu_jac = None
@@ -914,8 +919,9 @@ class Site(object):
             self.delta_depth = self.depth-self.ice_equiv_depth
             self.airage = interp(self.ice_equiv_depth, self.depth, self.age, left=np.nan,
                                     right=np.nan)
+            self.airagedens = np.diff(self.airage)
             with np.errstate(divide='ignore'):
-                self.airlayerthick = 1/np.diff(self.airage)
+                self.airlayerthick = 1/self.airagedens
 
     def model(self, var):
         """Calculate the model from the vector var containing its variables."""
@@ -948,8 +954,8 @@ class Site(object):
 
         if self.archive == 'icecore':
             return np.concatenate((self.age, self.accu, self.icelayerthick, self.airage,
-                                   self.delta_depth, self.tau, self.lid, self.airlayerthick,
-                                   self.age-self.airage))
+                                   self.delta_depth, self.tau, self.lid, self.airagedens, 
+                                   self.airlayerthick, self.age-self.airage))
         else:
             return np.concatenate((self.age, self.accu))
 
@@ -962,6 +968,7 @@ class Site(object):
         if self.archive == 'icecore':
             self.lid_init = self.lid
             self.tau_init = self.tau
+            self.airagedens_init = self.airagedens
             self.airlayerthick_init = self.airlayerthick
             self.airage_init = self.airage
             self.delta_depth_init = self.delta_depth
@@ -1145,6 +1152,7 @@ class Site(object):
             c_model = dot(jacob[index:index+np.size(self.accu), :], dot(self.cov,\
                                    np.transpose(jacob[index:index+np.size(self.accu), :])))
             self.sigma_accu = np.sqrt(np.diag(c_model))
+            self.sigma_agedens = - self.sigma_accu / self.accu**2
             index = index+np.size(self.accu)
     
             self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
@@ -1172,6 +1180,9 @@ class Site(object):
                                        np.transpose(jacob[index:index+np.size(self.lid), :])))
                 self.sigma_lid = np.sqrt(np.diag(c_model))
                 index = index+np.size(self.lid)
+                c_model = dot(jacob[index:index+np.size(self.airagedens), :], dot(self.cov,\
+                                       np.transpose(jacob[index:index+np.size(self.airagedens), :])))
+                self.sigma_airagedens = np.sqrt(np.diag(c_model))
                 c_model = dot(jacob[index:index+np.size(self.airlayerthick), :], dot(self.cov,\
                                        np.transpose(jacob[index:index+np.size(self.airlayerthick), :])))
                 self.sigma_airlayerthick = np.sqrt(np.diag(c_model))
@@ -1187,8 +1198,7 @@ class Site(object):
             self.sigma_accu = np.sqrt(np.diag(c_model))
             c_model = dot(np.transpose(self.age_jac), dot(self.cov, self.age_jac))
             self.sigma_age = np.sqrt(np.diag(c_model))
-            c_model = dot(np.transpose(self.agedens_jac), 
-                             dot(self.cov, self.agedens_jac))
+            c_model = dot(np.transpose(self.agedens_jac), dot(self.cov, self.agedens_jac))
             self.sigma_agedens = np.sqrt(np.diag(c_model))
             
     #        input('After calculating sigma_age with the analytical method. Program paused.')
@@ -1210,6 +1220,10 @@ class Site(object):
                 c_model = dot(np.transpose(self.age_jac-self.airage_jac), 
                                  dot(self.cov, self.age_jac-self.airage_jac))
                 self.sigma_delta_age = np.sqrt(np.diag(c_model))
+                c_model = dot(np.transpose(self.airagedens_jac), 
+                                 dot(self.cov, self.airagedens_jac))
+                self.sigma_airagedens = np.sqrt(np.diag(c_model))
+                
 
         self.sigma_accu_model = interp((self.age_model[1:]+self.age_model[:-1])/2,
                                               self.corr_a_age, self.sigmap_corr_a)
@@ -1517,6 +1531,28 @@ class Site(object):
             lines2, labels2 = ax2.get_legend_handles_labels()
             ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
             mpl.savefig(pccfg.datadir+self.label+'/thinning.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
+
+
+            mpl.title(self.label+' '+self.age2_label_+'age density')
+            mpl.xlabel('age density ('+pccfg.age_unit+'/'+self.depth_unit+')')
+            mpl.ylabel('Depth ('+self.depth_unit+')')
+            if pccfg.show_initial:
+                mpl.plot(self.airagedens_init, self.depth_mid, color=pccfg.color_init,
+                         label='Initial')
+            mpl.plot(self.airagedens_model, self.depth_mid, color=pccfg.color_mod,
+                     label='Prior')
+            mpl.plot(self.airagedens, self.depth_mid, color=pccfg.color_opt,
+                     label='Posterior $\\pm\\sigma$')
+            mpl.fill_betweenx(self.depth_mid, self.airagedens-self.sigma_airagedens,
+                              self.airagedens+self.sigma_airagedens,
+                              color=pccfg.color_ci, label="Confidence interval")
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
+            mpl.legend(loc="best")
+            mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'age_density.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
                 mpl.close()
