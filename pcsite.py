@@ -651,12 +651,12 @@ class Site(object):
         elif os.path.isfile(filename4):
             exec(open(filename4).read())
         
-        if ((os.path.isfile(filename1) or os.path.isfile(filename2) or os.path.isfile(filename3)\
-            or os.path.isfile(filename4)) and (pccfg.jacobian=='analytical' or \
-            pccfg.jacobian=='semi_adjoint' or pccfg.jacobian=='adjoint')):
-            print('Covariance on observations not implemented for analytical Jacobian. Exiting.')
-            sys.exit()
-        
+        # if ((os.path.isfile(filename1) or os.path.isfile(filename2) or os.path.isfile(filename3)\
+        #     or os.path.isfile(filename4)) and (pccfg.jacobian=='analytical' or \
+        #     pccfg.jacobian=='semi_adjoint' or pccfg.jacobian=='adjoint')):
+        #     print('Covariance on observations not implemented for analytical Jacobian. Exiting.')
+        #     sys.exit()
+
         if np.any(self.icehorizons_correlation != \
                   np.diag(np.ones(np.size(self.icehorizons_depth)))):
             self.icehorizons_correlation_bool = True
@@ -1071,16 +1071,29 @@ class Site(object):
         return resi
 
     def residuals_jacobian(self):
-        #FIXME: We don't take into account covariance here!
         resi_age_jac = self.fct_age_jac(self.icehorizons_depth)/self.icehorizons_sigma
+        if self.icehorizons_correlation_bool:
+            resi_age_jac = lu_solve(self.icehorizons_lu_piv, np.transpose(resi_age_jac))
         resi_iceint_jac = (self.fct_age_jac(self.iceintervals_depthbot)-\
                       self.fct_age_jac(self.iceintervals_depthtop))/self.iceintervals_sigma
+        if self.iceintervals_correlation_bool:
+            resi_iceint_jac = lu_solve(self.iceintervals_lu_piv, np.transpose(resi_iceint_jac))
+            resi_iceint_jac = np.transpose(resi_iceint_jac)
         if self.archive == 'icecore':
             resi_airage_jac = self.fct_airage_jac(self.airhorizons_depth)/self.airhorizons_sigma
+            if self.airhorizons_correlation_bool:
+                resi_airage_jac = lu_solve(self.airhorizons_lu_piv, np.transpose(resi_airage_jac))
+                resi_airage_jac = np.transpose(resi_airage_jac)
             resi_airint_jac = (self.fct_airage_jac(self.airintervals_depthbot)-\
                           self.fct_airage_jac(self.airintervals_depthtop))/self.airintervals_sigma
+            if self.airintervals_correlation_bool:
+                resi_airint_jac = lu_solve(self.airintervals_lu_piv, np.trasnpose(resi_airint_jac))
+                resi_airint_jac = np.transpose(resi_airint_jac)
             resi_delta_depth_jac = self.fct_delta_depth_jac(self.delta_depth_depth)/ \
                                     self.delta_depth_sigma
+            if self.delta_depth_correlation_bool:
+                resi_delta_depth_jac = lu_solve(self.delta_depth_lu_piv, np.transpose(resi_delta_depth_jac))
+                resi_delta_depth_jac = np.transpose(resi_delta_depth_jac)
             resi_jac = np.concatenate((resi_age_jac, resi_airage_jac, resi_iceint_jac, resi_airint_jac, 
                                resi_delta_depth_jac),
                               axis = 1)
