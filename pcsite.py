@@ -1574,7 +1574,7 @@ class Site(object):
 
             if pccfg.show_airlayerthick:
                 fig, ax = mpl.subplots()
-                mpl.title(self.label+' '+self.age2_label_+'layer thickness')
+                mpl.title(self.label+' '+self.age2_labelsp+'layer thickness')
                 mpl.xlabel('thickness of annual layers ('+self.depth_unit+'/'+pccfg.age_unit+')')
                 mpl.ylabel('Depth ('+self.depth_unit+')')
                 if pccfg.show_initial:
@@ -1588,7 +1588,7 @@ class Site(object):
                                   self.airlayerthick+self.sigma_airlayerthick,
                                   color=pccfg.color_ci, label="Confidence interval")
                 x_low, x_up, y_low, y_up = mpl.axis()
-                mpl.axis((0, 2*max(self.icelayerthick), self.depth[-1], self.depth[0]))
+                mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
                 mpl.legend(loc="best")
                 mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'layer_thickness.'+pccfg.fig_format,
                             format=pccfg.fig_format, bbox_inches='tight')
