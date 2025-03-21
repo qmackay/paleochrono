@@ -76,6 +76,7 @@ class Site(object):
         self.restart_file = "restart.bin"
         self.fig_age_show_unc = True   #Whether to show the age uncertainty in the age figure
         self.fig_age_switch_axes = False
+        self.fig_max_age_unc = None
 
 # Setting of the parameters from the parameter files
 
@@ -1357,7 +1358,10 @@ class Site(object):
             ax2.plot(self.sigma_age, self.depth, color=pccfg.color_sigma,
                      label='1$\\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
-            mpl.axis((0., x_up*5, y_low, y_up))
+            if self.fig_max_age_unc is None:
+                mpl.axis((0., x_up*5, y_low, y_up))
+            else:
+                mpl.axis((0., self.fig_max_age_unc, y_low, y_up))
             ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
             ax2.spines['top'].set_color(pccfg.color_sigma)
             ax2.xaxis.label.set_color(pccfg.color_sigma)
@@ -1550,6 +1554,36 @@ class Site(object):
             if not pccfg.show_figures:
                 mpl.close()
 
+            fig, ax1 = mpl.subplots()
+            mpl.title(self.label+' thinning (log)')
+            mpl.xlabel('Thinning')
+            mpl.ylabel('Depth ('+self.depth_unit+')')
+            if pccfg.show_initial:
+                mpl.plot(self.tau_init, self.depth_mid, color=pccfg.color_init, label='Initial')
+            mpl.plot(self.tau_model, self.depth_mid, color=pccfg.color_mod, label='Prior')
+            mpl.plot(self.tau, self.depth_mid, color=pccfg.color_opt,
+                     label='Posterior $\\pm\\sigma$')
+            mpl.fill_betweenx(self.depth_mid, np.exp(np.log(self.tau)-self.sigma_tau/self.tau),
+                              np.exp(np.log(self.tau)+self.sigma_tau/self.tau),
+                              color=pccfg.color_ci, label="Confidence interval")
+            ax1.axes.set_xscale('log')
+            x_low, x_up, y_low, y_up = mpl.axis()
+            mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
+            ax2 = ax1.twiny()
+            ax2.plot(self.corr_tau_depth[1:]-self.corr_tau_depth[:-1], 
+                     (self.corr_tau_depth[1:]+self.corr_tau_depth[:-1])/2, label='resolution',
+                     color=pccfg.color_resolution)
+            ax2.set_xlabel('resolution ('+self.depth_unit+')')
+            ax2.spines['top'].set_color(pccfg.color_resolution)
+            ax2.xaxis.label.set_color(pccfg.color_resolution)
+            ax2.tick_params(axis='x', colors=pccfg.color_resolution)
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+            mpl.savefig(pccfg.datadir+self.label+'/thinning_log.'+pccfg.fig_format,
+                        format=pccfg.fig_format, bbox_inches='tight')
+            if not pccfg.show_figures:
+                mpl.close()
 
             mpl.title(self.label+' '+self.age2_labelsp+'age density')
             mpl.xlabel('age density ('+pccfg.age_unit+'/'+self.depth_unit+')')
@@ -1672,21 +1706,21 @@ class Site(object):
                              xerr=self.airhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="observations")
     #        mpl.ylim(mpl.ylim()[::-1])
-            for i in range(np.size(self.airintervals_duration)):
-                y_low = self.airintervals_depthtop[i]
-                y_up = self.airintervals_depthbot[i]
-                x_low = self.fct_airage(y_low)
-                x_up = x_low+self.airintervals_duration[i]
-                xseries = np.array([x_low, x_up, x_up, x_low, x_low])
-                yseries = np.array([y_low, y_low, y_up, y_up, y_low])
-                if i == 0:
-                    mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
-                    mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
-                                 capsize=1)
-                else:
-                    mpl.plot(xseries, yseries, color=pccfg.color_di)
-                    mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
-                                 capsize=1)
+            # for i in range(np.size(self.airintervals_duration)):
+            #     y_low = self.airintervals_depthtop[i]
+            #     y_up = self.airintervals_depthbot[i]
+            #     x_low = self.fct_airage(y_low)
+            #     x_up = x_low+self.airintervals_duration[i]
+            #     xseries = np.array([x_low, x_up, x_up, x_low, x_low])
+            #     yseries = np.array([y_low, y_low, y_up, y_up, y_low])
+            #     if i == 0:
+            #         mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+            #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
+            #                      capsize=1)
+            #     else:
+            #         mpl.plot(xseries, yseries, color=pccfg.color_di)
+            #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
+            #                      capsize=1)
             mpl.plot(self.airage_model, self.depth, color=pccfg.color_mod, label='Prior')
             mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage,
                               self.airage+self.sigma_airage,
@@ -1699,7 +1733,10 @@ class Site(object):
             ax2.plot(self.sigma_airage, self.depth, color=pccfg.color_sigma,
                      label='1$\\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
-            mpl.axis((0., x_up, y_low, y_up))
+            if self.fig_max_age_unc is None:
+                mpl.axis((0., x_up*5, y_low, y_up))
+            else:
+                mpl.axis((0., self.fig_max_age_unc, y_low, y_up))
             ax2.set_xlabel('1$\\sigma$ uncertainty ('+pccfg.age_unit+')')
             ax2.spines['top'].set_color(pccfg.color_sigma)
             ax2.xaxis.label.set_color(pccfg.color_sigma)
