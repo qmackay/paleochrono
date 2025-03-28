@@ -102,3 +102,8 @@ def stretch(grid, start, end):
     grid = start + (grid-grid[0])/(grid[-1]-grid[0])*(end-start)
     return grid
 
+def mean_distri(distri):
+    return float(np.sum(distri[:,0]*distri[:,1])/np.sum(distri[:,1]))
+
+def stdev_distri(distri):
+    return m.sqrt(np.sum(distri[:,0]**2*distri[:,1])/np.sum(distri[:,1]) -mean_distri(distri)**2)

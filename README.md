@@ -160,6 +160,7 @@ Then you have one directory per site, which contains:
  specific observations
 - `deposition.txt`: depth / background accu (in ice-equivalent) / unc. (opt., relative)
 - `age_horizons.txt`: depth / age / unc. (absolute) for dated horizons for a non-ice-core
+- `age_horizons_C14.txt`: depth / age / unc. (absolute) for C14-dated horizons for a non-ice-core
 - `age_intervals.txt`: epth\_top / depth\_bottom / duration / unc. (absolute) for intervals for a non-ice-core
 - `ice_age_horizons.txt`: depth / age / unc. (absolute) for ice dated horizons for an ice core
 - `air_age_horizons.txt`: depth / age / unc. (absolute) for air dated horizons for an ice core
@@ -202,6 +203,18 @@ What is the structure of a site `parameters.yml` file?
 It defines age at the top of the core, the unthinned depth at the top of the core, the age equation grid, the correction functions grids and the type of representation of the prior accu scenario (linear or staircase). You can also define other parameters that are used to defined the covariance matrices of the priors.
 Have a look at the files `AICC2023-Hulu/EDC/parameters.yml`, it is commented.
 
+How do I use the C14 calibration?
+---------------------------------
+First, you need to install iosacal, which is a python software for C14 calibration.
+isoacal is included in conda-forge, so you have to add the conda-forge repo.
+If you are using Anaconda, you can add conda-forge like this:
+```
+conda config --append channels conda-forge
+```
+Then you can install iosacal like this:
+```
+conda install iosacal
+```
 
 How to set up the `parameters-CovarianceObservations.py` file?
 --------------------------------------------------------------

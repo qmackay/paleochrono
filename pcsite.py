@@ -20,7 +20,7 @@ from scipy import stats
 import pickle
 import yaml
 from pcmath import interp_lin_aver, interp_stair_aver, grid, truncation,\
-    stretch, interp_lin_slope
+    stretch, interp_lin_slope, mean_distri, stdev_distri
 import pccfg
 # from numpy import interp
 from numpy.core.multiarray import interp
@@ -555,6 +555,26 @@ class Site(object):
                 self.icehorizons_depth = np.array([])
                 self.icehorizons_age = np.array([])
                 self.icehorizons_sigma = np.array([])
+
+        filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons_C14.txt'
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if os.path.isfile(filename) and open(filename).read() and\
+                np.size(np.loadtxt(filename)) > 0:
+                readarray = np.loadtxt(filename)
+                if np.size(readarray) == np.shape(readarray)[0]:
+                    readarray.resize(1, np.size(readarray))
+                depth_C14 = readarray[:, 0]
+                age_C14 = readarray[:, 1]
+                sigma_C14 = readarray[:, 2]
+                print('Calibrating C14 ages')
+                from iosacal import R
+                for i in range(len(age_C14)):
+                    r = R(age_C14[i], sigma_C14[i], 'name')
+                    cal_r = r.calibrate(pccfg.c14_cal)
+                    self.icehorizons_depth = np.append( self.icehorizons_depth, depth_C14[i])
+                    self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
+                    self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
 
         filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_intervals.txt'
         with warnings.catch_warnings():
