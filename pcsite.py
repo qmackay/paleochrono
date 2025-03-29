@@ -768,7 +768,7 @@ class Site(object):
             self.icelayerthick_model = self.tau_model*self.a_model/self.dens
         else:
             self.icelayerthick_model = self.a_model
-        self.age_model = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
+        self.age_model = self.age_top+pccfg.way*np.cumsum(np.concatenate((np.array([0]),\
                          self.depth_inter/self.icelayerthick_model)))
 
         #air age
@@ -817,7 +817,7 @@ class Site(object):
                 self.agedens_jac[1+i, :] = agedens_vec
 
         #Ice age
-            age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
+            age_vec = pccfg.way*np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
             self.age_jac[1+i, :] = age_vec
 
         #Air age
@@ -827,14 +827,14 @@ class Site(object):
                 if full:
                     icelayerthick_vec = self.corr_a_jacmat[i, :] * self.icelayerthick
                     self.icelayerthick_jac[1+i, :] = icelayerthick_vec
-                    self.airagedens_jac[1+i, :] = np.diff(airage_vec)
+                    self.airagedens_jac[1+i, :] = pccfg.way*np.diff(airage_vec)
 
         if self.archive == 'icecore':
             
             for i in range(len(self.corr_tau)):
 
                 agedens_vec = -self.corr_tau_jacmat[i, :] * self.agedens                
-                age_vec = np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
+                age_vec = pccfg.way*np.cumsum(np.concatenate((np.array([0]), self.depth_inter*agedens_vec)))
                 self.age_jac[1+len(self.corr_a)+i, :] = age_vec
                 
                 thin_vec = -self.corr_tau_jacmat[i, :] * self.dens/self.tau
@@ -843,7 +843,7 @@ class Site(object):
                                               self.tau/self.dens) * (udepth_vec - \
                                             interp(self.ice_equiv_depth, self.depth, udepth_vec))
                 airage_vec = interp(self.ice_equiv_depth, self.depth, age_vec) \
-                                - interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
+                                - pccfg.way* interp(self.ice_equiv_depth, self.depth_mid, self.agedens) * \
                                 delta_depth_vec
                 self.airage_jac[1+len(self.corr_a)+i, :] = airage_vec
                 self.delta_depth_jac[1+len(self.corr_a)+i, :] = delta_depth_vec
@@ -853,7 +853,7 @@ class Site(object):
                     tau_vec = self.corr_tau_jacmat[i, :] * self.tau
                     self.tau_jac[1+len(self.corr_a)+i, :] = tau_vec
                     self.agedens_jac[1+len(self.corr_a)+i, :] = agedens_vec
-                    self.airagedens_jac[1+len(self.corr_a)+i, :] = np.diff(airage_vec)
+                    self.airagedens_jac[1+len(self.corr_a)+i, :] = pccfg.way*np.diff(airage_vec)
 
                 #To be continued...                
 
@@ -863,13 +863,13 @@ class Site(object):
                 delta_depth_vec = self.dens_firn * lid_vec * \
                                     interp(self.ice_equiv_depth, self.depth_mid, 
                                               self.tau/self.dens)
-                airage_vec = - interp(self.ice_equiv_depth, self.depth_mid, 
+                airage_vec = - pccfg.way*interp(self.ice_equiv_depth, self.depth_mid, 
                                           self.agedens) * delta_depth_vec
                 self.airage_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = airage_vec
                 self.delta_depth_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = delta_depth_vec
                 if full:
                     self.lid_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = lid_vec
-                    self.airagedens_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = np.diff(airage_vec)
+                    self.airagedens_jac[1+len(self.corr_a)+len(self.corr_tau)+i, :] = pccfg.way*np.diff(airage_vec)
 
     def corrected_jacobian_free(self):
         self.accu_jac = None
@@ -888,7 +888,7 @@ class Site(object):
         corr_delta = dot(self.chol_a, var[1:])*self.sigmap_corr_a
         agedens_delta = -interp((self.age_model[:-1]+self.age_model[1:])/2,
                                    self.corr_a_age, corr_delta) / self.accu
-        self.age_delta = age_top_delta+np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
+        self.age_delta = age_top_delta+pccfg.way*np.cumsum(np.concatenate((np.array([0]), self.depth_inter*\
                              agedens_delta)))
 
         if self.archive == 'icecore':
@@ -930,7 +930,7 @@ class Site(object):
         else:
             self.icelayerthick = self.accu
         self.agedens = 1/self.icelayerthick
-        self.age = self.age_top+np.cumsum(np.concatenate((np.array([0]),\
+        self.age = self.age_top+pccfg.way*np.cumsum(np.concatenate((np.array([0]),\
                     self.depth_inter*self.agedens)))
 
         #Air age
@@ -1050,8 +1050,8 @@ class Site(object):
                    /self.icehorizons_sigma
         if self.icehorizons_correlation_bool:
             resi_age = lu_solve(self.icehorizons_lu_piv, resi_age)
-        resi_iceint = (self.fct_age(self.iceintervals_depthbot)-\
-                      self.fct_age(self.iceintervals_depthtop)-\
+        resi_iceint = (pccfg.way*(self.fct_age(self.iceintervals_depthbot)-\
+                      self.fct_age(self.iceintervals_depthtop))-\
                       self.iceintervals_duration)/self.iceintervals_sigma
         if self.iceintervals_correlation_bool:
             resi_iceint = lu_solve(self.iceintervals_lu_piv, resi_iceint)
@@ -1062,8 +1062,8 @@ class Site(object):
                           self.airhorizons_sigma
             if self.airhorizons_correlation_bool:
                 resi_airage = lu_solve(self.airhorizons_lu_piv, resi_airage)
-            resi_airint = (self.fct_airage(self.airintervals_depthbot)-\
-                           self.fct_airage(self.airintervals_depthtop)-\
+            resi_airint = (pccfg.way*(self.fct_airage(self.airintervals_depthbot)-\
+                           self.fct_airage(self.airintervals_depthtop))-\
                            self.airintervals_duration)/self.airintervals_sigma
             if self.airintervals_correlation_bool:
                 resi_airint = lu_solve(self.airintervals_lu_piv, resi_airint)
@@ -1095,7 +1095,7 @@ class Site(object):
         resi_age_jac = self.fct_age_jac(self.icehorizons_depth)/self.icehorizons_sigma
         if self.icehorizons_correlation_bool:
             resi_age_jac = lu_solve(self.icehorizons_lu_piv, np.transpose(resi_age_jac))
-        resi_iceint_jac = (self.fct_age_jac(self.iceintervals_depthbot)-\
+        resi_iceint_jac = pccfg.way*(self.fct_age_jac(self.iceintervals_depthbot)-\
                       self.fct_age_jac(self.iceintervals_depthtop))/self.iceintervals_sigma
         if self.iceintervals_correlation_bool:
             resi_iceint_jac = lu_solve(self.iceintervals_lu_piv, np.transpose(resi_iceint_jac))
@@ -1105,7 +1105,7 @@ class Site(object):
             if self.airhorizons_correlation_bool:
                 resi_airage_jac = lu_solve(self.airhorizons_lu_piv, np.transpose(resi_airage_jac))
                 resi_airage_jac = np.transpose(resi_airage_jac)
-            resi_airint_jac = (self.fct_airage_jac(self.airintervals_depthbot)-\
+            resi_airint_jac = pccfg.way*(self.fct_airage_jac(self.airintervals_depthbot)-\
                           self.fct_airage_jac(self.airintervals_depthtop))/self.airintervals_sigma
             if self.airintervals_correlation_bool:
                 resi_airint_jac = lu_solve(self.airintervals_lu_piv, np.trasnpose(resi_airint_jac))
@@ -1290,7 +1290,10 @@ class Site(object):
                          np.exp(np.log(self.accu)+self.sigma_accu/self.accu),
                          color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((self.age_top, x_up, y_low, y_up))
+        if pccfg.time_axis:
+            mpl.axis((x_low, self.age_top, y_low, y_up))
+        else:
+            mpl.axis((self.age_top, x_up, y_low, y_up))
         ax2 = ax1.twinx()
         ax2.plot((self.corr_a_age[1:]+self.corr_a_age[:-1])/2, 
                  self.corr_a_age[1:]-self.corr_a_age[:-1], label='resolution',
@@ -1324,7 +1327,10 @@ class Site(object):
                          color=pccfg.color_ci, label="Confidence interval")
         ax1.axes.set_yscale('log')
         x_low, x_up, y_low, y_up = mpl.axis()
-        mpl.axis((self.age_top, x_up, y_low, y_up))
+        if pccfg.time_axis:
+            mpl.axis((x_low, self.age_top, y_low, y_up))
+        else:
+            mpl.axis((self.age_top, x_up, y_low, y_up))
         ax2 = ax1.twinx()
         ax2.plot((self.corr_a_age[1:]+self.corr_a_age[:-1])/2, 
                  self.corr_a_age[1:]-self.corr_a_age[:-1], label='resolution',
@@ -1388,7 +1394,7 @@ class Site(object):
             ax2.tick_params(axis='x', colors=pccfg.color_sigma)
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
-            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper center")
         else:
             mpl.legend(loc="best")
         mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age.'+pccfg.fig_format,
@@ -1708,7 +1714,10 @@ class Site(object):
                              self.age-self.airage+self.sigma_delta_age,
                              color=pccfg.color_ci, label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
-            mpl.axis((self.age_top, x_up, y_low, y_up))
+            if pccfg.time_axis:
+                mpl.axis((x_low, self.age_top, y_low, y_up))
+            else:
+                mpl.axis((self.age_top, x_up, y_low, y_up))
             mpl.savefig(pccfg.datadir+self.label+'/delta_age.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
@@ -1748,7 +1757,10 @@ class Site(object):
             mpl.plot(self.airage, self.depth, color=pccfg.color_opt,
                      label='Posterior $\\pm\\sigma$')
             x_low, x_up, y_low, y_up = mpl.axis()
-            mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
+            if pccfg.time_axis:
+                mpl.axis((x_low, self.age_top, self.depth[-1], self.depth[0]))
+            else:
+                mpl.axis((self.age_top, x_up, self.depth[-1], self.depth[0]))
             ax2 = ax1.twiny()
             ax2.plot(self.sigma_airage, self.depth, color=pccfg.color_sigma,
                      label='1$\\sigma$')
@@ -1763,7 +1775,7 @@ class Site(object):
             ax2.tick_params(axis='x', colors=pccfg.color_sigma)
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
-            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper center")
             mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'age.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:

@@ -39,6 +39,8 @@ calc_errors = True
 outlier_level = 3.
 show_prior_residuals = False
 c14_cal = 'intcal20'
+time_axis = False
+way = 1.
 #nb_runs = 0
 
 
@@ -46,6 +48,7 @@ def read_parameters():
     global list_sites
     global list_drillings
     global datadir
+    global way
 
     ###Reading parameters directory
     datadir = sys.argv[1]
@@ -74,3 +77,8 @@ def read_parameters():
         list_sites = list_drillings
     except NameError:
         pass
+    
+    if time_axis:
+        way = -1.
+    else:
+        way = 1.
