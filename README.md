@@ -62,10 +62,14 @@ modules:
 - math
 - numpy
 - matplotlib
-- multiprocessing
 - warnings
 - scipy
 - yaml
+- gc
+- multiprocessing
+- warnings
+- pickle
+- iosacal (optional, for C14 calibration)
 
 
 How to run paleochrono?
@@ -142,6 +146,7 @@ What is the structure of an experiment directory?
 You can have a look at the provided `AICC20123-Hulu` directory.
 You need to specify your prior scenarios for deposition rate (in all cases) and LID and thinning
 (for an ice core) and your age observations.
+Note that the .txt files should be space or tab separated values (do not use commas).
 
 You have five general files:
 - `parameters.yml`: contains general parameters for the
