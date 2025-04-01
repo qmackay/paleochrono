@@ -221,7 +221,9 @@ Then you can install iosacal like this:
 conda install iosacal
 ```
 To change the C14 calibration curve, you can set the `c14_cal` key in the site-specific parameters.yml file.
-Please have a look at the iosacal doc to have a list of C14 calibration curves.
+Please have a look at the iosacal doc to have a list of C14 calibration curves:
+
+https://iosacal.readthedocs.io/en/latest/how.html#other-calibration-curves
 
 How to set up the `parameters-CovarianceObservations.py` file?
 --------------------------------------------------------------
