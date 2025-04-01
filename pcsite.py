@@ -556,6 +556,8 @@ class Site(object):
                 self.icehorizons_depth = np.array([])
                 self.icehorizons_age = np.array([])
                 self.icehorizons_sigma = np.array([])
+            self.icehorizons_type = np.chararray(len(self.icehorizons_depth))
+            self.icehorizons_type[:] = ''
 
         filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons_C14.txt'
         with warnings.catch_warnings():
@@ -576,6 +578,7 @@ class Site(object):
                     self.icehorizons_depth = np.append( self.icehorizons_depth, depth_C14[i])
                     self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
                     self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
+                    self.icehorizons_type = np.append(self.icehorizons_type, 'C14')
 
         filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_intervals.txt'
         with warnings.catch_warnings():
@@ -1354,10 +1357,19 @@ class Site(object):
         mpl.ylabel('depth ('+self.depth_unit+')')
         if pccfg.show_initial:
             mpl.plot(self.age_init, self.depth, color=pccfg.color_init, label='Initial')
-        if np.size(self.icehorizons_depth) > 0:
-            mpl.errorbar(self.icehorizons_age, self.icehorizons_depth, color=pccfg.color_obs,
-                         xerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
+        if np.size(self.icehorizons_depth[np.where(self.icehorizons_type=='')]) > 0:
+            mpl.errorbar(self.icehorizons_age[np.where(self.icehorizons_type=='')],
+                         self.icehorizons_depth[np.where(self.icehorizons_type=='')],
+                         color=pccfg.color_obs,
+                         xerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='')], linestyle='', marker='o', markersize=2,
                          label="dated horizons")
+        if np.size(self.icehorizons_depth[np.where(self.icehorizons_type=='C14')]) > 0:
+            mpl.errorbar(self.icehorizons_age[np.where(self.icehorizons_type=='C14')],
+                         self.icehorizons_depth[np.where(self.icehorizons_type=='C14')],
+                         color=pccfg.color_obs,
+                         xerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')],
+                         linestyle='', marker='D', markersize=2,
+                         label="C14 dated horizons")
         # for i in range(np.size(self.iceintervals_duration)):
         #     y_low = self.iceintervals_depthtop[i]
         #     y_up = self.iceintervals_depthbot[i]
@@ -1409,10 +1421,20 @@ class Site(object):
         mpl.xlabel('depth ('+self.depth_unit+')')
         if pccfg.show_initial:
             mpl.plot(self.depth, self.age_init, color=pccfg.color_init, label='Initial')
-        if np.size(self.icehorizons_depth) > 0:
-            mpl.errorbar(self.icehorizons_depth, self.icehorizons_age, color=pccfg.color_obs,
-                         yerr=self.icehorizons_sigma, linestyle='', marker='o', markersize=2,
+        if np.size(self.icehorizons_depth[np.where(self.icehorizons_type=='')]) > 0:
+            mpl.errorbar(self.icehorizons_depth[np.where(self.icehorizons_type=='')],
+                         self.icehorizons_age[np.where(self.icehorizons_type=='')],
+                         color=pccfg.color_obs,
+                         yerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='')],
+                         linestyle='', marker='o', markersize=2,
                          label="dated horizons")
+        if np.size(self.icehorizons_depth[np.where(self.icehorizons_type=='C14')]) > 0:
+            mpl.errorbar(self.icehorizons_depth[np.where(self.icehorizons_type=='C14')],
+                         self.icehorizons_age[np.where(self.icehorizons_type=='C14')],
+                         color=pccfg.color_obs,
+                         yerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')],
+                         linestyle='', marker='D', markersize=2,
+                         label="C14 dated horizons")
         mpl.plot(self.depth, self.age_model, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.depth, self.age, color=pccfg.color_opt,
                  label='Posterior $\\pm\\sigma$')
@@ -1967,10 +1989,17 @@ class Site(object):
 
         resi = (self.fct_age(self.icehorizons_depth)-self.icehorizons_age)\
                    /self.icehorizons_sigma
+        resi_simple = (self.fct_age(self.icehorizons_depth[np.where(self.icehorizons_type=='')])-self.icehorizons_age[np.where(self.icehorizons_type=='')])\
+                   /self.icehorizons_sigma[np.where(self.icehorizons_type=='')]
+        resi_C14 = (self.fct_age(self.icehorizons_depth[np.where(self.icehorizons_type=='C14')])-self.icehorizons_age[np.where(self.icehorizons_type=='C14')])\
+                   /self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')]
         if np.size(resi)>0:
-            for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
-                print('Outlier in', self.age_label,'age horizon at index:', i, 'and depth:',
-                      self.icehorizons_depth[i], self.depth_unit)
+            for i in np.where(np.abs(resi_simple)>pccfg.outlier_level)[0]:
+                print('Outlier in '+self.age_labelsp+'age horizon at index:', i, 'and depth:',
+                      self.icehorizons_depth[np.where(self.icehorizons_type=='')][i], self.depth_unit)
+            for i in np.where(np.abs(resi_C14)>pccfg.outlier_level)[0]:
+                print('Outlier in '+self.age_labelsp+'C14 age horizon at index:', i, 'and depth:',
+                      self.icehorizons_depth[np.where(self.icehorizons_type=='C14')][i], self.depth_unit)
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' '+self.age_label+' age horizons residuals')
             mpl.xlabel('Residuals (no unit)')
