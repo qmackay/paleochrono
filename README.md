@@ -225,6 +225,10 @@ Please have a look at the iosacal doc to have a list of C14 calibration curves:
 
 https://iosacal.readthedocs.io/en/latest/how.html#other-calibration-curves
 
+It is also possible to have a horizon-specific calibration curve.
+In this case, just add a fourth column to the `dated_horizons_C14.txt` file with the calibration curve to be used.
+If you put `default`, the default site calibration curve will be used.
+
 How to set up the `parameters-CovarianceObservations.py` file?
 --------------------------------------------------------------
 

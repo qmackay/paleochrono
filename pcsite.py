@@ -573,7 +573,7 @@ class Site(object):
                 try: 
                     readarray1 = np.loadtxt(filename, usecols=[3], dtype=object)
                     cal_C14 = readarray1
-                    cal_C14 = np.where(cal_C14=="C14", self.c14_cal, cal_C14)
+                    cal_C14 = np.where(cal_C14=="default", self.c14_cal, cal_C14)
                 except:
                     cal_C14 = np.empty(np.shape(readarray)[0], dtype=object)
                     cal_C14[:] = self.c14_cal
