@@ -1,4 +1,4 @@
-#depth_dating	corr_age 	corr_age_uncert (from SISALv2)
+#depth_dating	corr_age 	corr_age_uncert
 16	2240	38.47638367
 36	3875	39.16901965
 56	5545	39.64042886
