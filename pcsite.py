@@ -556,25 +556,32 @@ class Site(object):
                 self.icehorizons_depth = np.array([])
                 self.icehorizons_age = np.array([])
                 self.icehorizons_sigma = np.array([])
-            self.icehorizons_type = np.chararray(len(self.icehorizons_depth))
+            self.icehorizons_type = np.empty(len(self.icehorizons_depth), dtype=object)
             self.icehorizons_type[:] = ''
 
         filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons_C14.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if os.path.isfile(filename) and open(filename).read() and\
-                np.size(np.loadtxt(filename)) > 0:
-                readarray = np.loadtxt(filename)
+                np.size(np.loadtxt(filename, usecols=[0])) > 0:
+                readarray = np.loadtxt(filename, usecols=[0, 1, 2])
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 depth_C14 = readarray[:, 0]
                 age_C14 = readarray[:, 1]
                 sigma_C14 = readarray[:, 2]
+                try: 
+                    readarray1 = np.loadtxt(filename, usecols=[3], dtype=object)
+                    cal_C14 = readarray1
+                    cal_C14 = np.where(cal_C14=="C14", self.c14_cal, cal_C14)
+                except:
+                    cal_C14 = np.empty(np.shape(readarray)[0], dtype=object)
+                    cal_C14[:] = self.c14_cal
                 print('Calibrating C14 ages')
                 from iosacal import R
                 for i in range(len(age_C14)):
                     r = R(age_C14[i], sigma_C14[i], 'name')
-                    cal_r = r.calibrate(self.c14_cal)
+                    cal_r = r.calibrate(cal_C14[i])
                     self.icehorizons_depth = np.append( self.icehorizons_depth, depth_C14[i])
                     self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
                     self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
