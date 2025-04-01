@@ -38,7 +38,6 @@ fig_format = 'pdf'
 calc_errors = True
 outlier_level = 3.
 show_prior_residuals = False
-c14_cal = 'intcal20'
 time_axis = False
 way = 1.
 #nb_runs = 0

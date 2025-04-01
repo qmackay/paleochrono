@@ -77,6 +77,7 @@ class Site(object):
         self.fig_age_show_unc = True   #Whether to show the age uncertainty in the age figure
         self.fig_age_switch_axes = False
         self.fig_max_age_unc = None
+        self.c14_cal = 'intcal20'
 
 # Setting of the parameters from the parameter files
 
@@ -571,7 +572,7 @@ class Site(object):
                 from iosacal import R
                 for i in range(len(age_C14)):
                     r = R(age_C14[i], sigma_C14[i], 'name')
-                    cal_r = r.calibrate(pccfg.c14_cal)
+                    cal_r = r.calibrate(self.c14_cal)
                     self.icehorizons_depth = np.append( self.icehorizons_depth, depth_C14[i])
                     self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
                     self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
