@@ -1377,21 +1377,6 @@ class Site(object):
                          xerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')],
                          linestyle='', marker='D', markersize=2,
                          label="C14 dated horizons")
-        # for i in range(np.size(self.iceintervals_duration)):
-        #     y_low = self.iceintervals_depthtop[i]
-        #     y_up = self.iceintervals_depthbot[i]
-        #     x_low = self.fct_age(y_low)
-        #     x_up = x_low+self.iceintervals_duration[i]
-        #     xseries = np.array([x_low, x_up, x_up, x_low, x_low])
-        #     yseries = np.array([y_low, y_low, y_up, y_up, y_low])
-        #     if i == 0:
-        #         mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
-        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
-        #                      capsize=1)
-        #     else:
-        #         mpl.plot(xseries, yseries, color=pccfg.color_di)
-        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
-        #                      capsize=1)
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.age, self.depth, color=pccfg.color_opt,
                  label='Posterior $\\pm\\sigma$')
@@ -1414,7 +1399,7 @@ class Site(object):
             ax2.tick_params(axis='x', colors=pccfg.color_sigma)
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
-            ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper center")
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
         else:
             mpl.legend(loc="best")
         mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age.'+pccfg.fig_format,
@@ -1449,21 +1434,6 @@ class Site(object):
                           color=pccfg.color_ci, label="Confidence interval")
         x_low, x_up, y_low, y_up = mpl.axis()
         mpl.axis((self.depth[0], self.depth[-1], y_low, y_up))
-        # for i in range(np.size(self.iceintervals_duration)):
-        #     y_low = self.iceintervals_depthtop[i]
-        #     y_up = self.iceintervals_depthbot[i]
-        #     x_low = self.fct_age(y_low)
-        #     x_up = x_low+self.iceintervals_duration[i]
-        #     xseries = np.array([x_low, x_up, x_up, x_low, x_low])
-        #     yseries = np.array([y_low, y_low, y_up, y_up, y_low])
-        #     if i == 0:
-        #         mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
-        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
-        #                      capsize=1)
-        #     else:
-        #         mpl.plot(xseries, yseries, color=pccfg.color_di)
-        #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.iceintervals_sigma[i],
-        #                      capsize=1)
         if self.fig_age_show_unc: 
             ax2 = ax1.twinx()
             ax2.plot(self.depth, self.sigma_age, color=pccfg.color_sigma,
@@ -1476,9 +1446,9 @@ class Site(object):
             ax2.tick_params(axis='y', colors=pccfg.color_sigma)
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
-            ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
         else:
-            mpl.legend(loc="upper left")
+            mpl.legend(loc="best")
         if self.fig_age_switch_axes:
             mpl.savefig(pccfg.datadir+self.label+'/'+self.age_label_+'age_switch_axes.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
@@ -1764,22 +1734,6 @@ class Site(object):
                 mpl.errorbar(self.airhorizons_age, self.airhorizons_depth, color=pccfg.color_obs,
                              xerr=self.airhorizons_sigma, linestyle='', marker='o', markersize=2,
                              label="observations")
-    #        mpl.ylim(mpl.ylim()[::-1])
-            # for i in range(np.size(self.airintervals_duration)):
-            #     y_low = self.airintervals_depthtop[i]
-            #     y_up = self.airintervals_depthbot[i]
-            #     x_low = self.fct_airage(y_low)
-            #     x_up = x_low+self.airintervals_duration[i]
-            #     xseries = np.array([x_low, x_up, x_up, x_low, x_low])
-            #     yseries = np.array([y_low, y_low, y_up, y_up, y_low])
-            #     if i == 0:
-            #         mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
-            #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
-            #                      capsize=1)
-            #     else:
-            #         mpl.plot(xseries, yseries, color=pccfg.color_di)
-            #         mpl.errorbar(x_up, y_up, color=pccfg.color_di, xerr=self.airintervals_sigma[i],
-            #                      capsize=1)
             mpl.plot(self.airage_model, self.depth, color=pccfg.color_mod, label='Prior')
             mpl.fill_betweenx(self.depth, self.airage-self.sigma_airage,
                               self.airage+self.sigma_airage,
@@ -1805,7 +1759,7 @@ class Site(object):
             ax2.tick_params(axis='x', colors=pccfg.color_sigma)
             lines1, labels1 = ax1.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
-            ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper center")
+            ax2.legend(lines1 + lines2, labels1 + labels2, loc="best")
             mpl.savefig(pccfg.datadir+self.label+'/'+self.age2_label_+'age.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
@@ -1830,7 +1784,7 @@ class Site(object):
                               label="Confidence interval")
             x_low, x_up, y_low, y_up = mpl.axis()
             mpl.axis((x_low, x_up, self.depth[-1], self.depth[0]))
-            mpl.legend(loc='lower right')
+            mpl.legend(loc='best')
             mpl.savefig(pccfg.datadir+self.label+'/delta_depth.'+pccfg.fig_format,
                         format=pccfg.fig_format, bbox_inches='tight')
             if not pccfg.show_figures:
