@@ -190,9 +190,8 @@ specific observations
 A few things you need to know to use paleochrono:
 1) You can use whatever units you want but they need to be consistent. For example, if you use meters for the depths and years for the dated horizons, you need to use meters per years for the accumulation rates. 
 2) The site specific parameters override the general parameters for all sites. In the very same way, the site-pair specific parameters override the general parameters for all site-pairs.
-3) The standard deviations defined in the parameters-Covariance*.py override the standard deviation defined in the observation or prior files.
-4) Most of these files are optional. If there is no file for an certain type of observations, that means that there is no observation of this type. If a covariance matrix is not defined for a prior or an observation type, that means that the correlation matrix is supposed to be equal to identity and that the standard deviation is given in the prior or observation file.
-
+3) Most of these files are optional. If there is no file for an certain type of observations, that means that there is no observation of this type. If a covariance matrix is not defined for an observation type, that means that the correlation matrix is supposed to be equal to identity and that the standard deviation is given in the observation file.
+4) You can put comment at the end of `.yml` or `.txt` file after a # character. This is handy if you want to add a label to, e.g., a dated horizon.
 
 What is the structure of the general `parameters.yml` file?
 --------------------------------------------------------
