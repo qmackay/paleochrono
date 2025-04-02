@@ -229,6 +229,10 @@ It is also possible to have a horizon-specific calibration curve.
 In this case, just add a fourth column to the `dated_horizons_C14.txt` file with the calibration curve to be used.
 If you put `default`, the default site calibration curve will be used.
 
+Regarding the reservoir ages, it is up to the user to correct for them, for example in a spreadsheet file.
+The reservoir age has to be subtracted from the C14 age: C14_age - reservoir_age.
+The uncertainty then becomes the quadratic sum of the two uncertainties: sqrt(C14_un^2 + reseroir_unc^2).
+
 How to set up the `parameters-CovarianceObservations.py` file?
 --------------------------------------------------------------
 
