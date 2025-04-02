@@ -577,7 +577,7 @@ class Site(object):
                 print('Calibrating C14 ages')
                 from iosacal import R
                 for i in range(len(df)):
-                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
+#                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
                     r = R(df['age'][i], df['age_unc'][i], 'name')
                     cal_r = r.calibrate(df['calib'][i])
                     self.icehorizons_depth = np.append(self.icehorizons_depth, df['depth'][i])
