@@ -12,6 +12,7 @@ import warnings
 import math as m
 import numpy as np
 import matplotlib.pyplot as mpl
+import pandas as pd
 from scipy.linalg import lu_factor, lu_solve
 from numpy.linalg import cholesky
 from scipy.interpolate import interp1d
@@ -562,27 +563,24 @@ class Site(object):
         filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons_C14.txt'
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read() and\
-                np.size(np.loadtxt(filename, usecols=[0])) > 0:
-                readarray = np.loadtxt(filename, usecols=[0, 1, 2])
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                depth_C14 = readarray[:, 0]
-                age_C14 = readarray[:, 1]
-                sigma_C14 = readarray[:, 2]
+            if os.path.isfile(filename) and open(filename).read():
+                df = pd.read_csv(filename, sep=None, comment='#')
                 try: 
-                    readarray1 = np.loadtxt(filename, usecols=[3], dtype=object)
-                    cal_C14 = readarray1
-                    cal_C14 = np.where(cal_C14=="default", self.c14_cal, cal_C14)
+                    df['calib'] = df['calib'].mask(df['calib']=='default', self.c14_cal)
                 except:
-                    cal_C14 = np.empty(np.shape(readarray)[0], dtype=object)
-                    cal_C14[:] = self.c14_cal
+                    df['calib'] = pd.Series(self.c14_cal, index=range(len(df)))
+                try:
+                    df['age'] -= df['res_age']
+                    df['age_unc'] = (df['age_unc']**2+df['res_unc']**2).pow(0.5)
+                except:
+                    pass
                 print('Calibrating C14 ages')
                 from iosacal import R
-                for i in range(len(age_C14)):
-                    r = R(age_C14[i], sigma_C14[i], 'name')
-                    cal_r = r.calibrate(cal_C14[i])
-                    self.icehorizons_depth = np.append( self.icehorizons_depth, depth_C14[i])
+                for i in range(len(df)):
+                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
+                    r = R(df['age'][i], df['age_unc'][i], 'name')
+                    cal_r = r.calibrate(df['calib'][i])
+                    self.icehorizons_depth = np.append(self.icehorizons_depth, df['depth'][i])
                     self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
                     self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
                     self.icehorizons_type = np.append(self.icehorizons_type, 'C14')

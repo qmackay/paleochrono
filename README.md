@@ -224,13 +224,14 @@ Please have a look at the iosacal doc to have a list of C14 calibration curves:
 
 https://iosacal.readthedocs.io/en/latest/how.html#other-calibration-curves
 
-It is also possible to have a horizon-specific calibration curve.
-In this case, just add a fourth column to the `dated_horizons_C14.txt` file with the calibration curve to be used.
+The `dated_horizons_C14.txt` works with a header to describe the columns.
+The following columns should be present: `depth`, `age` and `age_unc`.
+Optionnally, you can specify `res_age` and `res_unc` for a reservoir age and its uncertainty.
+You can also optionnally specify a per-horizon synchronisation curve with the `calib` key.
 If you put `default`, the default site calibration curve will be used.
-
-Regarding the reservoir ages, it is up to the user to correct for them, for example in a spreadsheet file.
-The reservoir age has to be subtracted from the C14 age: C14_age - reservoir_age.
-The uncertainty then becomes the quadratic sum of the two uncertainties: sqrt(C14_un^2 + reseroir_unc^2).
+You can also add other columns, for example `label` if you want to specify a label.
+The order of the columns does not matter, as long as the header is correct.
+The separator (e.g., comma, space, tab) should be the same for the header and the values.
 
 How to set up the `parameters-CovarianceObservations.py` file?
 --------------------------------------------------------------
