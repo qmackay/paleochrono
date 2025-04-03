@@ -69,6 +69,7 @@ modules:
 - multiprocessing
 - warnings
 - pickle
+- pandas
 - iosacal (optional, for C14 calibration)
 
 
