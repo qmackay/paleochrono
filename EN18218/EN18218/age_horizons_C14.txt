@@ -1,4 +1,4 @@
-#depth_dating	corr_age 	corr_age_uncert
+#Here, the Lab-ID column is an example descriptive column that can be removed.
 Lab-ID	depth	age	age_unc	res_age	res_unc
 AWI-5627.1.1	0.25	785	31	853	31
 AWI-2998.1.1	18.75	2787	33	853	31
