@@ -111,22 +111,7 @@ class Site(object):
                 self.corr_thinning_depth = grid(self.corr_thinning_grid)
                 self.corr_thinning_depth = stretch(self.corr_thinning_depth, self.depth[0], 
                                                    self.depth[-1])
-        else:
-            filename = pccfg.datadir+'/parameters_all_sites.py'
-            if os.path.isfile(filename):
-                exec(open(filename).read())
-                print('Python format for parameters_all_sites file is deprecated.'
-                      'Use YAML format instead.')
-            else:
-                filename = pccfg.datadir+'/parameters-AllDrillings.py'
-                if os.path.isfile(filename):
-                    exec(open(filename).read())
-                    print('parameters-AllDrillings.py file is deprecated.'
-                          'Use YAML parameters_all_sites.yml file instead.')
 
-            print('WARNING: python parameters file for sites are deprecated.'
-                  'Use YAML format instead.')
-            exec(open(pccfg.datadir+self.label+'/parameters.py').read())
 
 ##Translation of deprecated names
 
