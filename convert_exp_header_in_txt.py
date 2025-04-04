@@ -44,8 +44,9 @@ def convert_file(pattern, labels):
 labels = ["depth","age","age_unc"]
 for name in ['age_horizons.txt', 'ice_age_horizons.txt', 'air_age_horizons.txt']:
     convert_file(name, labels)
-convert_file('thinning.txt', ["depth", "thinning", "rel_unc"])
 convert_file('deposition.txt', ["depth", "deporate", "rel_unc"])
+convert_file('thinning.txt', ["depth", "thinning", "rel_unc"])
+convert_file('lock_in_depth.txt', ["depth", "LID", "rel_unc"])
 labels = ["depth_top", "depth_bot", "duration", "dur_unc"]
 for name in ['ice_age_intervals.txt', 'air_age_intervals.txt', 'age_intervals.txt']:
     convert_file(name, labels)
@@ -54,3 +55,5 @@ for name in ['synchro_horizons.txt', 'iceice_synchro_horizons.txt', 'airair_sync
              "iceair_synchro_horizons.txt", "airice_synchro_horizons.txt",
              "ice_synchro_horizons.txt", "air_synchro_horizons.txt"]:
     convert_file(name, labels)
+#convert_file('isotopes.txt', ["depth", "data"])
+
