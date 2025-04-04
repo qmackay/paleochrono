@@ -434,7 +434,6 @@ class Site(object):
           self.sigmap_corr_a = interp_stair_aver(x_out, self.fct_age_model(self.a_depth),
                                                         self.a_sigma)
         except AttributeError:
-            print('Sigma on prior accu scenario not defined in the deposition.txt file')
             self.sigmap_corr_a=self.sigmap_corr_a*np.ones(np.size(self.corr_a_age))
 
         if self.archive == 'icecore':
@@ -448,7 +447,6 @@ class Site(object):
                                                  lid_age[~np.isnan(lid_age)],
                                                  self.lid_sigma[~np.isnan(lid_age)])
             except AttributeError:
-                print('Sigma on prior LID scenario not defined in the lock_in_depth.txt file')
                 self.sigmap_corr_lid=self.sigmap_corr_lid*np.ones(np.size(self.corr_lid_age))
 
             try:
@@ -458,7 +456,6 @@ class Site(object):
                 self.sigmap_corr_tau = interp_lin_aver(x_out, self.tau_depth,
                                                  self.tau_sigma)
             except AttributeError:
-                print('Sigma on prior thinning scenario not defined in the thinning.txt file')
                 self.iedepth = np.cumsum(np.concatenate((np.array([self.iedepth_top]), 
                                                          self.dens*self.depth_inter)))
                 self.thickness_ie = self.thickness-self.depth[-1]+self.iedepth[-1]
