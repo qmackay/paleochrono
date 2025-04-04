@@ -210,6 +210,10 @@ Have a look at the files `AICC2023-Hulu/EDC/parameters.yml`, it is commented.
 
 How do I use the C14 calibration?
 ---------------------------------
+Paleochrono can calibrate your C14 ages using the python module iosacal.
+For now Paleochrono uses a least-squares optimization, 
+so the distribution of calibrated ages is transformed into a Gaussian distribution by calculating its mean and its standard deviation.
+
 First, you need to install iosacal, which is a python software for C14 calibration.
 isoacal is included in conda-forge, so you have to add the conda-forge repo.
 If you are using Anaconda, you can add conda-forge like this:
