@@ -315,8 +315,6 @@ class Site(object):
             filename = pccfg.datadir+self.label+'/deposition.txt'
             if os.path.isfile(filename):
                 readarray = np.loadtxt(filename)
-            else:
-                readarray = np.loadtxt(pccfg.datadir+self.label+'/accu-prior.txt')
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
             self.a_depth = readarray[:, 0]
@@ -335,12 +333,9 @@ class Site(object):
         self.airage = np.empty_like(self.depth)
 
         if self.archive == 'icecore':
-
-            if os.path.isfile(pccfg.datadir+self.label+'/density.txt'):
-                readarray = np.loadtxt(pccfg.datadir+self.label+'/density.txt')
-            else:
-                readarray = np.loadtxt(pccfg.datadir+self.label+'/density-prior.txt')
-            #        self.density_depth=readarray[:,0]
+            filename = pccfg.datadir+self.label+'/density.txt'
+            if os.path.isfile(filename):
+                readarray = np.loadtxt(filename)
             if np.size(readarray) == np.shape(readarray)[0]:
                 readarray.resize(1, np.size(readarray))
             self.dens_depth = readarray[:, 0]
@@ -362,11 +357,9 @@ class Site(object):
                     self.lid_depth = np.array([self.depth[0], self.depth[-1]])
                     self.lid_lid = np.array([self.lid_value, self.lid_value])
             else:
-    #            self.lid_model=np.loadtxt(pccfg.datadir+self.label+'/LID-prior.txt')
-                if os.path.isfile(pccfg.datadir+self.label+'/lock_in_depth.txt'):
-                    readarray = np.loadtxt(pccfg.datadir+self.label+'/lock_in_depth.txt')
-                else:
-                    readarray = np.loadtxt(pccfg.datadir+self.label+'/LID-prior.txt')
+                filename = pccfg.datadir+self.label+'/lock_in_depth.txt'
+                if os.path.isfile(filename):
+                    readarray = np.loadtxt(filename)
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 self.lid_depth = readarray[:, 0]
@@ -384,10 +377,9 @@ class Site(object):
                 self.zeta = (self.thickness_ie-self.iedepth_mid)/self.thickness_ie
                 self.tau = np.empty_like(self.depth_mid)
             else:
-                if os.path.isfile(pccfg.datadir+self.label+'/thinning.txt'):
-                    readarray = np.loadtxt(pccfg.datadir+self.label+'/thinning.txt')
-                else:
-                    readarray = np.loadtxt(pccfg.datadir+self.label+'/thinning-prior.txt')
+                filename = pccfg.datadir+self.label+'/thinning.txt'
+                if os.path.isfile(filename):
+                    readarray = np.loadtxt(filename)
                 if np.size(readarray) == np.shape(readarray)[0]:
                     readarray.resize(1, np.size(readarray))
                 self.tau_depth = readarray[:, 0]
@@ -442,7 +434,7 @@ class Site(object):
           self.sigmap_corr_a = interp_stair_aver(x_out, self.fct_age_model(self.a_depth),
                                                         self.a_sigma)
         except AttributeError:
-            print('Sigma on prior accu scenario not defined in the accu-prior.txt file')
+            print('Sigma on prior accu scenario not defined in the deposition.txt file')
             self.sigmap_corr_a=self.sigmap_corr_a*np.ones(np.size(self.corr_a_age))
 
         if self.archive == 'icecore':
@@ -456,7 +448,7 @@ class Site(object):
                                                  lid_age[~np.isnan(lid_age)],
                                                  self.lid_sigma[~np.isnan(lid_age)])
             except AttributeError:
-                print('Sigma on prior LID scenario not defined in the LID-prior.txt file')
+                print('Sigma on prior LID scenario not defined in the lock_in_depth.txt file')
                 self.sigmap_corr_lid=self.sigmap_corr_lid*np.ones(np.size(self.corr_lid_age))
 
             try:
@@ -466,7 +458,7 @@ class Site(object):
                 self.sigmap_corr_tau = interp_lin_aver(x_out, self.tau_depth,
                                                  self.tau_sigma)
             except AttributeError:
-                print('Sigma on prior thinning scenario not defined in the thinning-prior.txt file')
+                print('Sigma on prior thinning scenario not defined in the thinning.txt file')
                 self.iedepth = np.cumsum(np.concatenate((np.array([self.iedepth_top]), 
                                                          self.dens*self.depth_inter)))
                 self.thickness_ie = self.thickness-self.depth[-1]+self.iedepth[-1]
