@@ -1,4 +1,5 @@
 #Ice dated horizons for NGRIP from AICC2012.
+depth	age	age_unc	comment
 46.95	110	0.25
 60.83	170	0.25
 73.6	230	0.25

@@ -1,5 +1,6 @@
 # TAC data
 # depth (m) TAC (cm3/g)
+depth	data
 115.09	0.0873
 126.64	0.0860
 137.64	0.0883

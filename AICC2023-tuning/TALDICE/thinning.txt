@@ -1,4 +1,5 @@
-#depth	thinning function (no dimension)	
+#depth	thinning function (no dimension)
+depth	thinning	rel_unc	comment
 0	0.9997	0
 1	0.9994	0.000626174076393237
 2	0.99909	0.00125234815278647

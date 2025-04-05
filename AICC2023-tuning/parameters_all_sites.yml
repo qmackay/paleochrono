@@ -2,7 +2,7 @@ calc_deporate: False           #If you want to calculate the prior deporate.
 calc_thinning: False         #If you want to calculate the prior thinning.
 calc_lid: False         #If you want to calculate the prior lock-in depth.
 dens_firn: 0.7            #Average density of the firn
-start: 'restart'  #prior, restart or random
+start: 'prior'  #prior, restart or random
 calc_deporate_method: 'staircase' #linear or staircase. Define the prior deporate representation.
 
 corr_deporate_grid: #Age grid for the deporate correction function
