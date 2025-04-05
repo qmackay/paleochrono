@@ -1,4 +1,5 @@
 #depth_dating	corr_age 	corr_age_uncert (from SISALv2)
+depth	age	age_unc	comment
 21	35900	109
 21	35915	90
 41	38010	250
