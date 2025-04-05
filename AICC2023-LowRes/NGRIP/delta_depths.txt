@@ -1,4 +1,5 @@
 #Ddepth obs for NGRIP from AICC2012.
+air_depth	Ddepth	Ddepth_unc	comment
 2099.9	16.29	2
 2123.6	15.8	2
 2157.1	15.56	2

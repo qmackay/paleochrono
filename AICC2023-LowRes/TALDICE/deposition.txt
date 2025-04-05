@@ -1,4 +1,5 @@
 #depth	accumulation rate in meters of ice equivalent (from Lucie)	Uncertainty %
+depth	deporate	rel_unc	comment
 0	0.08743	0.2
 1	0.08743	0.2
 2	0.08743	0.2

@@ -1,5 +1,5 @@
 # density
-
+depth	rel_dens	comment
 1400	1
 1401	1
 1402	1
