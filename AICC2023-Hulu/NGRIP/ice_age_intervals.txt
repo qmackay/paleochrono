@@ -1,5 +1,6 @@
 #Dated intervals of 100 yr durations from GICC05. When error is <=0, put 0.1.
 #top depth (m)	bottom depth (m)	duration (yr)	sigma duration (yr)
+depth_top	depth_bot	duration	dur_unc	comment
 8.00	211.84	1000	1.00
 211.84	384.99	1000	0.10
 384.99	547.05	1000	1.41

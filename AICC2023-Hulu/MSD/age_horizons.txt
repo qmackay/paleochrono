@@ -1,4 +1,5 @@
-#U/Th ages as obtained in Cheng et al. (Science, 2018).		
+#U/Th ages as obtained in Cheng et al. (Science, 2018).
+depth	age	age_unc	comment
 1	18575	34.5
 3.5	18711	48
 5.5	18929	36

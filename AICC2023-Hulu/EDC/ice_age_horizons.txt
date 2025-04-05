@@ -1,6 +1,5 @@
-		
-# depth [m] ; orbital age [yr] ; uncertainty [kyr]			
-			
+# depth [m] ; orbital age [yr] ; uncertainty [kyr]
+depth	age	age_unc	comment
 645.314199	30950	3000	#TAC
 782.859282	47950	3000	#TAC
 1337.509399	93850	3000	#TAC
@@ -101,42 +100,3 @@
 3171.996468	778800	10000	#dO2N2
 3179.043682	787750	10000	#TAC
 3181.000738	787500	10000	#dO2N2
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
- 			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			

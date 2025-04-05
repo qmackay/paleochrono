@@ -1,6 +1,11 @@
 #  Stratigraphic links from bipolar vocanic synchronisation for EDML depth between 700m and 1700m (Svensson et al., 2020)  & from AICC2012 for other match points (Veres et al., 2013)
-
 # EDC depth [m]	 EDML depth [m] uncertainty [yr]
+#1568.29	2326.1	92
+#1583.34	2344.59	22
+#1587.05	2347.73	60
+#1596.69	2355.4	39
+#1602.8	2359.45	168
+depth1	depth2	age_unc	comment
 22.8	47.85	50
 23.24	48.7	50
 24.95	52.4	50
@@ -81,7 +86,7 @@
 732.625	1529.05	4
 733.65	1530.49	4
 734.77	1531.78	19
-741.235	1538.35 100 #incertitude max car yen avait pas de base. 	
+741.235	1538.35	100	#incertitude	max	car	yen	avait	pas	de	base.
 784.903	1595.04	22
 793.21	1605.00	6
 795.517	1606.52	21
@@ -147,11 +152,6 @@
 1526.13	2277.65	143
 1547.79	2302.75	25
 1551.53	2307.61	97
-#1568.29	2326.1	92
-#1583.34	2344.59	22
-#1587.05	2347.73	60
-#1596.69	2355.4	39
-#1602.8	2359.45	168
 1628.5	2382.65	17
 1630.9	2385.25	28
 1635.13	2389.49	68

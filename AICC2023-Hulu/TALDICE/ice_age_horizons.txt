@@ -1,5 +1,5 @@
 # tie points ice
-
+depth	age	age_unc	comment
 1413	129972	2137.21
 1438	153718	15748.8
 1470.05	174227	2994.33

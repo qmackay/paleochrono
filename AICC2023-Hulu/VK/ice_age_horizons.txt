@@ -1,5 +1,5 @@
 #Ice dated horizons for VK from AICC2012 (Bazin et al., 2013)
-
+depth	age	age_unc	comment
 178	7180	100
 601	40650	950
 1675	121800	4000

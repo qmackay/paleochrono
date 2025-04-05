@@ -1,7 +1,6 @@
 #EDC-VK ice links from AICC2012 (Veres et al., 2013)
-
 #EDC depth [m]	VK depth [m]	uncertainty [yr]
-
+depth1	depth2	age_unc	comment
 12.59	10.01	200
 29.6	23.57	200
 37.93	30.21	200

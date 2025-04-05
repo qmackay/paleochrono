@@ -1,5 +1,5 @@
-# depth -tie points	mean age 	
-
+# depth -tie points	mean age
+depth	age	age_unc	comment
 1447.92	158763.04	4880.79
 1455.92	163105.14	4257.18
 1483.00	179848.92	4008.29
