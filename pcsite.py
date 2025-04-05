@@ -1305,9 +1305,9 @@ class Site(object):
         if np.size(self.icehorizons_depth[np.where(self.icehorizons_type=='C14')]) > 0:
             mpl.errorbar(self.icehorizons_age[np.where(self.icehorizons_type=='C14')],
                          self.icehorizons_depth[np.where(self.icehorizons_type=='C14')],
-                         color=pccfg.color_obs,
+                         color=pccfg.color_c14,
                          xerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')],
-                         linestyle='', marker='D', markersize=2,
+                         linestyle='', marker='d', markersize=2,
                          label="$^{14}$C dated horizons")
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.age, self.depth, color=pccfg.color_opt,

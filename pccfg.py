@@ -19,6 +19,7 @@ is_jax = False
 nb_nodes = 6         #Number of nodes for the leastsq-parallel mode
 datadir = './'
 color_obs = 'r'       #color for the observations
+color_c14 = 'orange'  #color for the C14 dated horizons
 color_opt = 'k'       #color for the posterior scenario
 color_mod = 'b'       #color for the prior scenario
 color_ci = '0.8'      #color for the confidence intervals
