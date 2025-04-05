@@ -70,58 +70,7 @@ def convert_file(pattern, labels):
                     #     f.write(elem+sep)
                     # f.write(line_split[-1]+'|n')
                 f.close()
-            
-def convert_file_iso():
-    pattern = 'isotopes.txt'
-    for root, dirs, files in os.walk(dir, topdown=False):
-        for name in files:
-            if name == pattern:
-                path = os.path.join(root, name)
-                print(path)
-                f = open(path)
-                lines_comments = []
-                lines_data = []
-                for line in f:
-                    line = line.strip(" \t\n")            
-                    if len(line) == 0:
-                        pass
-                    elif line[0] == "#":
-                        lines_comments.append(line)
-                    elif line[0:5] =="depth" or line == '\n':
-                        pass
-                    else:                    
-                        lines_data.append(line)
-                f.close()
-                if len(lines_data) > 0:
-                    dialect = csv.Sniffer().sniff(lines_data[0])
-                    sep = dialect.delimiter
-                else:
-                    sep = "\t"
-                nb_cols = len(lines_data[0].split(sep))
-                if nb_cols == 4:
-                    header = "depth"+sep+"d18O"+sep+"deut"+sep+"d18Osw\n"
-                    print('4 columns file.')
-                elif nb_cols == 2:
-                    header = "depth"+sep+"deut\n"
-                    print("2 columns file.", header)
-                else:
-                    print('incorrect number of columns in isotopes.txt file')
-                f = open(path, 'w')
-                for line in lines_comments:
-                    f.write(line+'\n')
-                f.write(header)
-                for line in lines_data:
-                    if len(line.split(sep)) < len(labels):
-                        if sep == ' ':
-                            line = line.replace('\t', ' ')
-                        elif sep == '\t':
-                            line = line.replace(' ', '\t')
-                    elif len(line.split(sep)) > len(labels)+1:
-                        line1 = sep
-                        line = line1.join(line.split())
-                        # print(repr(line))
-                    f.write(line+'\n')
-                f.close()
+
                 
 labels = ["depth","age","age_unc"]
 for name in ['age_horizons.txt', 'ice_age_horizons.txt', 'air_age_horizons.txt']:
