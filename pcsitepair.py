@@ -9,6 +9,7 @@ Module for the SitePair class.
 import os
 import sys
 import numpy as np
+import pandas as pd
 import math as m
 import matplotlib.pyplot as mpl
 from scipy.linalg import lu_factor, lu_solve
@@ -18,7 +19,6 @@ import pccfg
 
 class SitePair(object):
     """Class for a pair of sites."""
-
     def __init__(self, site1, site2):
         self.site1 = site1
         self.site2 = site2
@@ -33,17 +33,21 @@ class SitePair(object):
         
 
 #TODO: allow to have either dlabel1+'-'dlabel2 or dlbel2+'-'dlabel1 as directory
-        filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-            '/'+self.age_age_label+'synchro_horizons.txt'
-        if not os.path.isfile(filename):
-            filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/ice_depth.txt'
-        if os.path.isfile(filename) and open(filename).read():
-            readarray = np.loadtxt(filename)
-            if np.size(readarray) == np.shape(readarray)[0]:
-                readarray.resize(1, np.size(readarray))
-            self.iceicehorizons_depth1 = readarray[:, 0]
-            self.iceicehorizons_depth2 = readarray[:, 1]
-            self.iceicehorizons_sigma = readarray[:, 2]
+        filename =pccfg.datadir+self.site1.label+'-'+self.site2.label+'/'
+        if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
+            prefix = 'iceice_'
+        elif self.site1.archive == 'icecore' and self.site2.archive != 'icecore':
+            prefix = 'ice_'
+        elif self.site1.archive != 'icecore' and self.site2.archive == 'icecore':
+            prefix = 'ice_'
+        else:
+            prefix = ''
+        filename =pccfg.datadir+self.site1.label+'-'+self.site2.label+'/'+prefix+'synchro_horizons.txt'
+        if os.path.isfile(filename):
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.iceicehorizons_depth1 = df['depth1'].to_numpy(dtype=float)
+            self.iceicehorizons_depth2 = df['depth2'].to_numpy(dtype=float)
+            self.iceicehorizons_sigma = df['age_unc'].to_numpy(dtype=float)
         else:
             self.iceicehorizons_depth1 = np.array([])
             self.iceicehorizons_depth2 = np.array([])
@@ -52,16 +56,12 @@ class SitePair(object):
 
         if self.site1.archive == 'icecore' and self.site2.archive == 'icecore':
             filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+\
-                       '/'+self.age2_age2_label+'synchro_horizons.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/air_depth.txt'
-            if os.path.isfile(filename) and open(filename).read():
-                readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.airairhorizons_depth1 = readarray[:, 0]
-                self.airairhorizons_depth2 = readarray[:, 1]
-                self.airairhorizons_sigma = readarray[:, 2]
+                       '/airair_'+'synchro_horizons.txt'
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.airairhorizons_depth1 = df['depth1'].to_numpy(dtype=float)
+                self.airairhorizons_depth2 = df['depth2'].to_numpy(dtype=float)
+                self.airairhorizons_sigma = df['age_unc'].to_numpy(dtype=float)
             else:
                 self.airairhorizons_depth1 = np.array([])
                 self.airairhorizons_depth2 = np.array([])
@@ -69,17 +69,17 @@ class SitePair(object):
             self.airairhorizons_correlation = np.diag(np.ones(np.size(self.airairhorizons_depth1)))
 
         if self.site2.archive == 'icecore':
+            if self.site1.archive == 'icecore':
+                prefix = 'iceair_'
+            else:
+                prefix = 'air_'
             filename = pccfg.datadir+self.site1.label+'-'+\
-                            self.site2.label+'/'+self.age_age2_label+'synchro_horizons.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/iceair_depth.txt'
-            if os.path.isfile(filename) and open(filename).read():
-                readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.iceairhorizons_depth1 = readarray[:, 0]
-                self.iceairhorizons_depth2 = readarray[:, 1]
-                self.iceairhorizons_sigma = readarray[:, 2]
+                            self.site2.label+'/'+prefix+'synchro_horizons.txt'
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.iceairhorizons_depth1 = df['depth1'].to_numpy(dtype=float)
+                self.iceairhorizons_depth2 = df['depth2'].to_numpy(dtype=float)
+                self.iceairhorizons_sigma = df['age_unc'].to_numpy(dtype=float)
             else:
                 self.iceairhorizons_depth1 = np.array([])
                 self.iceairhorizons_depth2 = np.array([])
@@ -87,17 +87,17 @@ class SitePair(object):
             self.iceairhorizons_correlation = np.diag(np.ones(np.size(self.iceairhorizons_depth1)))
 
         if self.site1.archive == 'icecore':
+            if self.site2.archive == 'icecore':
+                prefix = 'airice_'
+            else:
+                prefix = 'air_'
             filename = pccfg.datadir+self.site1.label+'-'+\
-                        self.site2.label+'/'+self.age2_age_label+'synchro_horizons.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.site1.label+'-'+self.site2.label+'/airice_depth.txt'
-            if os.path.isfile(filename) and open(filename).read():
-                readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.airicehorizons_depth1 = readarray[:, 0]
-                self.airicehorizons_depth2 = readarray[:, 1]
-                self.airicehorizons_sigma = readarray[:, 2]
+                        self.site2.label+'/'+prefix+'synchro_horizons.txt'
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.airicehorizons_depth1 = df['depth1'].to_numpy(dtype=float)
+                self.airicehorizons_depth2 = df['depth2'].to_numpy(dtype=float)
+                self.airicehorizons_sigma = df['age_unc'].to_numpy(dtype=float)
             else:
                 self.airicehorizons_depth1 = np.array([])
                 self.airicehorizons_depth2 = np.array([])
@@ -106,22 +106,16 @@ class SitePair(object):
 
 
         filename1 = pccfg.datadir+'/parameters_covariance_observations_all_site_pairs.py'
-        filename2 = pccfg.datadir+'/parameters-CovarianceObservations-AllDrillings.py'
         if os.path.isfile(filename1):
             exec(open(filename1).read())
-        elif os.path.isfile(filename2):
-            exec(open(filename2).read())
         filename3 = pccfg.datadir+self.label+'/parameters_covariance_observations.py'
-        filename4 = pccfg.datadir+self.label+'/parameters-CovarianceObservations.py'
         if os.path.isfile(filename3):
             exec(open(filename3).read())
-        elif os.path.isfile(filename4):
-            exec(open(filename4).read())
             
-        if ((os.path.isfile(filename1) or os.path.isfile(filename2) or os.path.isfile(filename3)\
-            or os.path.isfile(filename4)) and (pccfg.jacobian=='analytical' or \
-            pccfg.jacobian=='semi_adjoint' or pccfg.jacobian=='adjoint')):
-            print('Covariance on observations not implemented for analytical Jacobian. Exiting.')
+        if (os.path.isfile(filename1) or os.path.isfile(filename3))\
+             and (pccfg.jacobian=='analytical' or \
+            pccfg.jacobian=='semi_adjoint' or pccfg.jacobian=='adjoint'):
+            print('Covariance for observations on site pairs not implemented for analytical Jacobian. Exiting.')
             sys.exit()
             
         if np.any(self.iceicehorizons_correlation != \

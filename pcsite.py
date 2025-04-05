@@ -313,14 +313,13 @@ class Site(object):
                     sys.exit()
         else:
             filename = pccfg.datadir+self.label+'/deposition.txt'
-            if os.path.isfile(filename):
-                readarray = np.loadtxt(filename)
-            if np.size(readarray) == np.shape(readarray)[0]:
-                readarray.resize(1, np.size(readarray))
-            self.a_depth = readarray[:, 0]
-            self.a_a = readarray[:, 1]
-            if readarray.shape[1] >= 3:
-                self.a_sigma = readarray[:, 2]
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.a_depth = df['depth'].to_numpy(dtype=float)
+            self.a_a = df['deporate'].to_numpy(dtype=float)
+            try:
+                self.a_sigma = df['rel_unc'].to_numpy(dtype=float)
+            except:
+                pass
             if self.accu_prior_rep == 'staircase':
                 self.a_model = interp_stair_aver(self.depth, self.a_depth, self.a_a)
             elif self.accu_prior_rep == 'linear':
@@ -329,17 +328,15 @@ class Site(object):
                 print('Representation of prior accu scenario not recognized')
             self.accu = self.a_model
 
+
         self.age = np.empty_like(self.depth)
         self.airage = np.empty_like(self.depth)
 
         if self.archive == 'icecore':
             filename = pccfg.datadir+self.label+'/density.txt'
-            if os.path.isfile(filename):
-                readarray = np.loadtxt(filename)
-            if np.size(readarray) == np.shape(readarray)[0]:
-                readarray.resize(1, np.size(readarray))
-            self.dens_depth = readarray[:, 0]
-            self.dens_dens = readarray[:, 1]
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.dens_depth = df['depth'].to_numpy(dtype=float)
+            self.dens_dens = df['rel_dens'].to_numpy(dtype=float)
             #FIXME: implement staircase reprensentation for the density, as is done for accu.
             self.dens = interp(self.depth_mid, self.dens_depth, self.dens_dens)
 
@@ -358,14 +355,13 @@ class Site(object):
                     self.lid_lid = np.array([self.lid_value, self.lid_value])
             else:
                 filename = pccfg.datadir+self.label+'/lock_in_depth.txt'
-                if os.path.isfile(filename):
-                    readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.lid_depth = readarray[:, 0]
-                self.lid_lid = readarray[:, 1]
-                if readarray.shape[1] >= 3:
-                    self.lid_sigma = readarray[:, 2]
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.lid_depth = df['depth'].to_numpy(dtype=float)
+                self.lid_lid = df['LID'].to_numpy(dtype=float)
+                try:
+                    self.lid_sigma = df['rel_unc'].to_numpy(dtype=float)
+                except:
+                    pass
             self.lid_model = interp(self.depth, self.lid_depth, self.lid_lid)
 
             self.delta_depth = np.empty_like(self.depth)
@@ -378,14 +374,13 @@ class Site(object):
                 self.tau = np.empty_like(self.depth_mid)
             else:
                 filename = pccfg.datadir+self.label+'/thinning.txt'
-                if os.path.isfile(filename):
-                    readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.tau_depth = readarray[:, 0]
-                self.tau_tau = readarray[:, 1]
-                if readarray.shape[1] >= 3:
-                    self.tau_sigma = readarray[:, 2]
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.tau_depth = df['depth'].to_numpy(dtype=float)
+                self.tau_tau = df['thinning'].to_numpy(dtype=float)
+                try:
+                    self.tau_sigma = df['rel_unc'].to_numpy(dtype=float)
+                except:
+                    pass
                 self.tau_model = interp(self.depth_mid, self.tau_depth, self.tau_tau)
                 self.tau = self.tau_model
 
@@ -514,123 +509,99 @@ class Site(object):
 
 #Reading of observations
 
-        filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons.txt'
-        if not os.path.isfile(filename):
-            filename = pccfg.datadir+self.label+'/ice_age.txt'
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read() and\
-                np.size(np.loadtxt(filename)) > 0:
-                readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.icehorizons_depth = readarray[:, 0]
-                self.icehorizons_age = readarray[:, 1]
-                self.icehorizons_sigma = readarray[:, 2]
-            else:
-                self.icehorizons_depth = np.array([])
-                self.icehorizons_age = np.array([])
-                self.icehorizons_sigma = np.array([])
-            self.icehorizons_type = np.empty(len(self.icehorizons_depth), dtype=object)
-            self.icehorizons_type[:] = ''
-
-        filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_horizons_C14.txt'
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read():
-                df = pd.read_csv(filename, sep=None, comment='#')
-                try: 
-                    df['calib'] = df['calib'].mask(df['calib']=='default', self.c14_cal)
-                except:
-                    df['calib'] = pd.Series(self.c14_cal, index=range(len(df)))
-                try:
-                    df['age'] -= df['res_age']
-                    df['age_unc'] = (df['age_unc']**2+df['res_unc']**2).pow(0.5)
-                except:
-                    pass
-                print('Calibrating C14 ages')
-                from iosacal import R
-                for i in range(len(df)):
-#                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
-                    r = R(df['age'][i], df['age_unc'][i], 'name')
-                    cal_r = r.calibrate(df['calib'][i])
-                    self.icehorizons_depth = np.append(self.icehorizons_depth, df['depth'][i])
-                    self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
-                    self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
-                    self.icehorizons_type = np.append(self.icehorizons_type, 'C14')
-
-        filename = pccfg.datadir+self.label+'/'+self.age_label_+'age_intervals.txt'
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if os.path.isfile(filename) and open(filename).read() and\
-                np.size(np.loadtxt(filename)) > 0:
-                readarray = np.loadtxt(filename)
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.iceintervals_depthtop = readarray[:, 0]
-                self.iceintervals_depthbot = readarray[:, 1]
-                self.iceintervals_duration = readarray[:, 2]
-                self.iceintervals_sigma = readarray[:, 3]
-            else:
-                self.iceintervals_depthtop = np.array([])
-                self.iceintervals_depthbot = np.array([])
-                self.iceintervals_duration = np.array([])
-                self.iceintervals_sigma = np.array([])
+        if self.archive == 'icecore':
+            filename = pccfg.datadir+self.label+'/ice_age_horizons.txt'
+        else:
+            filename = pccfg.datadir+self.label+'/age_horizons.txt'
+        if os.path.isfile(filename):
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.icehorizons_depth = df['depth'].to_numpy(dtype=float)
+            self.icehorizons_age = df['age'].to_numpy(dtype=float)
+            self.icehorizons_sigma = df['age_unc'].to_numpy(dtype=float)
+        else:
+            self.icehorizons_depth = np.array([])
+            self.icehorizons_age = np.array([])
+            self.icehorizons_sigma = np.array([])
+        self.icehorizons_type = np.empty(len(self.icehorizons_depth), dtype=object)
+        self.icehorizons_type[:] = ''
 
         if self.archive == 'icecore':
-            filename = pccfg.datadir+self.label+'/'+self.age2_label_+'age_horizons.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.label+'/air_age.txt'
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                if os.path.isfile(filename) and open(filename).read() and\
-                    np.size(np.loadtxt(filename)) > 0:
-                    readarray = np.loadtxt(filename)
-                    if np.size(readarray) == np.shape(readarray)[0]:
-                        readarray.resize(1, np.size(readarray))
-                    self.airhorizons_depth = readarray[:, 0]
-                    self.airhorizons_age = readarray[:, 1]
-                    self.airhorizons_sigma = readarray[:, 2]
-                else:
-                    self.airhorizons_depth = np.array([])
-                    self.airhorizons_age = np.array([])
-                    self.airhorizons_sigma = np.array([])
+            filename = pccfg.datadir+self.label+'/ice_age_horizons_C14.txt'
+        else:
+            filename = pccfg.datadir+self.label+'/age_horizons_C14.txt'
+        if os.path.isfile(filename):
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            try: 
+                df['calib'] = df['calib'].mask(df['calib']=='default', self.c14_cal)
+            except:
+                df['calib'] = pd.Series(self.c14_cal, index=range(len(df)))
+            try:
+                df['age'] -= df['res_age']
+                df['age_unc'] = (df['age_unc']**2+df['res_unc']**2).pow(0.5)
+            except:
+                pass
+            print('Calibrating C14 ages')
+            from iosacal import R
+            for i in range(len(df)):
+#                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
+                r = R(df['age'][i], df['age_unc'][i], 'name')
+                cal_r = r.calibrate(df['calib'][i])
+                self.icehorizons_depth = np.append(self.icehorizons_depth, df['depth'][i])
+                self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
+                self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
+                self.icehorizons_type = np.append(self.icehorizons_type, 'C14')
 
-            filename = pccfg.datadir+self.label+'/'+self.age2_label_+'age_intervals.txt'
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                if os.path.isfile(filename) and open(filename).read() and\
-                    np.size(np.loadtxt(filename)) > 0:
-                    readarray = np.loadtxt(filename)
-                    if np.size(readarray) == np.shape(readarray)[0]:
-                        readarray.resize(1, np.size(readarray))
-                    self.airintervals_depthtop = readarray[:, 0]
-                    self.airintervals_depthbot = readarray[:, 1]
-                    self.airintervals_duration = readarray[:, 2]
-                    self.airintervals_sigma = readarray[:, 3]
-                else:
-                    self.airintervals_depthtop = np.array([])
-                    self.airintervals_depthbot = np.array([])
-                    self.airintervals_duration = np.array([])
-                    self.airintervals_sigma = np.array([])
+        if self.archive == 'icecore':
+            filename = pccfg.datadir+self.label+'/ice_age_intervals.txt'
+        else:
+            filename = pccfg.datadir+self.label+'/age_intervals.txt'
+        if os.path.isfile(filename):
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.iceintervals_depthtop = df['depth_top'].to_numpy(dtype=float)
+            self.iceintervals_depthbot = df['depth_bot'].to_numpy(dtype=float)
+            self.iceintervals_duration = df['duration'].to_numpy(dtype=float)
+            self.iceintervals_sigma = df['dur_unc'].to_numpy(dtype=float)
+        else:
+            self.iceintervals_depthtop = np.array([])
+            self.iceintervals_depthbot = np.array([])
+            self.iceintervals_duration = np.array([])
+            self.iceintervals_sigma = np.array([])
+
+        if self.archive == 'icecore':
+            filename = pccfg.datadir+self.label+'/air_age_horizons.txt'
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.airhorizons_depth = df['depth'].to_numpy(dtype=float)
+                self.airhorizons_age = df['age'].to_numpy(dtype=float)
+                self.airhorizons_sigma = df['age_unc'].to_numpy(dtype=float)
+            else:
+                self.airhorizons_depth = np.array([])
+                self.airhorizons_age = np.array([])
+                self.airhorizons_sigma = np.array([])
+
+            filename = pccfg.datadir+self.label+'/air_age_intervals.txt'
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.airintervals_depthtop = df['depth_top'].to_numpy(dtype=float)
+                self.airintervals_depthbot = df['depth_bot'].to_numpy(dtype=float)
+                self.airintervals_duration = df['duration'].to_numpy(dtype=float)
+                self.airintervals_sigma = df['dur_unc'].to_numpy(dtype=float)
+            else:
+                self.airintervals_depthtop = np.array([])
+                self.airintervals_depthbot = np.array([])
+                self.airintervals_duration = np.array([])
+                self.airintervals_sigma = np.array([])
 
             filename = pccfg.datadir+self.label+'/delta_depths.txt'
-            if not os.path.isfile(filename):
-                filename = pccfg.datadir+self.label+'/Ddepth.txt'
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                if os.path.isfile(filename) and open(filename).read() and\
-                    np.size(np.loadtxt(filename)) > 0:
-                    readarray = np.loadtxt(filename)
-                    if np.size(readarray) == np.shape(readarray)[0]:
-                        readarray.resize(1, np.size(readarray))
-                    self.delta_depth_depth = readarray[:, 0]
-                    self.delta_depth_delta_depth = readarray[:, 1]
-                    self.delta_depth_sigma = readarray[:, 2]
-                else:
-                    self.delta_depth_depth = np.array([])
-                    self.delta_depth_delta_depth = np.array([])
-                    self.delta_depth_sigma = np.array([])
+            if os.path.isfile(filename):
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.delta_depth_depth = df['air_depth'].to_numpy(dtype=float)
+                self.delta_depth_delta_depth = df['Ddepth'].to_numpy(dtype=float)
+                self.delta_depth_sigma = df['Ddepth_unc'].to_numpy(dtype=float)
+            else:
+                self.delta_depth_depth = np.array([])
+                self.delta_depth_delta_depth = np.array([])
+                self.delta_depth_sigma = np.array([])
 
 
         self.icehorizons_correlation = np.diag(np.ones(np.size(self.icehorizons_depth)))
@@ -641,26 +612,14 @@ class Site(object):
             self.delta_depth_correlation = np.diag(np.ones(np.size(self.delta_depth_depth)))
 #        print self.icehorizons_correlation
 
-        filename1 = pccfg.datadir+'/parameters_covariance_observations_all_sites.py'
-        filename2 = pccfg.datadir+'/parameters-CovarianceObservations-AllDrillings.py'
-        if os.path.isfile(filename1):
-            exec(open(filename1).read())
-        elif os.path.isfile(filename2):
-            exec(open(filename2).read())
+        filename = pccfg.datadir+'/parameters_covariance_observations_all_sites.py'
+        if os.path.isfile(filename):
+            exec(open(filename).read())
 
-        filename3 = pccfg.datadir+self.label+'/parameters_covariance_observations.py'
-        filename4 = pccfg.datadir+self.label+'/parameters-CovarianceObservations.py'
-        if os.path.isfile(filename3):
-            exec(open(filename3).read())
-        elif os.path.isfile(filename4):
-            exec(open(filename4).read())
+        filename = pccfg.datadir+self.label+'/parameters_covariance_observations.py'
+        if os.path.isfile(filename):
+            exec(open(filename).read())
         
-        # if ((os.path.isfile(filename1) or os.path.isfile(filename2) or os.path.isfile(filename3)\
-        #     or os.path.isfile(filename4)) and (pccfg.jacobian=='analytical' or \
-        #     pccfg.jacobian=='semi_adjoint' or pccfg.jacobian=='adjoint')):
-        #     print('Covariance on observations not implemented for analytical Jacobian. Exiting.')
-        #     sys.exit()
-
         if np.any(self.icehorizons_correlation != \
                   np.diag(np.ones(np.size(self.icehorizons_depth)))):
             self.icehorizons_correlation_bool = True
@@ -706,12 +665,14 @@ class Site(object):
                 self.delta_depth_correlation_bool = False
 
         for key in self.tuning:
-            readarray = np.loadtxt(pccfg.datadir+self.label+'/'+self.tuning[key]["data_file"])
-            self.tuning[key]["data_depth"] = readarray[:, 0]
-            self.tuning[key]["data_value"] = readarray[:, 1]
-            readarray = np.loadtxt(pccfg.datadir+self.label+'/'+self.tuning[key]["target_file"])
-            self.tuning[key]["target_age"] = readarray[:, 0]
-            self.tuning[key]["target_value"] = readarray[:, 1]
+            filename = pccfg.datadir+self.label+'/'+self.tuning[key]["data_file"]
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.tuning[key]["data_depth"] = df['depth'].to_numpy(dtype=float)
+            self.tuning[key]["data_value"] = df['data'].to_numpy(dtype=float)
+            filename = pccfg.datadir+self.label+'/'+self.tuning[key]["target_file"]
+            df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+            self.tuning[key]["target_age"] = df['age'].to_numpy(dtype=float)
+            self.tuning[key]["target_value"] = df['value'].to_numpy(dtype=float)
 
     def raw_model(self):
         """Calculate the raw model, that is before applying correction functions."""
