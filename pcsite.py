@@ -280,16 +280,15 @@ class Site(object):
 ## We set up the raw model
         if self.calc_a:
             if self.archive == 'icecore':
-                readarray = np.loadtxt(pccfg.datadir+self.label+'/isotopes.txt')
-                if np.size(readarray) == np.shape(readarray)[0]:
-                    readarray.resize(1, np.size(readarray))
-                self.iso_depth = readarray[:, 0]
+                filename = pccfg.datadir+self.label+'/isotopes.txt'
+                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                self.iso_depth = df['depth'].to_numpy(dtype=float)
                 if self.calc_a_method == 'fullcorr':
-                    self.iso_d18o_ice = readarray[:, 1]
+                    self.iso_d18o_ice = df['d18O'].to_numpy(dtype=float)
                     self.d18o_ice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_ice)
-                    self.iso_deutice = readarray[:, 2]
+                    self.iso_deutice = df['deut'].to_numpy(dtype=float)
                     self.deutice = interp_stair_aver(self.depth, self.iso_depth, self.iso_deutice)
-                    self.iso_d18o_sw = readarray[:, 3]
+                    self.iso_d18o_sw = df['d18Osw'].to_numpy(dtype=float)
                     self.d18o_sw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_sw)
                     self.excess = self.deutice-8*self.d18o_ice   # dans Uemura : d=excess
                     self.accu = np.empty_like(self.deutice)
@@ -301,11 +300,11 @@ class Site(object):
                     self.deutice_fullcorr = self.deutice_corr+self.gamma_source/self.beta_source*\
                         self.excess_corr
                 elif self.calc_a_method == 'deut':
-                    self.iso_deutice = readarray[:, 1]
+                    self.iso_deutice = df['deut'].to_numpy(dtype=float)
                     self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
                                                               self.iso_deutice)
                 elif self.calc_a_method == 'd18O':
-                    self.iso_d18o_ice = readarray[:, 1]
+                    self.iso_d18o_ice = df['d18O'].to_numpy(dtype=float)
                     self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
                                                                 self.iso_d18o_ice)
                 else:
