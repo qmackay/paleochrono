@@ -1410,11 +1410,11 @@ class Site(object):
             xseries = np.array([x_low, x_up, x_up, x_low, x_low])
             yseries = np.array([y_low, y_low, y_up, y_up, y_low])
             if i == 0:
-                mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+                mpl.plot(xseries, yseries, color=pccfg.color_obs, label="dated intervals")
                 mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
                              capsize=1)
             else:
-                mpl.plot(xseries, yseries, color=pccfg.color_di)
+                mpl.plot(xseries, yseries, color=pccfg.color_obs)
                 mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
                              capsize=1)
         mpl.legend(loc="best")
@@ -1447,11 +1447,11 @@ class Site(object):
             xseries = np.array([x_low, x_up, x_up, x_low, x_low])
             yseries = np.array([y_low, y_low, y_up, y_up, y_low])
             if i == 0:
-                mpl.plot(xseries, yseries, color=pccfg.color_di, label="dated intervals")
+                mpl.plot(xseries, yseries, color=pccfg.color_obs, label="dated intervals")
                 mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
                              capsize=1)
             else:
-                mpl.plot(xseries, yseries, color=pccfg.color_di)
+                mpl.plot(xseries, yseries, color=pccfg.color_obs)
                 mpl.errorbar(x_up, (y_low+y_up)/2, color=pccfg.color_di, xerr=self.iceintervals_sigma[i]/(y_up-y_low),
                              capsize=1)
         mpl.legend(loc="best")
