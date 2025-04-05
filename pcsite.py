@@ -1308,7 +1308,7 @@ class Site(object):
                          color=pccfg.color_obs,
                          xerr=self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')],
                          linestyle='', marker='D', markersize=2,
-                         label="C14 dated horizons")
+                         label="$^{14}$C dated horizons")
         mpl.plot(self.age_model, self.depth, color=pccfg.color_mod, label='Prior')
         mpl.plot(self.age, self.depth, color=pccfg.color_opt,
                  label='Posterior $\\pm\\sigma$')
