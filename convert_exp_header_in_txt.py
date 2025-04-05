@@ -25,8 +25,6 @@ def convert_file(pattern, labels):
                         pass
                     else:                    
                         lines_data.append(line)
-                        # if path == 'paleochrono/AICC2023-Hulu1/VK-TALDICE/airair_synchro_horizons.txt':
-                        #     print(repr(line))
                 f.close()
                 if len(lines_data) > 0:
                     # print(repr(lines_data[0]))
@@ -54,21 +52,9 @@ def convert_file(pattern, labels):
                     f.write(line+'\n')
                 f.write(header)
                 for line in lines_data:
-                    # if path == 'paleochrono/AICC2023-Hulu1/EDC-EDML/iceice_synchro_horizons.txt':
-                    #     print(repr(line), len(line.split(sep)), len(header))
-                    if len(line.split(sep)) < len(labels):
-                        if sep == ' ':
-                            line = line.replace('\t', ' ')
-                        elif sep == '\t':
-                            line = line.replace(' ', '\t')
                     line1 = sep
                     line = line1.join(line.split())
-                        # print(repr(line))
                     f.write(line+'\n')
-                    # line_split = line.replace('\t', ' ').split()
-                    # for elem in line_split[-1]:
-                    #     f.write(elem+sep)
-                    # f.write(line_split[-1]+'|n')
                 f.close()
 
                 
