@@ -32,19 +32,21 @@ Go here:
 https://github.com/parrenin/paleochrono/  
 and click on the donwload button.  
 In the downloaded folder, you will find the following files:
-- README.md		: is the current documentation of paleochrono.
-- LICENCE		: is the paleochrono licence file.
-- paleochrono.py		: is the main paleochrono program that you will run.
-- pccfg.py, pcmath.py, pcsite.py and pcsitepair.py	: are python modules used by paleochrono.py
-- Clean.py		: is a python script to clean a dating experiment directory
-- AICC2023-Hulu		: is an example experiment directory: it contains all the necessary
+- `README.md`		: is the current documentation of paleochrono.
+- `LICENCE`		: is the paleochrono licence file.
+- `paleochrono.py`		: is the main paleochrono program that you will run.
+- `pccfg.py`, pcmath.py, pcsite.py and pcsitepair.py	: are python modules used by paleochrono.py
+- `Clean.py`		: is a python script to clean a dating experiment directory
+- `convert_exp_header_in_txt.py` : is a python script to convert an old experiment to the new format with name columns for .txt files
+- `AICC2023-Hulu`		: is an example experiment directory: it contains all the necessary
 numerical settings, prior information and observations for the different ice cores in the AICC2023
 dating experiment and for the MSD and MSL Hulu speleothem. It takes a few minutes to run an a recent
 computer.
-- AICC2023-LowRes : is the experiment directory used to create the AICC2023 ice core chronology.
+- `AICC2023-LowRes` : is the experiment directory used to create the AICC2023 ice core chronology.
 It uses a lower resolution than the official AICC2023 experiment so that it runs faster.
-- Hulu_MSL : is an experiment directory used in the Paleochrono-1.1 article for only the Hulu/MSL speleothem.
+- `Hulu_MSL` : is an experiment directory used in the Paleochrono-1.1 article for only the Hulu/MSL speleothem.
 It is a simple example that you can follow when you date only one record from a simple archive.
+- `EN18208` and `EN18218` : are two one-site experiments with C14 ages.
 
 What do I need to run paleochrono?
 ----------------------------------
@@ -164,35 +166,51 @@ Then you have one directory per site, which contains:
 - `parameters.yml`: all the site specific parameters
 - `parameters_covariance_observations.py`: this file allows to define the correlation of site
  specific observations
-- `deposition.txt`: depth / background accu (in ice-equivalent) / unc. (opt., relative)
-- `age_horizons.txt`: depth / age / unc. (absolute) for dated horizons for a non-ice-core
-- `age_horizons_C14.txt`: depth / age / unc. (absolute) for C14-dated horizons for a non-ice-core
-- `age_intervals.txt`: epth\_top / depth\_bottom / duration / unc. (absolute) for intervals for a non-ice-core
-- `ice_age_horizons.txt`: depth / age / unc. (absolute) for ice dated horizons for an ice core
-- `air_age_horizons.txt`: depth / age / unc. (absolute) for air dated horizons for an ice core
-- `ice_age_intervals.txt`: depth\_top / depth\_bottom / duration / unc. (absolute) for ice intervals for an
+- `deposition.txt`: depth / deporate (/ opt., rel_unc)
+- `age_horizons.txt`: depth / age / age_unc for dated horizons for a non-ice-core
+- `age_horizons_C14.txt`: depth / age / age_unc for C14-dated horizons for a non-ice-core
+- `age_intervals.txt`: depth_top / depth_bot / duration / dur_unc for intervals for a non-ice-core
+- `ice_age_horizons.txt`: depth / age / age_unc for ice dated horizons for an ice core
+- `air_age_horizons.txt`: depth / age / age_unc for air dated horizons for an ice core
+- `ice_age_intervals.txt`: depth_top / depth_bot / duration / dur_unc for ice intervals for an
 ice core
-- `air_age_intervals.txt`: depth\_top / depth\_bottom / duration / unc. (absolute) for air intervals for an
+- `air_age_intervals.txt`: depth_top / depth_bot / duration / dur_unc for air intervals for an
 ice core
-- `density.txt`: depth / relative density for an ice core
-- `lock_in_depth.txt`: depth / Lock-in-Depth / unc. (opt, relative) for an ice core
-- `thinning.txt`: depth / thinning function / unc. (opt, relative) for an ice core
-- `delta_depths.txt`: depth / Delta-depth / unc. (absolute) for an ice core
+- `density.txt`: depth / rel_dens for an ice core
+- `lock_in_depth.txt`: depth / LID (/ opt., rel_unc) for an ice core
+- `thinning.txt`: depth / thinning (/ opt., rel_unc) for an ice core
+- `delta_depths.txt`: depth / Ddepth / Ddepth_unc for an ice core
 
 Then you have one directory per site pair, which contains:
 - `parameters_covariance_observations.py`: this file allows to define the correlation of site pair
 specific observations
-- `
-- `ice_depth.txt`: depth1 / depth2 / age unc. (absolute) for ice-ice stratigraphic links observations
-- `air_depth.txt`: depth1 / depth2 / age unc. (absolute) for air-air stratigraphic links observations
-- `iceair_depth.txt`: depth1 / depth2 / age unc. (absolute) for ice-air stratigraphic links observations
-- `airice_depth.txt`: depth1 / depth2 / age unc. (absolute) for air-ice stratigraphic links observations
+- `synchro_horizons.txt`: depth1 / depth2 / age_unc for stratigraphic links observations (two simple archives)
+- `ice_synchro_horizons.txt`: depth1 / depth2 / age_unc for ice-ice stratigraphic links observations (one ice core, one simple archive)
+- `air_synchro_horizons.txt`: depth1 / depth2 / age_unc for air-air stratigraphic links observations (one ice core, one simple archive)
+- `iceice_synchro_horizons.txt`: depth1 / depth2 / age_unc for ice-ice stratigraphic links observations (two ice cores)
+- `airair_synchro_horizons.txt`: depth1 / depth2 / age_unc for air-air stratigraphic links observations (two ice cores)
+- `iceair_synchro_horizons.txt`: depth1 / depth2 / age_unc for ice-air stratigraphic links observations (two ice cores)
+- `airice_synchro_horizons.txt`: depth1 / depth2 / age_unc for air-ice stratigraphic links observations (two ice cores)
 
 A few things you need to know to use paleochrono:
 1) You can use whatever units you want but they need to be consistent. For example, if you use meters for the depths and years for the dated horizons, you need to use meters per years for the accumulation rates. 
 2) The site specific parameters override the general parameters for all sites. In the very same way, the site-pair specific parameters override the general parameters for all site-pairs.
 3) Most of these files are optional. If there is no file for an certain type of observations, that means that there is no observation of this type. If a covariance matrix is not defined for an observation type, that means that the correlation matrix is supposed to be equal to identity and that the standard deviation is given in the observation file.
 4) You can put comment at the end of `.yml` or `.txt` file after a # character. This is handy if you want to add a label to, e.g., a dated horizon.
+
+New structure of data .txt files
+---------------------------------
+Starting April, 5th, 2025, we have a new structure for .txt files.
+These files now have a header which contains the name of each column.
+The names are specific and should be strictly equal to what Paleochrono expects.
+This new structure has several advantages:
+- the names in the header explains what each column is
+- the columns can now be reordered, as long as the header corresponds
+- you can have your own descriptive columns, e.g., lab-id, method, author, etc.
+- it is now possible to have several optional columns, which was not possible with the old format
+The `convert_exp_header_in_txt.py` allows to convert an experiment to the new format.
+It should work on most .txt files, but there might be corner cases which are not dealt with.
+In this case, drop me an email with the file and I will adjust the script.
 
 What is the structure of the general `parameters.yml` file?
 --------------------------------------------------------
