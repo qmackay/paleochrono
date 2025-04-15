@@ -78,7 +78,7 @@ def read_parameters():
     except NameError:
         pass
     
-    if time_axis:
+    if time_axis or age_unit_ref == 'CE':
         way = -1.
     else:
         way = 1.

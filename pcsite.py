@@ -545,9 +545,30 @@ class Site(object):
 #                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
                 r = R(df['age'][i], df['age_unc'][i], 'name')
                 cal_r = r.calibrate(df['calib'][i])
+                age = mean_distri(cal_r)
+                sigma = stdev_distri(cal_r)
+                if pccfg.age_unit_ref == 'CE':
+                    age = 1950 - age
+                elif pccfg.age_unit == 'BCE':
+                    age = age - 1950
+                elif pccfg.age_unit_ref == 'b2k':
+                    age = age + 50
+                elif pccfg.age_unit_ref in ['BP', 'B1950']:
+                    pass
+                else:
+                    print('Age reference should be CE, BCE, BP, B1950 or b2k')
+                    sys.exit()
+                if pccfg.age_unit == 'kyr':
+                    age = age / 1000. 
+                    sigma = sigma / 1000.
+                elif pccfg.age_unit == 'yr':
+                    pass
+                else:
+                    print('Age unit should be yr or kyr')
+                    sys.exit()
                 self.icehorizons_depth = np.append(self.icehorizons_depth, df['depth'][i])
-                self.icehorizons_age = np.append(self.icehorizons_age, mean_distri(cal_r))
-                self.icehorizons_sigma = np.append(self.icehorizons_sigma, stdev_distri(cal_r))
+                self.icehorizons_age = np.append(self.icehorizons_age, age)
+                self.icehorizons_sigma = np.append(self.icehorizons_sigma, sigma)
                 self.icehorizons_type = np.append(self.icehorizons_type, 'C14')
 
         if self.archive == 'icecore':
