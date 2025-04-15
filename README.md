@@ -205,7 +205,7 @@ These files now have a header which contains the name of each column.
 The names are specific and should be strictly equal to what Paleochrono expects.
 This new structure has several advantages:
 - the names in the header explains what each column is
-- the columns can now be reordered, as long as the header corresponds
+- the columns can now be reordered, as long as the header corresponds (with the same separator)
 - you can have your own descriptive columns, e.g., lab-id, method, author, etc.
 - it is now possible to have several optional columns, which was not possible with the old format
 The `convert_exp_header_in_txt.py` allows to convert an experiment to the new format.
@@ -253,7 +253,7 @@ Optionnally, you can specify `res_age` and `res_unc` for a reservoir age and its
 You can also optionnally specify a per-horizon synchronisation curve with the `calib` column. If you put `default`, the default site calibration curve will be used.\
 You can also add other columns, for example `label` if you want to specify a label.\
 The order of the columns does not matter, as long as the header is correct.\
-The separator (e.g., comma, space, tab) should be the same for the header and the values.
+Be careful that the C14 ages should always be expressed in BP, even though the rest is expressed in a different ref (e.g., CE).
 
 How to set up the `parameters-CovarianceObservations.py` file?
 --------------------------------------------------------------

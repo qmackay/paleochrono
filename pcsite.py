@@ -543,7 +543,13 @@ class Site(object):
             from iosacal import R
             for i in range(len(df)):
 #                    print(df['depth'][i], df['age'][i], df['age_unc'][i], df['calib'][i])
-                r = R(df['age'][i], df['age_unc'][i], 'name')
+                if pccfg.age_unit == 'yr':
+                    r = R(df['age'][i], df['age_unc'][i], 'name')
+                elif pccfg.age_unit == 'kyr':
+                    r = R(df['age'][i]*1000, df['age_unc'][i]*1000, 'name')
+                else:
+                    print('Age unit should be yr or kyr')
+                    sys.exit()
                 cal_r = r.calibrate(df['calib'][i])
                 age = mean_distri(cal_r)
                 sigma = stdev_distri(cal_r)
