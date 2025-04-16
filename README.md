@@ -83,7 +83,7 @@ ipython interpreter:
 
 ```
 cd path-to-palechrono
-run paleochron.py exp_directory/
+run paleochrono.py exp_directory/
 ```
 
 where `path-to-paleochrono` is the directory containing paleochrono and `exp_directory` is the name of
@@ -234,7 +234,7 @@ so the distribution of calibrated ages is transformed into a Gaussian distributi
 
 First, you need to install iosacal, which is a python software for C14 calibration.
 isoacal is included in conda-forge, so you have to add the conda-forge repo.
-If you are using Anaconda, you can add conda-forge like this:
+If you are using Anaconda, you can add conda-forge like this (in a terminal or Anaconda prompt):
 ```
 conda config --append channels conda-forge
 ```
