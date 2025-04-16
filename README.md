@@ -88,10 +88,8 @@ run paleochrono.py exp_directory/
 
 where `path-to-paleochrono` is the directory containing paleochrono and `exp_directory` is the name of
 your experiment directory. 
-The `AICC2023-Hulu` experiment directory is provided for you convenience.
-It is an AICC2023 + Hulu experiment.
-It takes a few minutes to run on a recent computer.
-
+A few experiment directories are provided for you convenience.
+You can for example try the `Hulu_MSL` experiment, it takes a few seconds to run.
 
 What are the outputs of a run:
 ------------------------------
