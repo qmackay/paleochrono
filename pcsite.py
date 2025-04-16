@@ -1915,12 +1915,12 @@ class Site(object):
                    /self.icehorizons_sigma[np.where(self.icehorizons_type=='C14')]
         if np.size(resi)>0:
             for i in np.where(np.abs(resi_simple)>pccfg.outlier_level)[0]:
-                print('Outlier in '+self.age_labelsp+'age horizon at index:', i, 'and depth:',
-                      self.icehorizons_depth[np.where(self.icehorizons_type=='')][i], self.depth_unit,
+                print('Outlier in '+self.age_labelsp+'age horizon:', str(i+1)+"/"+str(len(resi_simple)), 'at depth:',
+                      self.icehorizons_depth[np.where(self.icehorizons_type=='')][i], self.depth_unit+",",
                       'level:', "{:.2f}".format(np.abs(resi_simple[i])))
             for i in np.where(np.abs(resi_C14)>pccfg.outlier_level)[0]:
-                print('Outlier in '+self.age_labelsp+'C14 age horizon at index:', i, 'and depth:',
-                      self.icehorizons_depth[np.where(self.icehorizons_type=='C14')][i], self.depth_unit,
+                print('Outlier in '+self.age_labelsp+'C14 age horizon:', str(i+1)+"/"+str(len(resi_C14)), 'at depth:',
+                      self.icehorizons_depth[np.where(self.icehorizons_type=='C14')][i], self.depth_unit+",",
                       'level:', "{:.2f}".format(np.abs(resi_C14[i])))
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' '+self.age_label+' age horizons residuals')
