@@ -7,12 +7,16 @@ depth_grid: #depth grid for the age calculation
     start: 6.
     end: 450
     resolution: 0.1
-age_truncation:
-    inf: 30000.
-    sup: 80000.
-deporate_prior_rep: 'linear'
 calc_deporate: True
 deporate0: 1.09e-2
+corr_deporate_grid: #Age grid for the deporate correction function
+    type: 'regular' #regular or linear
+    start: 30000
+    end:  80000
+    nb_steps: 5000 
+deporate_prior_sigma: 0.5
+lambda_deporate: 500
+
 depth_unit: 'mm'
 age_label: ''
 fig_age_switch_axes: True
