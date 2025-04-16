@@ -144,10 +144,11 @@ run Clean.py exp_directory/
 What is the structure of an experiment directory?
 -------------------------------------------------
 
-You can have a look at the provided `AICC20123-Hulu` directory.
+You can have a look at the provided `Hulu_MSL` or `AICC20123-Hulu` directories.
+`Hulu_MSL` is a simple experiment with one single site of a simple archive.
+`AICC20123-Hulu` is a more complex experiment with several sites (simples and ice cores) combined together.
 You need to specify your prior scenarios for deposition rate (in all cases) and LID and thinning
 (for an ice core) and your age observations.
-Note that the .txt files should be space or tab separated values (do not use commas).
 
 You have five general files:
 - `parameters.yml`: contains general parameters for the
