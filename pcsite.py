@@ -1973,9 +1973,8 @@ class Site(object):
                           self.airhorizons_sigma
             if np.size(resi)>0:
                 for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
-                    print('Outlier in', self.age2_label,'age horizon at index:', i,
-                          'and depth:',
-                          self.airhorizons_depth[i], self.depth_unit)
+                    print('Outlier in', self.age2_label,'age horizon:', str(i+1)+"/"+str(len(resi)),
+                          'at depth:', self.airhorizons_depth[i], self.depth_unit+", level:", "{:.2f}".format(np.abs(resi[i])))
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' '+self.age2_label+' age horizons residuals')
                 mpl.xlabel('Residuals (no unit)')
@@ -2000,9 +1999,8 @@ class Site(object):
                                self.airintervals_duration)/self.airintervals_sigma
             if np.size(resi)>0:
                 for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
-                    print('Outlier in', self.age2_label,'age interval at index:', i,
-                          'and top depth:',
-                          self.airintervals_depthtop[i], self.depth_unit)
+                    print('Outlier in', self.age2_label,'age interval:', str(i+1)+"/"+str(len(resi)),
+                          'and top depth:', self.airintervals_depthtop[i], self.depth_unit+", level:", "{:.2f}".format(np.abs(resi[i])))
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' '+self.age2_label+' age intervals residuals')
                 mpl.xlabel('Residuals (no unit)')
@@ -2026,9 +2024,9 @@ class Site(object):
                        self.delta_depth_delta_depth)/self.delta_depth_sigma
             if np.size(resi)>0:
                 for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
-                    print('Outlier in $\\Delta$depth at index:', i,
-                          'and air depth:',
-                          self.delta_depth_depth[i], self.depth_unit)
+                    print('Outlier in $\\Delta$depth obs.:', str(i+1)+"/"+str(len(resi)),
+                          'at air depth:', self.delta_depth_depth[i], 
+                          self.depth_unit+", level:", "{:.2f}".format(np.abs(resi[i])))
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' $\\Delta$depth residuals')
                 mpl.xlabel('Residuals (no unit)')
@@ -2061,9 +2059,9 @@ class Site(object):
             resi = (target_data_value - self.tuning[key]["data_value"]) / self.tuning[key]["sigma"]
             if np.size(resi)>0:
                 for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
-                    print('Outlier in', key, 'tuning at index:', i,
-                          'and air depth:',
-                          self.tuning[key]["data_depth"][i], self.depth_unit)
+                    print('Outlier in', key, 'tuning obs.:', str(i+1)+"/"+str(len(resi)),
+                          'and air depth:', self.tuning[key]["data_depth"][i], 
+                          self.depth_unit+", level:", "{:.2f}".format(np.abs(resi[i])))
                 fig, ax1 = mpl.subplots()
                 mpl.title(self.label+' '+key+' tuning residuals')
                 mpl.xlabel('Residuals (no unit)')
