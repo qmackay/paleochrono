@@ -1946,9 +1946,9 @@ class Site(object):
                       self.iceintervals_duration)/self.iceintervals_sigma
         if np.size(resi)>0:
             for i in np.where(np.abs(resi)>pccfg.outlier_level)[0]:
-                print('Outlier in', self.age_label,'age interval at index:', i,
-                      'and top depth:',
-                      self.iceintervals_depthtop[i], self.depth_unit)
+                print('Outlier in', self.age_label,'age interval at index:', str(i+1)+"/"+str(len(resi)),
+                      'at top depth:',
+                      self.iceintervals_depthtop[i], self.depth_unit+", level:", "{:.2f}".format(np.abs(resi[i])))
             fig, ax1 = mpl.subplots()
             mpl.title(self.label+' '+self.age_label+' age intervals residuals')
             mpl.xlabel('Residuals (no unit)')
