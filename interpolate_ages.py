@@ -15,7 +15,7 @@ readarray = np.loadtxt(dir+'output.txt')
 depth = readarray[:, 0]
 age = readarray[:, 1]
 
-new_depth = np.loadtxt(dir+'depths_output.txt')
+new_depth = np.loadtxt(dir+'depths_outputs.txt')
 
 new_age = np.interp(new_depth, depth, age)
 
