@@ -55,9 +55,10 @@ paleochrono is a scientific python3 software, therefore you need a scipy distrib
 paleochrono is developed and tested using the anaconda distribution, therefore we recommend it.  
 Anaconda can be downloaded here (use the python3 version):  
 https://www.anaconda.com/download 
+If you have an old computer or if you want to limit the installation size, you can opt for miniconda, which is a minimal version of Anaconda.
+It installs faster, but then you have to install modules afterwards.
 
-Paleochrono probably works on other scipy distributions, provided they contain the following python
-modules:  
+Paleochrono uses the following python modules:  
 - sys
 - os
 - time
