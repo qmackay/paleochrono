@@ -280,36 +280,39 @@ class Site(object):
 ## We set up the raw model
         if self.calc_a:
             if self.archive == 'icecore':
-                filename = pccfg.datadir+self.label+'/isotopes.txt'
-                df = pd.read_csv(filename, sep=None, comment='#', engine='python')
-                self.iso_depth = df['depth'].to_numpy(dtype=float)
-                if self.calc_a_method == 'fullcorr':
-                    self.iso_d18o_ice = df['d18O'].to_numpy(dtype=float)
-                    self.d18o_ice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_ice)
-                    self.iso_deutice = df['deut'].to_numpy(dtype=float)
-                    self.deutice = interp_stair_aver(self.depth, self.iso_depth, self.iso_deutice)
-                    self.iso_d18o_sw = df['d18Osw'].to_numpy(dtype=float)
-                    self.d18o_sw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_sw)
-                    self.excess = self.deutice-8*self.d18o_ice   # dans Uemura : d=excess
-                    self.accu = np.empty_like(self.deutice)
-                    self.d18o_ice_corr = self.d18o_ice-self.d18o_sw*(1+self.d18o_ice/1000)/\
-                        (1+self.d18o_sw/1000)	#Uemura (1)
-                    self.deutice_corr = self.deutice-8*self.d18o_sw*(1+self.deutice/1000)/\
-                        (1+8*self.d18o_sw/1000) #Uemura et al. (CP, 2012) (2)
-                    self.excess_corr = self.deutice_corr-8*self.d18o_ice_corr
-                    self.deutice_fullcorr = self.deutice_corr+self.gamma_source/self.beta_source*\
-                        self.excess_corr
-                elif self.calc_a_method == 'deut':
-                    self.iso_deutice = df['deut'].to_numpy(dtype=float)
-                    self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
-                                                              self.iso_deutice)
-                elif self.calc_a_method == 'd18O':
-                    self.iso_d18o_ice = df['d18O'].to_numpy(dtype=float)
-                    self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
-                                                                self.iso_d18o_ice)
+                if self.calc_a_method == 'constant':
+                    print('Prior accumulation rate is taken as constant')
                 else:
-                    print('Accumulation method not recognized')
-                    sys.exit()
+                    filename = pccfg.datadir+self.label+'/isotopes.txt'
+                    df = pd.read_csv(filename, sep=None, comment='#', engine='python')
+                    self.iso_depth = df['depth'].to_numpy(dtype=float)
+                    if self.calc_a_method == 'fullcorr':
+                        self.iso_d18o_ice = df['d18O'].to_numpy(dtype=float)
+                        self.d18o_ice = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_ice)
+                        self.iso_deutice = df['deut'].to_numpy(dtype=float)
+                        self.deutice = interp_stair_aver(self.depth, self.iso_depth, self.iso_deutice)
+                        self.iso_d18o_sw = df['d18Osw'].to_numpy(dtype=float)
+                        self.d18o_sw = interp_stair_aver(self.depth, self.iso_depth, self.iso_d18o_sw)
+                        self.excess = self.deutice-8*self.d18o_ice   # dans Uemura : d=excess
+                        self.accu = np.empty_like(self.deutice)
+                        self.d18o_ice_corr = self.d18o_ice-self.d18o_sw*(1+self.d18o_ice/1000)/\
+                            (1+self.d18o_sw/1000)	#Uemura (1)
+                        self.deutice_corr = self.deutice-8*self.d18o_sw*(1+self.deutice/1000)/\
+                            (1+8*self.d18o_sw/1000) #Uemura et al. (CP, 2012) (2)
+                        self.excess_corr = self.deutice_corr-8*self.d18o_ice_corr
+                        self.deutice_fullcorr = self.deutice_corr+self.gamma_source/self.beta_source*\
+                            self.excess_corr
+                    elif self.calc_a_method == 'deut':
+                        self.iso_deutice = df['deut'].to_numpy(dtype=float)
+                        self.deutice_fullcorr = interp_stair_aver(self.depth, self.iso_depth,
+                                                                  self.iso_deutice)
+                    elif self.calc_a_method == 'd18O':
+                        self.iso_d18o_ice = df['d18O'].to_numpy(dtype=float)
+                        self.deutice_fullcorr = 8*interp_stair_aver(self.depth, self.iso_depth,
+                                                                    self.iso_d18o_ice)
+                    else:
+                        print('Accumulation method not recognized')
+                        sys.exit()
         else:
             filename = pccfg.datadir+self.label+'/deposition.txt'
             df = pd.read_csv(filename, sep=None, comment='#', engine='python')
@@ -708,9 +711,12 @@ class Site(object):
         if self.archive == 'icecore':
             #Accumulation
             if self.calc_a:
-                self.a_model = self.accu0*np.exp(self.beta*(self.deutice_fullcorr-\
-                    self.deutice_fullcorr[0])) #Parrenin et al. (CP, 2007a) 2.3 (6)
-
+                if self.calc_a_method != 'constant':
+                    self.a_model = self.accu0*np.exp(self.beta*(self.deutice_fullcorr-\
+                        self.deutice_fullcorr[0])) #Parrenin et al. (CP, 2007a) 2.3 (6)
+                else:
+                    self.a_model = self.accu0*np.ones(np.size(self.depth_inter))
+                    
             #Thinning
             if self.calc_tau:
                 self.p_def = -1+m.exp(self.pprime)
