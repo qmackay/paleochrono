@@ -79,6 +79,7 @@ class Site(object):
         self.fig_age_switch_axes = False
         self.fig_max_age_unc = None
         self.c14_cal = 'intcal20'
+        self.background_correlation_deporate = 0.
 
 # Setting of the parameters from the parameter files
 
@@ -464,7 +465,7 @@ class Site(object):
             np.size(self.corr_a_age)))*self.corr_a_age-\
             np.transpose(np.ones((np.size(self.corr_a_age),\
             np.size(self.corr_a_age)))*self.corr_a_age)),\
-            np.array([0,self.lambda_a]),np.array([1, 0]))
+            np.array([0,self.lambda_a]),np.array([1, self.background_correlation_deporate]))
         
         
         if self.archive == 'icecore':
