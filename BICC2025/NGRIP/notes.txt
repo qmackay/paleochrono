@@ -1,0 +1,5 @@
+density from freitag
+
+acc rate, thinning function, LID from AICC2012
+
+horizons/intervals will be from layer count
